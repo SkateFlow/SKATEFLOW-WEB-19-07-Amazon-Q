@@ -8,7 +8,7 @@ export const homeObjOne = {
     description: 'Pistas compartilhadas por outros usuários.',
     buttonLabel: 'Acessar',
     imgStart: false,
-    img: require('../../images/maps.svg').default,
+    img: require('../../images/logomap.svg').default,
     alt: 'GugaAbout',
     dark: true,
     primary: true,
