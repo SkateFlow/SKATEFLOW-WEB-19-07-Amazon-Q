@@ -47,7 +47,7 @@ const Login = () => {
             {errorMessage && <p className="error-text">{errorMessage}</p>} {/* Mensagem de erro */}
             <FormButton type='submit'>Entrar</FormButton>
             <Text>
-              <ForgetButton to="/forget">Esqueci a senha</ForgetButton>
+              <ForgetButton to="/forget">Cadastr</ForgetButton>
             </Text>
             <BackButton to="/">Voltar</BackButton>
           </Form>

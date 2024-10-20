@@ -23,7 +23,7 @@ const ForgetPass = () => {
         <Icon to="/">SkateFlow</Icon>
         <FormContent>
           <Form onSubmit={handleSubmit} autoComplete="off">
-            <FormH1>Recuperar Senha</FormH1>
+            <FormH1>Cadastrar Admin</FormH1>
             <FormLabel htmlFor='email'>Email</FormLabel>
             <FormInput 
               type='email' 
