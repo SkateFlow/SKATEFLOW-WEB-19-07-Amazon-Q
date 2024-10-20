@@ -1,11 +1,10 @@
-import React from 'react';
+// src/pages/EventsPage.js
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import Navbar from '../Navbar';
-import Footer from '../Footer';
-
-// Estilos com styled-components
-
-
+import { getEvents, createEvent, updateEvent, deleteEvent } from '../../services/eventService';
+import EventDetails from '../../components/EventsPage/EventsDetails';
+import { Form } from '../../LoginPage/LoginElements';
 
 const EventsContainer = styled.div`
   padding: 50px;
@@ -13,7 +12,6 @@ const EventsContainer = styled.div`
   background-color: black;
   color: white;
   min-height: 100vh;
-
 `;
 
 const EventCardsContainer = styled.div`
@@ -25,7 +23,7 @@ const EventCardsContainer = styled.div`
 `;
 
 const EventCard = styled.div`
-  flex: 1 1 calc(33.333% - 40px); /* 3 cards por linha */
+  flex: 1 1 calc(33.333% - 40px); 
   padding: 20px;
   border: 1px solid #ccc;
   background-color: #001426;
@@ -33,11 +31,11 @@ const EventCard = styled.div`
   box-sizing: border-box;
 
   @media (max-width: 768px) {
-    flex: 1 1 calc(50% - 40px); /* 2 cards por linha em telas menores */
+    flex: 1 1 calc(50% - 40px); 
   }
 
   @media (max-width: 480px) {
-    flex: 1 1 100%; /* 1 card por linha em telas muito pequenas */
+    flex: 1 1 100%; 
   }
 
   img {
@@ -45,37 +43,120 @@ const EventCard = styled.div`
     height: auto;
     margin-top: 10px;
   }
+
+  button {
+    margin-top: 10px;
+    padding: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+    margin-right: 10px;
+  }
+
+  button.delete {
+    background-color: #ff0000;
+  }
 `;
 
 const EventsPage = () => {
-  const events = [
-    { id: 1, name: 'Campeonato de Skate São Paulo', date: '12/10/2024', location: 'Parque Ibirapuera' },
-    { id: 2, name: 'Skate Jam Rio de Janeiro', date: '05/11/2024', location: 'Praia de Copacabana' },
-    { id: 3, name: 'Festival de Skate Curitiba', date: '20/11/2024', location: 'Praça do Japão' },
-    { id: 4, name: 'Campeonato de Skate São Paulo', date: '12/10/2024', location: 'Parque Ibirapuera' },
-    { id: 5, name: 'Campeonato de Skate São Paulo', date: '12/10/2024', location: 'Parque Ibirapuera' },
-    { id: 6, name: 'Campeonato de Skate São Paulo', date: '12/10/2024', location: 'Parque Ibirapuera' },
-  ];
+  const [events, setEvents] = useState([]);
+  const [event, setEvent] = useState({ id: null, nomeEvento: '', dataEvento: '', localEvento: '', imagemEvento: '' });
+  const [isEditing, setIsEditing] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState(null); // Para armazenar o evento selecionado
 
-  const eventImage = require('../../images/ph.svg').default; // Reutilizando a imagem
+  useEffect(() => {
+    fetchEvents();
+  }, []);
+
+  const fetchEvents = async () => {
+    const data = await getEvents();
+    setEvents(data);
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setEvent({ ...event, [name]: value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (isEditing) {
+      await updateEvent(event);
+    } else {
+      await createEvent(event);
+    }
+    setEvent({ id: null, nomeEvento: '', dataEvento: '', localEvento: '', imagemEvento: '' });
+    setIsEditing(false);
+    fetchEvents();
+  };
+
+  const handleEdit = (eventToEdit) => {
+    setEvent(eventToEdit);
+    setIsEditing(true);
+  };
+
+  const handleDelete = async (id) => {
+    await deleteEvent(id);
+    fetchEvents();
+  };
+
+  const handleViewDetails = (event) => {
+    setSelectedEvent(event); // Quando um evento é clicado, exibir seus detalhes
+  };
+
+  const closeDetails = () => {
+    setSelectedEvent(null); // Fechar a exibição de detalhes
+  };
 
   return (
     <>
       <Navbar />
       <EventsContainer>
         <h1>Eventos de Skate</h1>
+        <Form onSubmit={handleSubmit}>
+          <input
+            type="text"
+            name="nomeEvento"
+            value={event.nomeEvento}
+            onChange={handleInputChange}
+            placeholder="Nome do Evento"
+            required
+          />
+          <input
+            type="date"
+            name="dataEvento"
+            value={event.dataEvento}
+            onChange={handleInputChange}
+            required
+          />
+          <input
+            type="text"
+            name="localEvento"
+            value={event.localEvento}
+            onChange={handleInputChange}
+            placeholder="Local do Evento"
+            required
+          />
+          <button type="submit">{isEditing ? 'Atualizar' : 'Criar'} Evento</button>
+        </Form>
+
         <EventCardsContainer>
           {events.map((event) => (
             <EventCard key={event.id}>
-              <h2>{event.name}</h2>
-              <p>Data: {event.date}</p>
-              <p>Local: {event.location}</p>
-              <img src={eventImage} alt={event.name} />
+              <h2>{event.nomeEvento}</h2>
+              <p>Data: {event.dataEvento}</p>
+              <p>Local: {event.localEvento}</p>
+              <img src={event.imagemEvento || require('../../images/ph.svg').default} alt={event.nomeEvento} />
+              <button onClick={() => handleViewDetails(event)}>Visualizar</button>
+              <button onClick={() => handleEdit(event)}>Editar</button>
+              <button className="delete" onClick={() => handleDelete(event.id)}>Deletar</button>
             </EventCard>
           ))}
         </EventCardsContainer>
+
+        {selectedEvent && <EventDetails event={selectedEvent} onClose={closeDetails} />} {/* Exibir detalhes se um evento estiver selecionado */}
       </EventsContainer>
-      <Footer />
     </>
   );
 };
