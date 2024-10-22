@@ -3,10 +3,9 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Home from './pages'; // Sua página inicial
 import SuccessPage from './components/SucessPage/SucessPage';
 import Login from './pages/loginp'; // Mantenha o nome do import consistente
-import ForgetPage from './pages/forget'; // Corrigido para o nome do componente correto
+import CreateAdmin from './components/CreateAdmin'; // Altere para o caminho do seu novo componente
 import Map from './pages/map';
 import EventsPage from './components/EventsPage'; // Correto se o arquivo se chama map.js
-
 
 function App() {
   return (
@@ -15,7 +14,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/success" element={<SuccessPage />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/forget" element={<ForgetPage />} />
+        <Route path="/create-admin" element={<CreateAdmin />} /> {/* Nova rota para criar admin */}
         <Route path="/map" element={<Map />} />
         <Route path="/events" element={<EventsPage />} />
       </Routes>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Container, FormWrap, Icon, FormContent, Form, FormH1, FormLabel, FormInput, FormButton, Text, BackButton, ForgetButton } from './LoginElements';
+import { Container, FormWrap, Icon, FormContent, Form, FormH1, FormLabel, FormInput, FormButton, Text, BackButton } from './LoginElements';
 import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
@@ -15,7 +15,7 @@ const Login = () => {
     const storedPassword = localStorage.getItem('password');
 
     if (email === storedEmail && password === storedPassword) {
-      navigate('/');
+      navigate('/'); // Navega para a página inicial ao logar com sucesso
     } else {
       setErrorMessage('Email ou senha incorretos'); // Define a mensagem de erro
     }
@@ -38,7 +38,7 @@ const Login = () => {
             />
             <FormLabel htmlFor='password'>Senha</FormLabel>
             <FormInput 
-              type='password'  // Removido o toggle de mostrar/esconder senha
+              type='password' // Removido o toggle de mostrar/esconder senha
               required 
               value={password} 
               onChange={(e) => setPassword(e.target.value)} 
@@ -47,7 +47,7 @@ const Login = () => {
             {errorMessage && <p className="error-text">{errorMessage}</p>} {/* Mensagem de erro */}
             <FormButton type='submit'>Entrar</FormButton>
             <Text>
-              <ForgetButton to="/forget">Cadastrar Admin</ForgetButton>
+              <BackButton to="/create-admin">Cadastrar Admin</BackButton> {/* Nova rota */}
             </Text>
             <BackButton to="/">Voltar</BackButton>
           </Form>

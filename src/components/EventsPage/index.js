@@ -1,4 +1,3 @@
-// src/pages/EventsPage.js
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import Navbar from '../Navbar';
@@ -61,7 +60,7 @@ const EventCard = styled.div`
 
 const EventsPage = () => {
   const [events, setEvents] = useState([]);
-  const [event, setEvent] = useState({ id: null, nomeEvento: '', dataEvento: '', localEvento: '', imagemEvento: '' });
+  const [event, setEvent] = useState({ id: null, nomeEvento: '', dataEvento: '', localEvento: '', descricao: '' });
   const [isEditing, setIsEditing] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null); // Para armazenar o evento selecionado
 
@@ -86,7 +85,7 @@ const EventsPage = () => {
     } else {
       await createEvent(event);
     }
-    setEvent({ id: null, nomeEvento: '', dataEvento: '', localEvento: '', imagemEvento: '' });
+    setEvent({ id: null, nomeEvento: '', dataEvento: '', localEvento: '', descricao: '' });
     setIsEditing(false);
     fetchEvents();
   };
@@ -138,6 +137,13 @@ const EventsPage = () => {
             placeholder="Local do Evento"
             required
           />
+          <textarea
+            name="descricao"
+            value={event.descricao}
+            onChange={handleInputChange}
+            placeholder="Descrição do Evento"
+            required
+          />
           <button type="submit">{isEditing ? 'Atualizar' : 'Criar'} Evento</button>
         </Form>
 
@@ -147,6 +153,7 @@ const EventsPage = () => {
               <h2>{event.nomeEvento}</h2>
               <p>Data: {event.dataEvento}</p>
               <p>Local: {event.localEvento}</p>
+              <p>Descrição: {event.descricao}</p>
               <img src={event.imagemEvento || require('../../images/ph.svg').default} alt={event.nomeEvento} />
               <button onClick={() => handleViewDetails(event)}>Visualizar</button>
               <button onClick={() => handleEdit(event)}>Editar</button>
