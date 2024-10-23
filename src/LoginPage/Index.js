@@ -5,19 +5,28 @@ import { useNavigate } from 'react-router-dom';
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [errorMessage, setErrorMessage] = useState(''); // Estado para mensagem de erro
+  const [errorMessage, setErrorMessage] = useState('');
 
   const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    // Pegue os dados armazenados
     const storedEmail = localStorage.getItem('email');
     const storedPassword = localStorage.getItem('password');
 
+    // Verifique se os dados existem e se coincidem com a entrada do usuário
+    if (!storedEmail || !storedPassword) {
+      setErrorMessage('Nenhuma conta encontrada. Por favor, cadastre-se primeiro.');
+      return;
+    }
+
+    // Comparação de valores
     if (email === storedEmail && password === storedPassword) {
-      navigate('/'); // Navega para a página inicial ao logar com sucesso
+      navigate('/'); // Login bem-sucedido
     } else {
-      setErrorMessage('Email ou senha incorretos'); // Define a mensagem de erro
+      setErrorMessage('Email ou senha incorretos'); // Mensagem de erro
     }
   };
 
@@ -38,16 +47,16 @@ const Login = () => {
             />
             <FormLabel htmlFor='password'>Senha</FormLabel>
             <FormInput 
-              type='password' // Removido o toggle de mostrar/esconder senha
+              type='password'
               required 
               value={password} 
               onChange={(e) => setPassword(e.target.value)} 
               autoComplete="new-password"
             />
-            {errorMessage && <p className="error-text">{errorMessage}</p>} {/* Mensagem de erro */}
+            {errorMessage && <p className="error-text">{errorMessage}</p>}
             <FormButton type='submit'>Entrar</FormButton>
             <Text>
-              <BackButton to="/create-admin">Cadastrar Admin</BackButton> {/* Nova rota */}
+              <BackButton to="/create-admin">Cadastrar Admin</BackButton>
             </Text>
             <BackButton to="/">Voltar</BackButton>
           </Form>
