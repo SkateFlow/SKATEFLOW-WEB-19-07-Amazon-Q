@@ -1,7 +1,7 @@
 import React from 'react';
 import Login from '../LoginPage/Index'; // Importe o novo arquivo renomeado
  
-const loginp = () => {
+const login = () => {
   return (
     <>
       <Login />
@@ -9,4 +9,4 @@ const loginp = () => {
   );
 };
  
-export default loginp;
+export default login;

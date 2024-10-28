@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import Navbar from '../Navbar';
+import NavbarEvents from '../NavbarEvent'; // Importe o NavbarEvents
 import { getEvents, createEvent, updateEvent, deleteEvent } from '../../services/eventService';
 import EventDetails from '../../components/EventsPage/EventsDetails';
 import { Form } from '../../LoginPage/LoginElements';
 
+// Estilização do container principal da página de eventos
 const EventsContainer = styled.div`
   padding: 50px;
   text-align: center;
@@ -13,6 +14,7 @@ const EventsContainer = styled.div`
   min-height: 100vh;
 `;
 
+// Estilização do container de cartões de eventos
 const EventCardsContainer = styled.div`
   display: flex;
   justify-content: center;
@@ -21,6 +23,7 @@ const EventCardsContainer = styled.div`
   margin-top: 30px;
 `;
 
+// Estilização de cada cartão de evento
 const EventCard = styled.div`
   flex: 1 1 calc(33.333% - 40px); 
   padding: 20px;
@@ -62,8 +65,9 @@ const EventsPage = () => {
   const [events, setEvents] = useState([]);
   const [event, setEvent] = useState({ id: null, nomeEvento: '', dataEvento: '', localEvento: '', descricao: '' });
   const [isEditing, setIsEditing] = useState(false);
-  const [selectedEvent, setSelectedEvent] = useState(null); // Para armazenar o evento selecionado
+  const [selectedEvent, setSelectedEvent] = useState(null); 
 
+  // Efeito para buscar eventos ao carregar o componente
   useEffect(() => {
     fetchEvents();
   }, []);
@@ -85,6 +89,7 @@ const EventsPage = () => {
     } else {
       await createEvent(event);
     }
+    // Limpa o formulário e atualiza a lista de eventos
     setEvent({ id: null, nomeEvento: '', dataEvento: '', localEvento: '', descricao: '' });
     setIsEditing(false);
     fetchEvents();
@@ -101,18 +106,18 @@ const EventsPage = () => {
   };
 
   const handleViewDetails = (event) => {
-    setSelectedEvent(event); // Quando um evento é clicado, exibir seus detalhes
+    setSelectedEvent(event);
   };
 
   const closeDetails = () => {
-    setSelectedEvent(null); // Fechar a exibição de detalhes
+    setSelectedEvent(null);
   };
 
   return (
     <>
-      <Navbar />
+      <NavbarEvents /> 
+
       <EventsContainer>
-        <h1>Eventos de Skate</h1>
         <Form onSubmit={handleSubmit}>
           <input
             type="text"
@@ -162,7 +167,7 @@ const EventsPage = () => {
           ))}
         </EventCardsContainer>
 
-        {selectedEvent && <EventDetails event={selectedEvent} onClose={closeDetails} />} {/* Exibir detalhes se um evento estiver selecionado */}
+        {selectedEvent && <EventDetails event={selectedEvent} onClose={closeDetails} />}
       </EventsContainer>
     </>
   );

@@ -6,27 +6,27 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Pegue os dados armazenados
-    const storedEmail = localStorage.getItem('email');
-    const storedPassword = localStorage.getItem('password');
+    try {
+      const response = await fetch('http://localhost:8080/admin/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ username: email, password: password })
+      });
 
-    // Verifique se os dados existem e se coincidem com a entrada do usuário
-    if (!storedEmail || !storedPassword) {
-      setErrorMessage('Nenhuma conta encontrada. Por favor, cadastre-se primeiro.');
-      return;
-    }
-
-    // Comparação de valores
-    if (email === storedEmail && password === storedPassword) {
-      navigate('/'); // Login bem-sucedido
-    } else {
-      setErrorMessage('Email ou senha incorretos'); // Mensagem de erro
+      if (response.ok) {
+        navigate('/'); // Login bem-sucedido
+      } else {
+        setErrorMessage('Email ou senha incorretos'); // Mensagem de erro
+      }
+    } catch (error) {
+      setErrorMessage('Erro ao conectar-se ao servidor');
     }
   };
 
