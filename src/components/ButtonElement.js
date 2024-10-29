@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
-
+ 
 export const Button = styled(Link)`
     border-radius: 50px;
     background: ${({ primary }) => (primary ? '#043C70' : '#010606')};
@@ -15,9 +15,11 @@ export const Button = styled(Link)`
     justify-content: center;
     align-items: center;
     transition: all 0.2s ease-in-out;
-
+    text-decoration: none; /* Remove sublinhado */
+ 
     &:hover {
         transition: all 0.2s ease-in-out;
         background: ${({ primary }) => (primary ? '#0c0c0c' : '#F9540')};
     }
 `;
+ 
