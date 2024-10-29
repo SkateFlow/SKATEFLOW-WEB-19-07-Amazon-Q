@@ -45,7 +45,6 @@ const Services = () => {
         </ServicesWrapper>
         <BtnWrap>
           <Button 
-              id =""
               to="home"
               smooth={true}
               duration={500}

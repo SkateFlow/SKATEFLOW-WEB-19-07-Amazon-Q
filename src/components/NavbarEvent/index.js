@@ -11,7 +11,7 @@ import {
     NavLinks,
     NavBtn,
     NavBtnLink
-} from '../Navbar/NavbarElements';
+} from './NavbarEvent';
 
 const NavbarEvents = ({ toggle }) => {
     const [scrollNav, setScrollNav] = useState(false);
@@ -46,6 +46,9 @@ const NavbarEvents = ({ toggle }) => {
                         </NavItem>
                         <NavItem>
                             <NavLinks to="/articles">Artigos</NavLinks>
+                        </NavItem>
+                        <NavItem>
+                            <NavLinks to="/articles">Mobile</NavLinks>
                         </NavItem>
                     </NavMenu>
                     <NavBtn>
