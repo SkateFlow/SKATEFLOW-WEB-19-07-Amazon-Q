@@ -1,14 +1,12 @@
 import React from 'react';
-import { Container, MapWrap, Icon, FormContent, FormH1, Map,  } from './MapPageElements';
-import { Button } from '../ButtonElement'
+import { Container, MapWrap,  Map,  } from './MapPageElements';
+import NavbarEvents from '../NavbarEvent';
 
 const MapPage = () => {
   return (
     <Container>
+      <NavbarEvents /> 
       <MapWrap>
-        <Icon to="/">SkateFlow</Icon>
-        <FormContent>
-          <FormH1>Pistas de Skate no Mapa</FormH1>
           <Map>
             <iframe
               title="Mapa de Pistas de Skate em São Paulo"
@@ -16,18 +14,9 @@ const MapPage = () => {
               width="100%" height="450" style={{ border: 0 }} allowFullScreen="" loading="fast"
             ></iframe>
           </Map>
-          <Button 
-              to="/"
-              smooth={true}
-              duration={500}
-              spy={true}
-              exact="true"
-              offset={-80}
-              primary={1} 
-              dark={0}
-          > Voltar </Button>
+     
         
-        </FormContent>
+    
       </MapWrap>
     </Container>
   );

@@ -6,7 +6,8 @@ import Login from './pages/login'; // Mantenha o nome do import consistente
 import CreateAdmin from './components/CreateAdmin'; // Altere para o caminho do seu novo componente
 import Map from './pages/map';
 import EventsPage from './components/EventsPage'; 
-import ArticlesPage from './components/ArticlesPage' // Correto se o arquivo se chama map.js
+import ArticlesPage from './components/ArticlesPage'
+import AdminPage from './components/AdminPage';// Correto se o arquivo se chama map.js
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
         <Route path="/map" element={<Map />} />
         <Route path="/events" element={<EventsPage />} />
         <Route path="/articles" element={<ArticlesPage />} /> 
+        <Route path='/admin' element={<AdminPage />} />
       </Routes>
     </Router>
   );

@@ -8,6 +8,11 @@ const Login = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const navigate = useNavigate();
 
+
+   const goto = () => {
+        navigate("/admin");
+    }
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -21,7 +26,7 @@ const Login = () => {
       });
 
       if (response.ok) {
-        navigate('/'); // Login bem-sucedido
+        navigate('/admin'); // Redireciona para a tela de Dashboard
       } else {
         setErrorMessage('Email ou senha incorretos'); // Mensagem de erro
       }
@@ -54,7 +59,7 @@ const Login = () => {
               autoComplete="new-password"
             />
             {errorMessage && <p className="error-text">{errorMessage}</p>}
-            <FormButton type='submit'>Entrar</FormButton>
+            <FormButton type='submit' onClick={goto}>Entrar</FormButton>
             <Text>
               <BackButton to="/create-admin">Cadastrar Admin</BackButton>
             </Text>

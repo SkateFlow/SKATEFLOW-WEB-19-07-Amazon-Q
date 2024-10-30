@@ -48,7 +48,7 @@ const NavbarEvents = ({ toggle }) => {
                             <NavLinks to="/articles">Artigos</NavLinks>
                         </NavItem>
                         <NavItem>
-                            <NavLinks to="/articles">Mobile</NavLinks>
+                            <NavLinks to="https://www.example.com">Mobile</NavLinks>
                         </NavItem>
                     </NavMenu>
                     <NavBtn>

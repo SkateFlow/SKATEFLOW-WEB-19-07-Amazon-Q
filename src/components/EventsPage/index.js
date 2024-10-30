@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import NavbarEvents from '../NavbarEvent'; // Importe o NavbarEvents
 import { getEvents, createEvent, updateEvent, deleteEvent } from '../../services/eventService';
 import EventDetails from '../../components/EventsPage/EventsDetails';
-import { Form } from '../../LoginPage/LoginElements';
+
 
 // Estilização do container principal da página de eventos
 const EventsContainer = styled.div`
@@ -115,42 +115,11 @@ const EventsPage = () => {
 
   return (
     <>
-      <NavbarEvents /> 
+     
 
       <EventsContainer>
-        <Form onSubmit={handleSubmit}>
-          <input
-            type="text"
-            name="nomeEvento"
-            value={event.nomeEvento}
-            onChange={handleInputChange}
-            placeholder="Nome do Evento"
-            required
-          />
-          <input
-            type="date"
-            name="dataEvento"
-            value={event.dataEvento}
-            onChange={handleInputChange}
-            required
-          />
-          <input
-            type="text"
-            name="localEvento"
-            value={event.localEvento}
-            onChange={handleInputChange}
-            placeholder="Local do Evento"
-            required
-          />
-          <textarea
-            name="descricao"
-            value={event.descricao}
-            onChange={handleInputChange}
-            placeholder="Descrição do Evento"
-            required
-          />
-          <button type="submit">{isEditing ? 'Atualizar' : 'Criar'} Evento</button>
-        </Form>
+      <NavbarEvents /> 
+       
 
         <EventCardsContainer>
           {events.map((event) => (
@@ -161,8 +130,6 @@ const EventsPage = () => {
               <p>Descrição: {event.descricao}</p>
               <img src={event.imagemEvento || require('../../images/ph.svg').default} alt={event.nomeEvento} />
               <button onClick={() => handleViewDetails(event)}>Visualizar</button>
-              <button onClick={() => handleEdit(event)}>Editar</button>
-              <button className="delete" onClick={() => handleDelete(event.id)}>Deletar</button>
             </EventCard>
           ))}
         </EventCardsContainer>

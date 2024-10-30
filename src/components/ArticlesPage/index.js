@@ -8,6 +8,7 @@ import {
   ArticleHeading,
   ArticleDescription,
 } from './ArticlesElements';
+import NavbarEvents from '../NavbarEvent';
  
 // Ícones das imagens - altere para os caminhos reais se forem diferentes
 import Icon1 from '../../images/news.svg';
@@ -16,6 +17,8 @@ import Icon3 from '../../images/logo2.svg';
  
 const ArticlesPage = () => {
   return (
+    <>
+    <NavbarEvents /> 
     <ArticlesContainer>
       <ArticlesTitle>Artigos</ArticlesTitle>
       <ArticlesWrapper>
@@ -36,6 +39,7 @@ const ArticlesPage = () => {
         </ArticleCard>
       </ArticlesWrapper>
     </ArticlesContainer>
+    </>
   );
 }
  
