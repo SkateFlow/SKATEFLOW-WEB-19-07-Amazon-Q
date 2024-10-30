@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import NavbarEvents from '../NavbarEvent'; // Importe o NavbarEvents
-import { getEvents, createEvent, updateEvent, deleteEvent } from '../../services/eventService';
+import NavbarEvents from '../NavbarEvent';
+import { getEvents, deleteEvent } from '../../services/eventService';
 import EventDetails from '../../components/EventsPage/EventsDetails';
-
 
 // Estilização do container principal da página de eventos
 const EventsContainer = styled.div`
@@ -63,9 +62,7 @@ const EventCard = styled.div`
 
 const EventsPage = () => {
   const [events, setEvents] = useState([]);
-  const [event, setEvent] = useState({ id: null, nomeEvento: '', dataEvento: '', localEvento: '', descricao: '' });
-  const [isEditing, setIsEditing] = useState(false);
-  const [selectedEvent, setSelectedEvent] = useState(null); 
+  const [selectedEvent, setSelectedEvent] = useState(null);
 
   // Efeito para buscar eventos ao carregar o componente
   useEffect(() => {
@@ -75,29 +72,6 @@ const EventsPage = () => {
   const fetchEvents = async () => {
     const data = await getEvents();
     setEvents(data);
-  };
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setEvent({ ...event, [name]: value });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (isEditing) {
-      await updateEvent(event);
-    } else {
-      await createEvent(event);
-    }
-    // Limpa o formulário e atualiza a lista de eventos
-    setEvent({ id: null, nomeEvento: '', dataEvento: '', localEvento: '', descricao: '' });
-    setIsEditing(false);
-    fetchEvents();
-  };
-
-  const handleEdit = (eventToEdit) => {
-    setEvent(eventToEdit);
-    setIsEditing(true);
   };
 
   const handleDelete = async (id) => {
@@ -115,12 +89,8 @@ const EventsPage = () => {
 
   return (
     <>
-     
-
       <EventsContainer>
-      <NavbarEvents /> 
-       
-
+        <NavbarEvents />
         <EventCardsContainer>
           {events.map((event) => (
             <EventCard key={event.id}>
@@ -130,6 +100,7 @@ const EventsPage = () => {
               <p>Descrição: {event.descricao}</p>
               <img src={event.imagemEvento || require('../../images/ph.svg').default} alt={event.nomeEvento} />
               <button onClick={() => handleViewDetails(event)}>Visualizar</button>
+              <button onClick={() => handleDelete(event.id)} className="delete">Excluir</button>
             </EventCard>
           ))}
         </EventCardsContainer>

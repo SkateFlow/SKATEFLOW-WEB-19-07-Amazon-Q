@@ -10,7 +10,7 @@ const Login = () => {
 
 
    const goto = () => {
-        navigate("/admin");
+        navigate("/adminhome");
     }
 
   const handleSubmit = async (e) => {

@@ -1,41 +1,59 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
+import logo from '../../images/system-logo_24_x_24.png';
 
 const SidebarContainer = styled.div`
   width: 250px;
-  height: 100vh;
-  background-color: #fff;
-  color: black;
-  padding: 20px;
-  position: fixed;
+  background-color: #343a40;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 `;
 
-const SidebarLink = styled(Link)`
-  display: block;
-  color: black;
-  text-decoration: none;
-  padding: 10px;
-  margin: 10px 0;
-  transition: background 0.3s, color 0.3s, transform 0.3s, box-shadow 0.3s; /* Adiciona transições para todas as propriedades */
-  border-radius: 4px; /* Adiciona bordas arredondadas para suavizar a aparência */
-
-  &:hover {
-    background-color: rgba(255, 255, 255, 0.2); /* Fundo um pouco mais escuro */
-    color: #007bff; /* Muda a cor do texto ao passar o mouse */
-    transform: scale(1.05); /* Aumenta ligeiramente o tamanho do link */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Adiciona sombra ao link */
+const LogoContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid #495057;
+  img {
+    margin-right: 8px;
+  }
+  span {
+    font-weight: bold;
+    font-size: 1.2rem;
   }
 `;
 
-const SidebarAdmin = () => {
+const NavLink = styled(Link)`
+  color: #adb5bd;
+  padding: 15px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background 0.3s, color 0.3s;
+  width: 100%;
+  text-align: center;
+  &:hover {
+    background-color: #495057;
+    color: white;
+  }
+`;
+
+const Sidebar = () => {
   return (
     <SidebarContainer>
-      <h2>Admin Painel</h2>
-      <SidebarLink to="/admin/events">Eventos</SidebarLink>
-      <SidebarLink to="/admin/articles">Artigos</SidebarLink>
+      <LogoContainer>
+        <img src={logo} alt="logo" width="24" height="24" />
+        <span>AdminFlow</span>
+      </LogoContainer>
+      <NavLink to="/adminhome">Dashboard</NavLink>
+      <NavLink to="/admin/mensagem">Mensagens</NavLink>
+      <NavLink to="/admin">Eventos</NavLink>
+      <NavLink to="/admin/usuarios">Usuários</NavLink>
     </SidebarContainer>
   );
 };
 
-export default SidebarAdmin;
+export default Sidebar;
