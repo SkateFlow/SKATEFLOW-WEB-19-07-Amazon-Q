@@ -1,8 +1,10 @@
+// AdminPage.js
+
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { useNavigate } from 'react-router-dom'; // Importação de useNavigate para navegação
+import { useNavigate } from 'react-router-dom';
 import SidebarAdmin from '../SidebarAdmin';
-import EventForm from '../EventsPage/EventForm';
+import EventForm from '../EventsPage/EventForm'; // Ajuste o caminho conforme necessário
 
 const AdminContainer = styled.div`
   display: flex;
@@ -42,17 +44,18 @@ const ToggleButton = styled.button`
 `;
 
 const AdminPage = () => {
-  const navigate = useNavigate(); // Hook para redirecionamento
+  const navigate = useNavigate();
   const [event, setEvent] = useState({ id: null, nomeEvento: '', dataEvento: '', localEvento: '', descricao: '' });
   const [isEditing, setIsEditing] = useState(false);
 
-  const handleToggleForm = () => {
+  const navigateToForm = () => {
     setIsEditing(false);
     setEvent({ id: null, nomeEvento: '', dataEvento: '', localEvento: '', descricao: '' });
+    navigate('/event-form');
   };
 
   const navigateToList = () => {
-    navigate('/event-list'); // Redireciona para a rota da lista de eventos
+    navigate('/event-list');
   };
 
   return (
@@ -60,12 +63,12 @@ const AdminPage = () => {
       <SidebarAdmin />
       <ContentContainer>
         <ButtonContainer>
-          <ToggleButton onClick={handleToggleForm}>Novo Evento</ToggleButton>
+          <ToggleButton onClick={navigateToForm}>Novo Evento</ToggleButton>
           <ToggleButton onClick={navigateToList}>Listar Eventos</ToggleButton>
         </ButtonContainer>
-
-        <EventForm
-          fetchEvents={() => {}}
+        {/* Renderiza o EventForm aqui quando necessário */}
+        <EventForm 
+          fetchEvents={() => {}} // Implementar lógica de busca, se necessário
           event={event}
           setEvent={setEvent}
           isEditing={isEditing}

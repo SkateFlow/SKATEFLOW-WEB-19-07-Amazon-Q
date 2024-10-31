@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   ArticlesContainer,
   ArticlesWrapper,
@@ -9,40 +9,71 @@ import {
   ArticleDescription,
 } from './ArticlesElements';
 import NavbarEvents from '../NavbarEvent';
- 
-// Ícones das imagens - altere para os caminhos reais se forem diferentes
-import Icon1 from '../../images/news.svg';
-import Icon2 from '../../images/ph.svg';
-import Icon3 from '../../images/logo2.svg';
- 
+import ArticleForm from './ArticleForm'; // Importando ArticleForm
+import { getArtigos, deleteArtigo } from '../../services/articleService'; // Ajuste o caminho conforme necessário
+import Icon1 from '../../images/news.svg'; // Certifique-se de importar ícones
+
 const ArticlesPage = () => {
+  const [articles, setArticles] = useState([]);
+  const [article, setArticle] = useState({ id: null, title: '', description: '' });
+  const [isEditing, setIsEditing] = useState(false);
+
+  const fetchArticles = async () => {
+    const data = await getArtigos();
+    setArticles(data);
+  };
+
+  const handleEdit = (artigo) => {
+    setArticle(artigo);
+    setIsEditing(true);
+  };
+
+  const handleDelete = async (id) => {
+    await deleteArtigo(id);
+    fetchArticles();
+  };
+
+  useEffect(() => {
+    let isMounted = true; // variável de controle
+
+    const fetchArticles = async () => {
+      const data = await getArtigos();
+      if (isMounted) setArticles(data); // atualiza o estado apenas se o componente estiver montado
+    };
+
+    fetchArticles();
+
+    return () => {
+      isMounted = false; // define como desmontado
+    };
+  }, []);
+
   return (
     <>
-    <NavbarEvents /> 
-    <ArticlesContainer>
-      <ArticlesTitle>Artigos</ArticlesTitle>
-      <ArticlesWrapper>
-        <ArticleCard>
-          <ArticleIcon src={Icon1} alt="Notícias Skate" />
-          <ArticleHeading>Skateflow News</ArticleHeading>
-          <ArticleDescription>Notícias do mundo do skate.</ArticleDescription>
-        </ArticleCard>
-        <ArticleCard>
-          <ArticleIcon src={Icon2} alt="Top 10 Pistas" />
-          <ArticleHeading>Top 10 Pistas de Skate da América Latina</ArticleHeading>
-          <ArticleDescription>Avaliadas por vocês!</ArticleDescription>
-        </ArticleCard>
-        <ArticleCard>
-          <ArticleIcon src={Icon3} alt="Grupos femininos" />
-          <ArticleHeading>Grupos femininos de skate que você deve conhecer</ArticleHeading>
-          <ArticleDescription>Esses grupos crescem mais e mais!</ArticleDescription>
-        </ArticleCard>
-      </ArticlesWrapper>
-    </ArticlesContainer>
+      <NavbarEvents />
+      <ArticlesContainer>
+        <ArticlesTitle>Artigos</ArticlesTitle>
+        <ArticleForm
+          fetchArticles={fetchArticles}
+          article={article}
+          setArticle={setArticle}
+          isEditing={isEditing}
+          setIsEditing={setIsEditing}
+        />
+        <ArticlesWrapper>
+          {articles.map((artigo) => (
+            <ArticleCard key={artigo.id}>
+              <ArticleIcon src={Icon1} alt="Artigo" />
+              <ArticleHeading>{artigo.title}</ArticleHeading>
+              <ArticleDescription>{artigo.description}</ArticleDescription>
+              <button onClick={() => handleEdit(artigo)}>Editar</button>
+              <button onClick={() => handleDelete(artigo.id)}>Deletar</button>
+            </ArticleCard>
+          ))}
+        </ArticlesWrapper>
+      </ArticlesContainer>
     </>
   );
-}
- 
+};
+
 export default ArticlesPage;
- 
- 
