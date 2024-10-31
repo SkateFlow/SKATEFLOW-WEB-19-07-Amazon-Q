@@ -2,15 +2,14 @@ import styled from 'styled-components';
 import { Link } from 'react-router-dom';
 
 export const Container = styled.div`
-  min-height: 692px;
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  top: 0;
-  z-index: 0;
-  overflow: hidden;
-  background: #010606;
+    min-height: 120vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: rgb(0,41,79);
+    background: linear-gradient(90deg, rgba(0,41,79,1) 0%, rgba(0,20,38,1) 35%, rgba(0,20,38,1) 100%);
+    padding: 50px 0;
 `;
 
 export const MapWrap = styled.div`
@@ -49,7 +48,7 @@ export const FormH1 = styled.h1`
 `;
 
 export const Map = styled.div`
-  width: 300%;
+  width: 1500px;
   height: 500px;
   background-color: #f9f9f9;
   border-radius: 10px;

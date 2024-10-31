@@ -1,23 +1,37 @@
 import styled from 'styled-components';
+import { Link } from 'react-router-dom';
  
 export const ArticlesContainer = styled.div`
-    min-height: 100vh;
+    min-height: 120vh;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    background: #000;
+    background: rgb(0,41,79);
+    background: linear-gradient(90deg, rgba(0,41,79,1) 0%, rgba(0,20,38,1) 35%, rgba(0,20,38,1) 100%);
     padding: 50px 0;
+`;
  
-    @media screen and (max-width: 768px) {
-        padding: 100px 0;
+export const Icon = styled(Link)`
+    font-size: 2rem;
+    color: #fff;
+    position: absolute;
+    top: 18px;
+    left: 16px;
+    font-weight: bold;
+    text-decoration: none;
+    cursor: pointer;
+ 
+    &:hover {
+        color: #202020;
     }
 `;
+ 
  
 export const ArticlesTitle = styled.h1`
     font-size: 2.5rem;
     color: #fff;
-    margin-bottom: 64px;
+    margin-bottom: 20px;
  
     @media screen and (max-width: 480px) {
         font-size: 2rem;
@@ -77,5 +91,26 @@ export const ArticleDescription = styled.p`
     font-size: 1rem;
     text-align: center;
     color: #010606;
+`;
+ 
+export const ArticleContent = styled.div`
+    font-size: 1rem;
+    color: #333;
+    line-height: 1.6;
+    text-align: left;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-top: 20px;
+    max-width: 800px;
+    width: 100%;
+`;
+ 
+export const BackButton = styled(Link)`
+    text-align: center;
+    margin-top: 24px;
+    color: #fff;
+    font-size: 14px;
 `;
  

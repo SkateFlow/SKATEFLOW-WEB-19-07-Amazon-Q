@@ -8,8 +8,9 @@ import EventsPage from './components/EventsPage';
 import ArticlesPage from './components/ArticlesPage';
 import AdminPage from './components/AdminPage';
 import AdminHome from './components/AdminHome';
-import EventList from './components/EventsPage/EventList';
-import EventForm from './components/EventsPage/EventForm'; // Importando EventForm
+import SkateflowNews from './components/ArticlesPage/FutureOfSkateboarding';
+import Top10SkateParks from './components/ArticlesPage/Top10SkateParks';
+import FemaleSkateGroups from './components/ArticlesPage/FemaleSkateGroups'; // Importando EventForm
 
 function App() {
   return (
@@ -23,8 +24,9 @@ function App() {
         <Route path="/articles" element={<ArticlesPage />} />
         <Route path='/admin' element={<AdminPage />} />
         <Route path='/adminhome' element={<AdminHome />} />
-        <Route path="/event-list" element={<EventList />} />
-        <Route path="/event-form" element={<EventForm fetchEvents={() => {}} event={{}} setEvent={() => {}} isEditing={false} setIsEditing={() => {}} />} />
+        <Route path="/articles/skateflow-news" element={<SkateflowNews />} />
+        <Route path="/articles/top10-skateparks" element={<Top10SkateParks />} />
+        <Route path="/articles/female-skate-groups" element={<FemaleSkateGroups />} />
       </Routes>
     </Router>
   );

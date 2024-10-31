@@ -4,8 +4,9 @@ import NavbarEvents from '../NavbarEvent';
 
 const MapPage = () => {
   return (
+    <>
+    <NavbarEvents /> 
     <Container>
-      <NavbarEvents /> 
       <MapWrap>
           <Map>
             <iframe
@@ -19,6 +20,7 @@ const MapPage = () => {
     
       </MapWrap>
     </Container>
+    </>
   );
 };
 
