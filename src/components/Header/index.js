@@ -1,6 +1,6 @@
 // components/Header.js
 import React from 'react';
-import { Link } from 'react-router-dom';
+import {  useNavigate } from 'react-router-dom'; // Importando useNavigate
 import styled from 'styled-components';
 import logo from '../../images/logo.png';
 
@@ -12,8 +12,8 @@ const HeaderContainer = styled.header`
   background-color: #343a40;
   color: white;
   border-bottom: 1px solid #495057;
-  heigth: 100%;
-  margin-top:20px;
+  height: 100px; /* Corrigido 'heigth' para 'height' */
+  margin-top: 20px;
 `;
 
 const LogoTitle = styled.div`
@@ -29,12 +29,30 @@ const LogoTitle = styled.div`
   }
 `;
 
-const Header = ({ title, goto }) => {
+const BackLink = styled.button`
+  background: none; /* Sem fundo */
+  border: none; /* Sem borda */
+  color: white; /* Cor do texto */
+  font-size: 1rem; /* Tamanho da fonte */
+  cursor: pointer; /* Cursor em forma de ponteiro */
+  text-decoration: underline; /* Texto sublinhado */
+  transition: color 0.3s; /* Transição suave de cor */
 
+  &:hover {
+    color: #ffc107; /* Cor ao passar o mouse */
+  }
+`;
+
+const Header = ({ title }) => {
+  const navigate = useNavigate(); // Criando uma instância do useNavigate
+
+  const handleBackClick = () => {
+    navigate("/"); // Redireciona para a tela inicial
+  };
 
   return (
     <HeaderContainer>
-      <Link to={goto} >Voltar</Link>
+      <BackLink onClick={handleBackClick}>Voltar</BackLink> {/* Usando BackLink estilizado */}
       <LogoTitle>
         <img src={logo} alt="Logo" />
         <h1>{title}</h1>

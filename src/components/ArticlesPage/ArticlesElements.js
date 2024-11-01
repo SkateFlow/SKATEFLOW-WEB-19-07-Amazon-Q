@@ -114,3 +114,6 @@ export const BackButton = styled(Link)`
     font-size: 14px;
 `;
  
+export const Spacer = styled.div`
+  height: 40px; /* ajuste o valor conforme necessário */
+`;

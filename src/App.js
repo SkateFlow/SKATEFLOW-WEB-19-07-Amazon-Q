@@ -11,6 +11,8 @@ import AdminHome from './components/AdminHome';
 import SkateflowNews from './components/ArticlesPage/FutureOfSkateboarding';
 import Top10SkateParks from './components/ArticlesPage/Top10SkateParks';
 import FemaleSkateGroups from './components/ArticlesPage/FemaleSkateGroups'; // Importando EventForm
+import ArticleAdminPage from './components/AdminPage/ArticleAdminPage';
+import AdminManagementPage from './components/AdminPage/AdminManagementPage';
 
 function App() {
   return (
@@ -27,6 +29,8 @@ function App() {
         <Route path="/articles/skateflow-news" element={<SkateflowNews />} />
         <Route path="/articles/top10-skateparks" element={<Top10SkateParks />} />
         <Route path="/articles/female-skate-groups" element={<FemaleSkateGroups />} />
+        <Route path='/adminarticle' element={<ArticleAdminPage />} />
+        <Route path='/admins' element={<AdminManagementPage />} />
       </Routes>
     </Router>
   );

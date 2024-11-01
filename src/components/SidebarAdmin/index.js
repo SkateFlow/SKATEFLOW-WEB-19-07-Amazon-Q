@@ -45,13 +45,13 @@ const Sidebar = () => {
   return (
     <SidebarContainer>
       <LogoContainer>
-        <img src={logo} alt="logo" width="24" height="24" />
+        <img src={logo} alt="logo" width="24" height="24"  />
         <span>AdminFlow</span>
       </LogoContainer>
       <NavLink to="/adminhome">Dashboard</NavLink>
-      <NavLink to="/admin/mensagem">Mensagens</NavLink>
+      <NavLink to="/adminarticle">Artigos</NavLink>
       <NavLink to="/admin">Eventos</NavLink>
-      <NavLink to="/admin/usuarios">Usuários</NavLink>
+      <NavLink to="/admins">Usuários</NavLink>
     </SidebarContainer>
   );
 };

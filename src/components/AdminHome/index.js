@@ -22,7 +22,7 @@ const AdminHome = () => {
         <SidebarAdmin />
       <ContentContainer>
         <Header title="Admin Home" goto="/adminhome" />
-        <h2>Bem-vindo ao Painel de Administração</h2>
+        <h1>Home</h1>
         <p>Aqui você pode gerenciar eventos, artigos, usuários e outras funcionalidades.</p>
       </ContentContainer>
     </AdminContainer>
