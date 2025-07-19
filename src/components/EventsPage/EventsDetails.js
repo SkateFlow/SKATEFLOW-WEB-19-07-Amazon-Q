@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+import placeholderImage from '../../assets/images/ph.svg';
 
 const ModalOverlay = styled.div`
   position: fixed;
@@ -58,7 +59,7 @@ const EventDetails = ({ event, onClose }) => {
         <p><strong>Data:</strong> {event.dataEvento}</p>
         <p><strong>Local:</strong> {event.localEvento}</p>
         <p><strong>Descrição:</strong> {event.descricao}</p>
-        <img src={event.imagemEvento || require('../../images/ph.svg').default} alt={event.nomeEvento} style={{ maxWidth: '100%', height: 'auto', marginTop: '10px' }} />
+        <img src={event.imagemEvento || placeholderImage} alt={event.nomeEvento} style={{ maxWidth: '100%', height: 'auto', marginTop: '10px' }} />
       </ModalContent>
     </ModalOverlay>
   );

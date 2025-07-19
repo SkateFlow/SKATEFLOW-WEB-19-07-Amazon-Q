@@ -1,7 +1,7 @@
 import React from 'react';
-import Icon1 from '../../images/ph.svg';
-import Icon2 from '../../images/news.svg';
-import Icon3 from '../../images/logo2.svg';
+import Icon1 from '../../assets/images/ph.svg';
+import Icon2 from '../../assets/images/news.svg';
+import Icon3 from '../../assets/images/logo2.svg';
 import { Link } from 'react-router-dom';
 import { Button } from '../ButtonElement'; // Certifique-se de que o caminho esteja correto
  
@@ -54,4 +54,3 @@ const Services = () => {
 }
  
 export default Services;
- 

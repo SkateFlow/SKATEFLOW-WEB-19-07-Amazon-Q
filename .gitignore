@@ -18,6 +18,27 @@
 .env.test.local
 .env.production.local
 
+# logs
+logs
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# local env files
+.env
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache

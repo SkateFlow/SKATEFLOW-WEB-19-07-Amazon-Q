@@ -1,37 +1,43 @@
 import React, { useState } from 'react';
 import { Container, FormWrap, Icon, FormContent, Form, FormH1, FormLabel, FormInput, FormButton, Text, BackButton } from './LoginElements';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import api from '../utils/api';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-
-
-   const goto = () => {
-        navigate("/adminhome");
-    }
+  const { login } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    setErrorMessage('');
 
     try {
-      const response = await fetch('http://localhost:8080/admin/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ username: email, password: password })
+      const response = await api.post('/admin/login', { 
+        username: email, 
+        password: password 
       });
 
-      if (response.ok) {
-        navigate('/admin'); // Redireciona para a tela de Dashboard
+      if (response.status === 200) {
+        // Salvar dados do usuário no contexto de autenticação
+        login({
+          ...response.data,
+          role: 'ADMIN'
+        });
+        navigate('/adminhome');
       } else {
-        setErrorMessage('Email ou senha incorretos'); // Mensagem de erro
+        setErrorMessage('Email ou senha incorretos');
       }
     } catch (error) {
       setErrorMessage('Erro ao conectar-se ao servidor');
+      console.error('Erro de login:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -59,7 +65,9 @@ const Login = () => {
               autoComplete="new-password"
             />
             {errorMessage && <p className="error-text">{errorMessage}</p>}
-            <FormButton type='submit' onClick={goto}>Entrar</FormButton>
+            <FormButton type='submit' disabled={loading}>
+              {loading ? 'Carregando...' : 'Entrar'}
+            </FormButton>
             <Text>
               <BackButton to="/create-admin">Cadastrar Admin</BackButton>
             </Text>

@@ -1,38 +1,70 @@
 import './App.css';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
+import * as ROUTES from './utils/routes';
+
+// Páginas públicas
 import Home from './pages';
 import Login from './pages/login';
-import CreateAdmin from './components/CreateAdmin';
 import Map from './pages/map';
 import EventsPage from './components/EventsPage'; 
 import ArticlesPage from './components/ArticlesPage';
-import AdminPage from './components/AdminPage';
-import AdminHome from './components/AdminHome';
 import SkateflowNews from './components/ArticlesPage/FutureOfSkateboarding';
 import Top10SkateParks from './components/ArticlesPage/Top10SkateParks';
-import FemaleSkateGroups from './components/ArticlesPage/FemaleSkateGroups'; // Importando EventForm
+import FemaleSkateGroups from './components/ArticlesPage/FemaleSkateGroups';
+
+// Páginas administrativas
+import AdminPage from './components/AdminPage';
+import AdminHome from './components/AdminHome';
+import CreateAdmin from './components/CreateAdmin';
 import ArticleAdminPage from './components/AdminPage/ArticleAdminPage';
 import AdminManagementPage from './components/AdminPage/AdminManagementPage';
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/create-admin" element={<CreateAdmin />} />
-        <Route path="/map" element={<Map />} />
-        <Route path="/events" element={<EventsPage />} />
-        <Route path="/articles" element={<ArticlesPage />} />
-        <Route path='/admin' element={<AdminPage />} />
-        <Route path='/adminhome' element={<AdminHome />} />
-        <Route path="/articles/skateflow-news" element={<SkateflowNews />} />
-        <Route path="/articles/top10-skateparks" element={<Top10SkateParks />} />
-        <Route path="/articles/female-skate-groups" element={<FemaleSkateGroups />} />
-        <Route path='/adminarticle' element={<ArticleAdminPage />} />
-        <Route path='/admins' element={<AdminManagementPage />} />
-      </Routes>
-    </Router>
+    <AuthProvider>
+      <Router>
+        <Routes>
+          {/* Rotas públicas */}
+          <Route path={ROUTES.HOME} element={<Home />} />
+          <Route path={ROUTES.LOGIN} element={<Login />} />
+          <Route path={ROUTES.MAP} element={<Map />} />
+          <Route path={ROUTES.EVENTS} element={<EventsPage />} />
+          <Route path={ROUTES.ARTICLES} element={<ArticlesPage />} />
+          <Route path={ROUTES.ARTICLE_SKATEFLOW_NEWS} element={<SkateflowNews />} />
+          <Route path={ROUTES.ARTICLE_TOP10_SKATEPARKS} element={<Top10SkateParks />} />
+          <Route path={ROUTES.ARTICLE_FEMALE_SKATE_GROUPS} element={<FemaleSkateGroups />} />
+          
+          {/* Rotas protegidas (apenas para administradores) */}
+          <Route path={ROUTES.ADMIN} element={
+            <ProtectedRoute requireAdmin={true}>
+              <AdminPage />
+            </ProtectedRoute>
+          } />
+          <Route path={ROUTES.ADMIN_HOME} element={
+            <ProtectedRoute requireAdmin={true}>
+              <AdminHome />
+            </ProtectedRoute>
+          } />
+          <Route path={ROUTES.CREATE_ADMIN} element={
+            <ProtectedRoute requireAdmin={true}>
+              <CreateAdmin />
+            </ProtectedRoute>
+          } />
+          <Route path={ROUTES.ADMIN_ARTICLE} element={
+            <ProtectedRoute requireAdmin={true}>
+              <ArticleAdminPage />
+            </ProtectedRoute>
+          } />
+          <Route path={ROUTES.ADMIN_MANAGEMENT} element={
+            <ProtectedRoute requireAdmin={true}>
+              <AdminManagementPage />
+            </ProtectedRoute>
+          } />
+        </Routes>
+      </Router>
+    </AuthProvider>
   );
 }
 

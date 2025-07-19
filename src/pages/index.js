@@ -11,11 +11,7 @@ const Home = () => {
     const [isOpen, setIsOpen] = useState(false)
 
     const toggle = () => {
-        let abortController = new AbortController();
         setIsOpen(!isOpen);
-        return () => {
-            abortController.abort();
-        }
     }
 
     return (

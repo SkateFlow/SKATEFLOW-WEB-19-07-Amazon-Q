@@ -1,14 +1,32 @@
-# Template for Company Website
+# SkateFlow Web
 
-Responsive one page static website containing multiple sections with simple designs. Sign in page is not functional, it was implemented for learning purposes.
+Aplicativo web responsivo para a comunidade de skate, com seções para eventos, artigos, mapas de pistas e área administrativa.
 
-## Online Demo
+## Estrutura do Projeto
 
-See the finished result yourself! Here is the [demo link](https://template-company-website.netlify.app/)
+O projeto foi organizado seguindo as melhores práticas de desenvolvimento React:
 
-## Available Scripts
+- `/src/assets`: Arquivos estáticos como imagens
+- `/src/components`: Componentes reutilizáveis da UI
+- `/src/context`: Contextos React para gerenciamento de estado
+- `/src/hooks`: Hooks personalizados
+- `/src/layouts`: Layouts de página
+- `/src/pages`: Componentes de página
+- `/src/services`: Serviços para comunicação com a API
+- `/src/utils`: Funções utilitárias e constantes
 
-In the project directory, you can run:
+## Configuração
+
+Crie um arquivo `.env` na raiz do projeto com as seguintes variáveis:
+
+```
+REACT_APP_API_URL=http://localhost:8080
+REACT_APP_NAME=SkateFlow
+```
+
+## Scripts Disponíveis
+
+No diretório do projeto, você pode executar:
 
 ### `npm start`
 
@@ -30,6 +48,14 @@ It correctly bundles React in production mode and optimizes the build for the be
 
 The build is minified and the filenames include the hashes.\
 Your app is ready to be deployed!
+
+### `npm run build:prod`
+
+Builds the app for production with additional optimizations:
+- Desativa a geração de sourcemaps para maior segurança
+- Otimiza o tamanho do bundle
+
+Use este comando para builds de produção.
 
 See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
 

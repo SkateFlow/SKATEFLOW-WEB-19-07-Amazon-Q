@@ -1,3 +1,7 @@
+import logomap from '../../assets/images/logomap.svg';
+import placeholder from '../../assets/images/ph.svg';
+import appIcon from '../../assets/images/app.svg';
+
 export const homeObjOne = {
     id: 'about',
     lightBg: false,
@@ -8,7 +12,7 @@ export const homeObjOne = {
     description: 'Pistas compartilhadas por outros usuários.',
     buttonLabel: 'Acessar',
     imgStart: false,
-    img: require('../../images/logomap.svg').default,
+    img: logomap,
     alt: 'GugaAbout',
     dark: true,
     primary: true,
@@ -26,7 +30,7 @@ export const homeObjTwo = {
     description: 'Fique por dentro dos melhores eventos!',
     buttonLabel: 'Acessar',
     imgStart: true,
-    img: require('../../images/ph.svg').default,
+    img: placeholder,
     alt: 'GugaDiscover',
     dark: false,
     primary: false,
@@ -44,7 +48,7 @@ export const homeObjThree = {
     description: "Com o SkateFlow mobile, você consegue agendar seus ingressos para ir a eventos, avaliar pistas e ver suas avaliações feitas por outros usuários e muito mais!",
     buttonLabel: 'Baixar',
     imgStart: false,
-    img: require('../../images/app.svg').default,
+    img: appIcon,
     alt: 'GugaSignUp',
     dark: false,
     primary: false,

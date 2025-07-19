@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import NavbarEvents from '../NavbarEvent';
 import { getEvents, deleteEvent } from '../../services/eventService';
 import EventDetails from '../../components/EventsPage/EventsDetails';
+import placeholderImage from '../../assets/images/ph.svg';
 
 // Estilização do container principal da página de eventos
 const EventsContainer = styled.div`
@@ -95,6 +96,7 @@ const EventsPage = () => {
     setEvents(data);
   };
 
+  // Função para lidar com a exclusão de eventos
   const handleDelete = async (id) => {
     await deleteEvent(id);
     fetchEvents();
@@ -120,7 +122,7 @@ const EventsPage = () => {
               <p><strong>Data:</strong> {event.dataEvento}</p>
               <p><strong>Local:</strong> {event.localEvento}</p>
               <p><strong>Descrição:</strong> {event.descricao}</p>
-              <img src={event.imagemEvento || require('../../images/ph.svg').default} alt={event.nomeEvento} />
+              <img src={event.imagemEvento || placeholderImage} alt={event.nomeEvento} />
               <button onClick={() => handleViewDetails(event)}>Visualizar</button>
             </EventCard>
           ))}

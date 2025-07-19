@@ -1,8 +1,8 @@
 // components/Header.js
 import React from 'react';
-import {  useNavigate } from 'react-router-dom'; // Importando useNavigate
+import { useNavigate } from 'react-router-dom'; // Importando useNavigate
 import styled from 'styled-components';
-import logo from '../../images/logo.png';
+import logo from '../../assets/images/logo.png';
 
 const HeaderContainer = styled.header`
   display: flex;

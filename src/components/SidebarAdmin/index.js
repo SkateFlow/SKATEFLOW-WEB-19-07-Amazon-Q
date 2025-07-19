@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
-import logo from '../../images/system-logo_24_x_24.png';
+import logo from '../../assets/images/system-logo_24_x_24.png';
 
 const SidebarContainer = styled.div`
   width: 250px;

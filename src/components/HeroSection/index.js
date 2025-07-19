@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Img from '../../images/inicial.png'; // Caminho da imagem correto
+import Img from '../../assets/images/inicial.png'; // Caminho da imagem atualizado
 import {
     HeroContainer,
     HeroBg,
