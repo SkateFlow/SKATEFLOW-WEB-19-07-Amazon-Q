@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import NavbarEvents from '../NavbarEvent';
-import { getEvents, deleteEvent } from '../../services/eventService';
+import { getEvents } from '../../services/eventService';
 import EventDetails from '../../components/EventsPage/EventsDetails';
 import placeholderImage from '../../assets/images/ph.svg';
 
