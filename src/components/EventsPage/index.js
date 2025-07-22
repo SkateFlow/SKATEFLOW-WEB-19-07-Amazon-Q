@@ -97,10 +97,10 @@ const EventsPage = () => {
   };
 
   // Função para lidar com a exclusão de eventos
-  const handleDelete = async (id) => {
-    await deleteEvent(id);
-    fetchEvents();
-  };
+  // const handleDelete = async (id) => {
+  //   await deleteEvent(id);
+  //   fetchEvents();
+  // };
 
   const handleViewDetails = (event) => {
     setSelectedEvent(event);
