@@ -1,5 +1,8 @@
 import styled from 'styled-components'
 import { Link } from 'react-router-dom'
+//import fundoLogin from '../src/images/fundoLogin.svg';
+import fundoLogin from './fundoLogin.svg';
+
 
 export const Container = styled.div`
     min-height: 692px;
@@ -10,7 +13,10 @@ export const Container = styled.div`
     top: 0;
     z-index: 0;
     overflow: hidden;
-  background: radial-gradient(circle, rgba(4,60,112,1) 20%, rgba(4,60,112,1) 30%, rgba(0,0,0,1) 100%);
+    background-image: url(${fundoLogin});
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
 `
 
 export const FormWrap = styled.div`
@@ -124,3 +130,12 @@ export const ForgetButton = styled(Link)`
     color: #fff;
     font-size: 14px;
 `
+
+export const PageContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center; /* Centraliza verticalmente */
+  min-height: 100vh;
+`;
+

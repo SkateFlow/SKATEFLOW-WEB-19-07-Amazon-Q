@@ -43,39 +43,74 @@ const Login = () => {
 
   return (
     <Container>
-      <FormWrap>
-        <Icon to="/">SkateFlow</Icon>
-        <FormContent>
-          <Form onSubmit={handleSubmit} autoComplete="off">
-            <FormH1>LOGIN ADMIN</FormH1>
-            <FormLabel htmlFor='email'>Email</FormLabel>
-            <FormInput 
-              type='email' 
-              required 
-              value={email} 
-              onChange={(e) => setEmail(e.target.value)} 
-              autoComplete="off"
-            />
-            <FormLabel htmlFor='password'>Senha</FormLabel>
-            <FormInput 
-              type='password'
-              required 
-              value={password} 
-              onChange={(e) => setPassword(e.target.value)} 
-              autoComplete="new-password"
-            />
-            {errorMessage && <p className="error-text">{errorMessage}</p>}
-            <FormButton type='submit' disabled={loading}>
-              {loading ? 'Carregando...' : 'Entrar'}
-            </FormButton>
-            <Text>
-              <BackButton to="/create-admin">Cadastrar Admin</BackButton>
-            </Text>
-            <BackButton to="/">Voltar</BackButton>
-          </Form>
-        </FormContent>
-      </FormWrap>
-    </Container>
+  {/* Nome SkateFlow com margem do topo */}
+  <div style={{ textAlign: 'center', marginTop: 'center' }}>
+    <Icon to="/" style={{ fontSize: '2rem', fontWeight: 'bold' }}>
+      SkateFlow
+    </Icon>
+  </div>
+
+  {/* Formulário centralizado e com bordas arredondadas */}
+  <FormWrap id>
+    <FormContent>
+      <Form
+        onSubmit={handleSubmit}
+        autoComplete="off"
+        style={{
+          borderRadius: '25px',
+          padding: '40px',
+          backgroundColor: '#111111cc',
+          boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)'
+        }}
+      >
+        <FormH1>LOGIN ADMIN</FormH1>
+
+        <FormInput
+          type="email"
+          placeholder="Email"
+          required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          autoComplete="off"
+          style={{ 
+            color: '#333', 
+            borderRadius: '10px',
+          }}
+        />
+
+        <FormInput
+          type="password"
+          placeholder="Senha"
+          required
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          autoComplete="new-password"
+          style={{ 
+            color: '#333',
+            borderRadius: '10px',
+          }}
+        />
+
+        {errorMessage && <p className="error-text">{errorMessage}</p>}
+
+        <FormButton type="submit" disabled={loading}
+          style={{
+            borderRadius: '17px'
+          }}
+        >
+          {loading ? 'Carregando...' : 'Entrar'}
+        </FormButton>
+
+        <Text>
+          <BackButton to="/create-admin">Cadastrar Admin</BackButton>
+        </Text>
+
+        <BackButton to="/">Voltar</BackButton>
+      </Form>
+    </FormContent>
+  </FormWrap>
+</Container>
+
   );
 };
 
