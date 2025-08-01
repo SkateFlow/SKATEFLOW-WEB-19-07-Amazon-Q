@@ -101,10 +101,6 @@ const Login = () => {
           {loading ? 'Carregando...' : 'Entrar'}
         </FormButton>
 
-        <Text>
-          <BackButton to="/create-admin">Cadastrar Admin</BackButton>
-        </Text>
-
         <BackButton to="/">Voltar</BackButton>
       </Form>
     </FormContent>

@@ -22,9 +22,9 @@ export const homeObjOne = {
 
 export const homeObjTwo = {
     id: 'discover',
-    lightBg: true,
-    lightText: false,
-    lightTextDesc: false,
+    lightBg: false,
+    lightText: true,
+    lightTextDesc: true,
     topLine: 'Acessar eventos',
     headline: 'Principais Eventos',
     description: 'Fique por dentro dos melhores eventos!',
@@ -32,9 +32,9 @@ export const homeObjTwo = {
     imgStart: true,
     img: placeholder,
     alt: 'GugaDiscover',
-    dark: false,
-    primary: false,
-    darkText: true,
+    dark: true,
+    primary: true,
+    darkText: false,
     linkTo: '/events', // Link aleatório
 };
 
