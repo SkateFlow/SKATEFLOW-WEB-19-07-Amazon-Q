@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { FaBars } from 'react-icons/fa';
 import { IconContext } from 'react-icons';
 import {
-    Nav,
+Nav,
     NavbarContainer,
     NavLogo,
     MobileIcon,
@@ -39,10 +39,10 @@ const NavbarEvents = ({ toggle }) => {
                     </MobileIcon>
                     <NavMenu>
                         <NavItem>
-                            <NavLinks to="/map">Mapa</NavLinks>
+                            <NavLinks to="/events">Eventos</NavLinks>
                         </NavItem>
                         <NavItem>
-                            <NavLinks to="/events">Eventos</NavLinks>
+                            <NavLinks to="/map">Mapa</NavLinks>
                         </NavItem>
                         <NavItem>
                             <NavLinks to="/articles">Artigos</NavLinks>

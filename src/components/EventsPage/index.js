@@ -1,33 +1,191 @@
-import React, { useEffect, useState } from 'react';
+
+import React, { useEffect, useState, useRef } from 'react';
 import styled from 'styled-components';
-import NavbarEvents from '../NavbarEvent';
+import { Link } from 'react-router-dom';
+import { FaBars, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import { getEvents } from '../../services/eventService';
 import EventDetails from '../../components/EventsPage/EventsDetails';
 import placeholderImage from '../../assets/images/ph.svg';
 
-// Estilização do container principal da página de eventos
-const EventsContainer = styled.div`
-  min-height: 120vh;
+
+
+// Navbar customizada com background sempre transparente
+const TransparentNav = styled.nav`
+  background: #1D1E21;
+  height: 80px;
+  margin-top: 0;
   display: flex;
-  flex-direction: column;
   justify-content: center;
   align-items: center;
-  background: rgb(0, 41, 79);
-  background: linear-gradient(90deg, rgba(0, 41, 79, 1) 0%, rgba(0, 20, 38, 1) 35%, rgba(0, 20, 38, 1) 100%);
-  padding: 50px 0;
-  color: white;
+  font-size: 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 999;
 `;
 
-// Estilização do container de cartões de eventos
+const NavbarContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  height: 80px;
+  z-index: 1;
+  width: 100%;
+  padding: 0 24px;
+  max-width: 1100px;
+`;
+
+const NavLogo = styled(Link)`
+  color: #fff;
+  justify-self: flex-start;
+  cursor: pointer;
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  margin-left: 24px;
+  font-weight: bold;
+  text-decoration: none;
+`;
+
+const MobileIcon = styled.div`
+  display: none;
+
+  @media screen and (max-width: 768px) {
+    display: block;
+    position: absolute;
+    top: 0;
+    right: 0;
+    transform: translate(-100%, 60%);
+    font-size: 1.8rem;
+    cursor: pointer;
+    color: #fff;
+  }
+`;
+
+const NavMenu = styled.ul`
+  display: flex;
+  align-items: center;
+  list-style: none;
+  text-align: center;
+  margin-right: -22px;
+
+  @media screen and (max-width: 768px) {
+    display: none;
+  }
+`;
+
+const NavItem = styled.li`
+  height: 80px;
+`;
+
+const NavLinks = styled(Link)`
+  color: #fff;
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  padding: 0 1rem;
+  height: 100%;
+  cursor: pointer;
+  transition: border-bottom 0.2s ease-in-out;
+
+  &:hover {
+    border-bottom: 3px solid #043C70;
+  }
+
+  &.active {
+    border-bottom: 3px solid #043C70;
+  }
+`;
+
+const NavBtn = styled.nav`
+  display: flex;
+  align-items: center;
+
+  @media screen and (max-width: 768px) {
+    display: none;
+  }
+`;
+
+const MobileMenu = styled.div`
+  display: none;
+  position: fixed;
+  top: 80px;
+  left: 0;
+  width: 100%;
+  height: calc(100vh - 80px);
+  background: rgba(0, 0, 0, 0.9);
+  z-index: 999;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 50px;
+
+  @media screen and (max-width: 768px) {
+    display: ${({ isOpen }) => (isOpen ? 'flex' : 'none')};
+  }
+`;
+
+const MobileNavItem = styled.div`
+  padding: 20px 0;
+  width: 100%;
+  text-align: center;
+  border-bottom: 1px solid #333;
+`;
+
+const MobileNavLink = styled(Link)`
+  color: #fff;
+  font-size: 1.2rem;
+  text-decoration: none;
+  
+  &:hover {
+    color: #043C70;
+  }
+`;
+
+const NavBtnLink = styled(Link)`
+  border-radius: 50px;
+  background: #043C70;
+  white-space: nowrap;
+  padding: 10px 22px;
+  color: #C0C0C0;
+  font-size: 16px;
+  outline: none;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  text-decoration: none;
+
+  &:hover {
+    transition: all 0.2s ease-in-out;
+    background: #fff;
+    color: #010606;
+  }
+`;
+
+// Estilização do container principal da página de eventos
+const EventsContainer = styled.div`
+  height: 1080px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #1D1E21;
+  padding: 20px 0;
+  color: white;
+  margin-top:-80px;
+  overflow-y: auto;
+
+  h1 {
+    margin-top: 100px;
+    margin-bottom: 30px;
+  }
+`;
+
 const EventCardsContainer = styled.div`
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
   gap: 20px;
-  margin-top: 30px;
+  width: 100%;
+  max-width: 1200px;
 `;
 
-// Estilização de cada cartão de evento
 const EventCard = styled.div`
   flex: 1 1 calc(33.333% - 40px);
   padding: 20px;
@@ -49,12 +207,12 @@ const EventCard = styled.div`
     max-width: 100%;
     height: auto;
     margin-top: 10px;
-    border-radius: 8px; /* Arredondando as bordas da imagem */
+    border-radius: 8px;
   }
 
   &:hover {
-    transform: translateY(-5px); /* Levanta o cartão ao passar o mouse */
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5); /* Sombra mais intensa */
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
   }
 
   button {
@@ -63,13 +221,13 @@ const EventCard = styled.div`
     background-color: #007bff;
     color: white;
     border: none;
-    border-radius: 5px; /* Arredondando as bordas do botão */
+    border-radius: 5px;
     cursor: pointer;
     margin-right: 10px;
     transition: background-color 0.3s;
 
     &:hover {
-      background-color: #0056b3; /* Escurecendo a cor ao passar o mouse */
+      background-color: #0056b3;
     }
   }
 
@@ -77,24 +235,218 @@ const EventCard = styled.div`
     background-color: #ff0000;
 
     &:hover {
-      background-color: #cc0000; /* Escurecendo a cor ao passar o mouse */
+      background-color: #cc0000;
+    }
+  }
+`;
+const CarouselWrapper = styled.div`
+  position: relative;
+  width: 100%;
+`;
+
+const CarouselContainer = styled.div`
+  display: flex;
+  gap: 24px;
+  overflow-x: auto;
+  padding: 24px 20px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  
+  &::-webkit-scrollbar {
+    height: 3px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 2px;
+    
+    &:hover {
+      background: rgba(255, 255, 255, 0.5);
     }
   }
 `;
 
+const NavButton = styled.button`
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #043C70;
+  color: white;
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  z-index: 2;
+  
+  &:hover {
+    background: #0056b3;
+  }
+`;
+
+const PrevButton = styled(NavButton)`
+  left: 10px;
+`;
+
+const NextButton = styled(NavButton)`
+  right: 10px;
+`;
+
+
+//Card Geral
+const CarouselCard = styled.div`
+  min-width: 300px;
+  width: 300px;
+  background: #00274d;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+  scroll-snap-align: start;
+  
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+  }
+`;
+
+const CardImage = styled.img`
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+`;
+
+const CardContent = styled.div`
+  padding: 16px;
+  color: white;
+`;
+//Título -> Best Trick Session
+const CardTitle = styled.h3`
+  margin: 0 0 8px 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #ffffff;
+`;
+//Data/Local Texto
+const CardInfo = styled.p`
+  margin: 4px 0;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.8);
+  
+  strong {
+    color: #ffffff;
+  }
+`;
+
+//Descrição Pequena
+const CardDescription = styled.p`
+  margin: 8px 0 12px 0;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.4;
+`;
+//Botão
+const ViewButton = styled.button`
+  background: #b85030ff;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  
+  &:hover {
+    background: #0056b3;
+  }
+`;
+
 const EventsPage = () => {
-  const [events, setEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [isOpen, setIsOpen] = useState(false);
+  const carouselRef = useRef(null);
+const [events, setEvents] = useState([
+  {
+    id: 1,
+    nomeEvento: 'Campeonato de Skate',
+    dataEvento: '2025-08-20',
+    localEvento: 'Praça Central',
+    descricao: 'Competição para amadores e profissionais.',
+    imagemEvento: placeholderImage,
+  },
+  {
+    id: 2,
+    nomeEvento: 'Best Trick Session',
+    dataEvento: '2025-08-25',
+    localEvento: 'Skate Park Leste',
+    descricao: 'Sessão aberta com prêmios para melhores manobras.',
+    imagemEvento: placeholderImage,
+  },
+  {
+    id: 3,
+    nomeEvento: 'Encontro de Skatistas',
+    dataEvento: '2025-08-30',
+    localEvento: 'Pista do Centro',
+    descricao: 'Confraternização com DJs e food trucks.',
+    imagemEvento: placeholderImage,
+  },
+  {
+    id: 4,
+    nomeEvento: 'Noite do Ollie Alto',
+    dataEvento: '2025-09-05',
+    localEvento: 'Skate Park Norte',
+    descricao: 'Quem consegue o ollie mais alto leva o troféu!',
+    imagemEvento: placeholderImage,
+  }, {
+    id: 5,
+    nomeEvento: 'Noite do Ollie Alto',
+    dataEvento: '2025-09-05',
+    localEvento: 'Skate Park Norte',
+    descricao: 'Quem consegue o ollie mais alto leva o troféu!',
+    imagemEvento: placeholderImage,
+  }, {
+    id: 6,
+    nomeEvento: 'Noite do Ollie Alto',
+    dataEvento: '2025-09-05',
+    localEvento: 'Skate Park Norte',
+    descricao: 'Quem consegue o ollie mais alto leva o troféu!',
+    imagemEvento: placeholderImage,
+  }, {
+    id: 7,
+    nomeEvento: 'Noite do Ollie Alto',
+    dataEvento: '2025-09-05',
+    localEvento: 'Skate Park Norte',
+    descricao: 'Quem consegue o ollie mais alto leva o troféu!',
+    imagemEvento: placeholderImage,
+  },
+]);
+
+  const toggle = () => {
+    setIsOpen(!isOpen);
+  };
 
   // Efeito para buscar eventos ao carregar o componente
   useEffect(() => {
     fetchEvents();
   }, []);
 
-  const fetchEvents = async () => {
+const fetchEvents = async () => {
+  try {
     const data = await getEvents();
-    setEvents(data);
-  };
+    console.log('Eventos carregados:', data);
+    if (data && data.length > 0) {
+      setEvents(data);
+    }
+  } catch (error) {
+    console.error('Erro ao carregar eventos:', error);
+  }
+};
+
 
   // Função para lidar com a exclusão de eventos
   // const handleDelete = async (id) => {
@@ -103,6 +455,7 @@ const EventsPage = () => {
   // };
 
   const handleViewDetails = (event) => {
+    console.log('Abrindo modal para evento:', event);
     setSelectedEvent(event);
   };
 
@@ -110,25 +463,101 @@ const EventsPage = () => {
     setSelectedEvent(null);
   };
 
+  const scrollLeft = () => {
+    carouselRef.current?.scrollBy({ left: -300, behavior: 'smooth' });
+  };
+
+  const scrollRight = () => {
+    carouselRef.current?.scrollBy({ left: 300, behavior: 'smooth' });
+  };
+
   return (
     <>
-      <NavbarEvents />
+      <TransparentNav>
+        <NavbarContainer>
+          <NavLogo to="/">SkateFlow</NavLogo>
+          <MobileIcon onClick={toggle}>
+            <FaBars />
+          </MobileIcon>
+          <NavMenu>
+            <NavItem>
+              <NavLinks to="/events">Eventos</NavLinks>
+            </NavItem>
+            <NavItem>
+              <NavLinks to="/map">Mapa</NavLinks>
+            </NavItem>
+            <NavItem>
+              <NavLinks to="/articles">Artigos</NavLinks>
+            </NavItem>
+            <NavItem>
+              <NavLinks to="https://www.example.com">Mobile</NavLinks>
+            </NavItem>
+          </NavMenu>
+          <NavBtn>
+            <NavBtnLink to="/login">Login</NavBtnLink>
+          </NavBtn>
+        </NavbarContainer>
+      </TransparentNav>
+      
+      <MobileMenu isOpen={isOpen}>
+        <MobileNavItem>
+          <MobileNavLink to="/events" onClick={toggle}>Eventos</MobileNavLink>
+        </MobileNavItem>
+        <MobileNavItem>
+          <MobileNavLink to="/map" onClick={toggle}>Mapa</MobileNavLink>
+        </MobileNavItem>
+        <MobileNavItem>
+          <MobileNavLink to="/articles" onClick={toggle}>Artigos</MobileNavLink>
+        </MobileNavItem>
+        <MobileNavItem>
+          <MobileNavLink to="https://www.example.com" onClick={toggle}>Mobile</MobileNavLink>
+        </MobileNavItem>
+        <MobileNavItem>
+          <MobileNavLink to="/login" onClick={toggle}>Login</MobileNavLink>
+        </MobileNavItem>
+      </MobileMenu>
       <EventsContainer>
         <h1>Eventos</h1>
-        <EventCardsContainer>
-          {events.map((event) => (
-            <EventCard key={event.id}>
-              <h2>{event.nomeEvento}</h2>
-              <p><strong>Data:</strong> {event.dataEvento}</p>
-              <p><strong>Local:</strong> {event.localEvento}</p>
-              <p><strong>Descrição:</strong> {event.descricao}</p>
-              <img src={event.imagemEvento || placeholderImage} alt={event.nomeEvento} />
-              <button onClick={() => handleViewDetails(event)}>Visualizar</button>
-            </EventCard>
-          ))}
-        </EventCardsContainer>
+        <CarouselWrapper>
+          <PrevButton onClick={scrollLeft}>
+            <FaChevronLeft />
+          </PrevButton>
+          <CarouselContainer ref={carouselRef}>
+            {events.map((event) => (
+              <CarouselCard key={event.id}>
+                <CardImage 
+                  src={event.imagemEvento || placeholderImage} 
+                  alt={event.nomeEvento}
+                />
+                <CardContent>
+                  <CardTitle>{event.nomeEvento}</CardTitle>
+                  <CardInfo>
+                    <strong>Data:</strong> {event.dataEvento}
+                  </CardInfo>
+                  <CardInfo>
+                    <strong>Local:</strong> {event.localEvento}
+                  </CardInfo>
+                  <CardDescription>{event.descricao}</CardDescription>
+                  <ViewButton onClick={() => handleViewDetails(event)}>
+                    Visualizar
+                  </ViewButton>
+                </CardContent>
+              </CarouselCard>
+            ))}
+          </CarouselContainer>
+          <NextButton onClick={scrollRight}>
+            <FaChevronRight />
+          </NextButton>
+        </CarouselWrapper>
 
-        {selectedEvent && <EventDetails event={selectedEvent} onClose={closeDetails} />}
+
+
+        {selectedEvent && (
+          <div>
+            <p>Modal deveria aparecer aqui</p>
+            <EventDetails event={selectedEvent} onClose={closeDetails} />
+          </div>
+        )}
       </EventsContainer>
     </>
   );

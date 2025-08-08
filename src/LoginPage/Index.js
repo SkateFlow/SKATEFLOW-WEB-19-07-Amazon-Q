@@ -43,15 +43,21 @@ const Login = () => {
 
   return (
     <Container>
-  {/* Nome SkateFlow com margem do topo */}
-  <div style={{ textAlign: 'center', marginTop: 'center' }}>
-    <Icon to="/" style={{ fontSize: '2rem', fontWeight: 'bold' }}>
-      SkateFlow
-    </Icon>
-  </div>
+      {/* Nome SkateFlow centralizado */}
+      <div style={{ 
+        position: 'absolute',
+        top: '15%',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        textAlign: 'center'
+      }}>
+        <Icon to="/" style={{ fontSize: '3rem', fontWeight: 'bold', color: '#fff' }}>
+          SkateFlow
+        </Icon>
+      </div>
 
-  {/* Formulário centralizado e com bordas arredondadas */}
-  <FormWrap id>
+      {/* Formulário centralizado */}
+      <FormWrap>
     <FormContent>
       <Form
         onSubmit={handleSubmit}

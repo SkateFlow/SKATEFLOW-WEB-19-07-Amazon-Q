@@ -13,7 +13,6 @@ import ArticlesPage from './components/ArticlesPage';
 import SkateflowNews from './components/ArticlesPage/FutureOfSkateboarding';
 import Top10SkateParks from './components/ArticlesPage/Top10SkateParks';
 import FemaleSkateGroups from './components/ArticlesPage/FemaleSkateGroups';
-
 // Páginas administrativas
 import AdminPage from './components/AdminPage';
 import AdminHome from './components/AdminHome';
@@ -22,6 +21,8 @@ import ArticleAdminPage from './components/AdminPage/ArticleAdminPage';
 import AdminManagementPage from './components/AdminPage/AdminManagementPage';
 
 function App() {
+
+
   return (
     <AuthProvider>
       <Router>

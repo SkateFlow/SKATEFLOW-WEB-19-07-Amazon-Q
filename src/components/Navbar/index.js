@@ -63,6 +63,15 @@ const Navbar = ({ toggle }) => {
                         <NavMenu>
                             <NavItem>
                                 <NavLinks 
+                                to="discover"
+                                smooth={true}
+                                duration={500}
+                                spy={true}
+                                activeClass='active'
+                                exact='true'> Eventos </NavLinks>
+                            </NavItem>
+                            <NavItem>
+                                <NavLinks 
                                 to="about"
                                 smooth={true}
                                 duration={500}
@@ -70,15 +79,6 @@ const Navbar = ({ toggle }) => {
                                 activeClass='active'
                                 exact='true'
                                 > Mapa </NavLinks>
-                            </NavItem>
-                            <NavItem>
-                                <NavLinks 
-                                to="discover"
-                                smooth={true}
-                                duration={500}
-                                spy={true}
-                                activeClass='active'
-                                exact='true'> Eventos </NavLinks>
                             </NavItem>
                             <NavItem>
                             <NavLinks 

@@ -82,12 +82,14 @@ export const NavLinks = styled(LinkS)`
     padding: 0 1rem;
     height: 100%;
     cursor: pointer;
+    transition: border-bottom 0.2s ease-in-out;
 
-    /*  &: is used to insert styling for pseudo class selectors like
-        :active, :hover, :focus in one big css block */
+    &:hover {
+        border-bottom: 3px solid #043C70;
+    }
 
     &.active {
-        border-bottom: 3px solid #3888D2;
+        border-bottom: 3px solid #043C70;
     }
 `;
 

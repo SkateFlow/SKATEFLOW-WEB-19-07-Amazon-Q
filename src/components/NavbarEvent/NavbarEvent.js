@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 export const Nav = styled.nav`
     background: ${({ scrollNav }) => (scrollNav ? '#000' : 'transparent')};
     height: 80px;
-    margin-top: -80px;
+    margin-top: 0;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -77,9 +77,14 @@ export const NavLinks = styled(Link)`
     padding: 0 1rem;
     height: 100%;
     cursor: pointer;
+    transition: border-bottom 0.2s ease-in-out;
+
+    &:hover {
+        border-bottom: 3px solid #043C70;
+    }
 
     &.active {
-        border-bottom: 3px solid #3888D2;
+        border-bottom: 3px solid #043C70;
     }
 `;
 
