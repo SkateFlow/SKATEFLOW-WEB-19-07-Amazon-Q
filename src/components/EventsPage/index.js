@@ -177,68 +177,7 @@ const EventsContainer = styled.div`
   }
 `;
 
-const EventCardsContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 20px;
-  width: 100%;
-  max-width: 1200px;
-`;
 
-const EventCard = styled.div`
-  flex: 1 1 calc(33.333% - 40px);
-  padding: 20px;
-  border-radius: 10px;
-  background-color: #00274d;
-  color: white;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-  transition: transform 0.3s, box-shadow 0.3s;
-
-  @media (max-width: 768px) {
-    flex: 1 1 calc(50% - 40px);
-  }
-
-  @media (max-width: 480px) {
-    flex: 1 1 100%;
-  }
-
-  img {
-    max-width: 100%;
-    height: auto;
-    margin-top: 10px;
-    border-radius: 8px;
-  }
-
-  &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
-  }
-
-  button {
-    margin-top: 10px;
-    padding: 10px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    margin-right: 10px;
-    transition: background-color 0.3s;
-
-    &:hover {
-      background-color: #0056b3;
-    }
-  }
-
-  button.delete {
-    background-color: #ff0000;
-
-    &:hover {
-      background-color: #cc0000;
-    }
-  }
-`;
 const CarouselWrapper = styled.div`
   position: relative;
   width: 100%;
