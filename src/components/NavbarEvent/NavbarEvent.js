@@ -3,7 +3,11 @@ import { Link } from 'react-router-dom';
 
 
 export const Nav = styled.nav`
-    background: ${({ scrollNav }) => (scrollNav ? '#000' : 'transparent')};
+    background: ${({ scrollNav }) => 
+        scrollNav 
+            ? 'rgba(0,41,79,0.95)' 
+            : 'linear-gradient(90deg, rgba(0,41,79,0.8) 0%, rgba(0,20,38,0.8) 35%, rgba(0,20,38,0.8) 100%)'
+    };
     height: 80px;
     margin-top: 0;
     display: flex;
@@ -14,6 +18,7 @@ export const Nav = styled.nav`
     top: 0;
     z-index: 10;
     transition: 0.8s all ease;
+    backdrop-filter: blur(10px);
 `;
 
 export const NavbarContainer = styled.div`

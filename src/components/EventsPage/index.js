@@ -298,20 +298,20 @@ const NextButton = styled(NavButton)`
 `;
 
 
-//Card Geral
 const CarouselCard = styled.div`
   min-width: 300px;
   width: 300px;
-  background: #00274d;
+  background: #ffffff;
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
   scroll-snap-align: start;
+  cursor: pointer;
   
   &:hover {
     transform: translateY(-5px);
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
   }
 `;
 
@@ -323,47 +323,55 @@ const CardImage = styled.img`
 
 const CardContent = styled.div`
   padding: 16px;
-  color: white;
-`;
-//Título -> Best Trick Session
-const CardTitle = styled.h3`
-  margin: 0 0 8px 0;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #ffffff;
-`;
-//Data/Local Texto
-const CardInfo = styled.p`
-  margin: 4px 0;
-  font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.8);
-  
-  strong {
-    color: #ffffff;
-  }
+  color: #000000;
 `;
 
-//Descrição Pequena
+const CardHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+`;
+
+const CardTitle = styled.h2`
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #000000;
+  flex: 1;
+`;
+
+const Badge = styled.span`
+  background: #1e40af;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-left: 8px;
+`;
+
 const CardDescription = styled.p`
-  margin: 8px 0 12px 0;
-  font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.7);
+  margin: 0 0 16px 0;
+  font-size: 0.9rem;
+  color: #6b7280;
   line-height: 1.4;
 `;
-//Botão
-const ViewButton = styled.button`
-  background: #b85030ff;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 6px;
-  font-size: 0.85rem;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-  
-  &:hover {
-    background: #0056b3;
-  }
+
+const CardActions = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+`;
+
+const BadgeOutline = styled.span`
+  border: 1px solid #6b7280;
+  color: #6b7280;
+  background: transparent;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 400;
 `;
 
 const EventsPage = () => {
@@ -524,23 +532,21 @@ const fetchEvents = async () => {
           </PrevButton>
           <CarouselContainer ref={carouselRef}>
             {events.map((event) => (
-              <CarouselCard key={event.id}>
+              <CarouselCard key={event.id} onClick={() => handleViewDetails(event)}>
                 <CardImage 
                   src={event.imagemEvento || placeholderImage} 
                   alt={event.nomeEvento}
                 />
                 <CardContent>
-                  <CardTitle>{event.nomeEvento}</CardTitle>
-                  <CardInfo>
-                    <strong>Data:</strong> {event.dataEvento}
-                  </CardInfo>
-                  <CardInfo>
-                    <strong>Local:</strong> {event.localEvento}
-                  </CardInfo>
+                  <CardHeader>
+                    <CardTitle>{event.nomeEvento}</CardTitle>
+                    <Badge>NOVO</Badge>
+                  </CardHeader>
                   <CardDescription>{event.descricao}</CardDescription>
-                  <ViewButton onClick={() => handleViewDetails(event)}>
-                    Visualizar
-                  </ViewButton>
+                  <CardActions>
+                    <BadgeOutline>{event.dataEvento}</BadgeOutline>
+                    <BadgeOutline>{event.localEvento}</BadgeOutline>
+                  </CardActions>
                 </CardContent>
               </CarouselCard>
             ))}

@@ -21,8 +21,6 @@ import ArticleAdminPage from './components/AdminPage/ArticleAdminPage';
 import AdminManagementPage from './components/AdminPage/AdminManagementPage';
 
 function App() {
-
-
   return (
     <AuthProvider>
       <Router>
