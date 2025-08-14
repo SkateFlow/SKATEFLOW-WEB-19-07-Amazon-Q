@@ -16,10 +16,10 @@ const ModalOverlay = styled.div`
 `;
 
 const ModalContent = styled.div`
-  background-color: #001426;
+  background-color: #0f1820ff;
   color: white;
   padding: 20px;
-  border-radius: 10px;
+  border-radius: 30px;
   max-width: 600px;
   width: 100%;
   position: relative;
@@ -45,6 +45,7 @@ const CloseButton = styled.button`
   background-color: #ff0000;
   color: white;
   border: none;
+  border-radius: 20%;
   cursor: pointer;
 `;
 
