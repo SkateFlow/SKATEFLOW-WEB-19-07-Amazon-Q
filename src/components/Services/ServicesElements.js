@@ -1,20 +1,12 @@
 import styled from 'styled-components'
 
 export const ServicesContainer = styled.div`
-    height: 860px;
+    height: 100vh;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     background: #000;
-
-    @media screen and (max-width: 768px) {
-        height: 1300px;
-    }
-
-    @media screen and (max-width: 480px) {
-        height: 1300px;
-    }
 `
 
 export const ServicesWrapper = styled.div`
