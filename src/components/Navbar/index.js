@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { FaBars } from 'react-icons/fa'
 import { IconContext } from 'react-icons/lib';
 import { animateScroll as scroll } from 'react-scroll'
+import { useLocation } from 'react-router-dom';
+import logoSvg from '../../assets/images/logoof1.svg';
 import {
     Nav,
     NavbarContainer,
@@ -10,12 +12,13 @@ import {
     NavMenu,
     NavItem,
     NavLinks,
+    NavLinksRouter,
     NavBtn,
     NavBtnLink
 } from './NavbarElements';
 
 const Navbar = ({ toggle }) => {
-
+    const location = useLocation();
     const [scrollNav, setScrollNav] = useState(false)
 
     const changeNav = () => {
@@ -56,20 +59,26 @@ const Navbar = ({ toggle }) => {
             <IconContext.Provider value={{ color: '#fff' }}>
                 <Nav scrollNav={scrollNav}>
                     <NavbarContainer>
-                        <NavLogo to="/" onClick={toggleHome}> SkateFlow  </NavLogo>
+                        <NavLogo to="/" onClick={toggleHome}>
+                            <img src={logoSvg} alt="SkateFlow" style={{ height: '70px' }} />
+                        </NavLogo>
                         <MobileIcon onClick={toggle}>
                             <FaBars />
                         </MobileIcon>
                         <NavMenu>
 
                             <NavItem>
-                                <NavLinks 
-                                to="discover"
-                                smooth={true}
-                                duration={500}
-                                spy={true}
-                                activeClass='active'
-                                exact='true'> Eventos </NavLinks>
+                                {location.pathname === '/events' ? (
+                                    <NavLinksRouter to="/events" className="active">Eventos</NavLinksRouter>
+                                ) : (
+                                    <NavLinks 
+                                    to="events-hero"
+                                    smooth={true}
+                                    duration={500}
+                                    spy={true}
+                                    activeClass='active'
+                                    exact='true'>Eventos</NavLinks>
+                                )}
                             </NavItem>
                             <NavItem>
                                 <NavLinks 

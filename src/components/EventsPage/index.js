@@ -1,163 +1,11 @@
-
 import React, { useEffect, useState, useRef } from 'react';
 import styled from 'styled-components';
-import { Link } from 'react-router-dom';
-import { FaBars, FaChevronLeft, FaChevronRight, FaSearch } from 'react-icons/fa';
+import { FaChevronLeft, FaChevronRight, FaSearch } from 'react-icons/fa';
 import { getEvents } from '../../services/eventService';
 import EventDetails from '../../components/EventsPage/EventsDetails';
+import Navbar from '../Navbar';
+import Sidebar from '../Sidebar';
 import placeholderImage from '../../assets/images/ph.svg';
-
-
-
-// Navbar customizada com background sempre transparente
-const TransparentNav = styled.nav`
-  background: #1D1E21;
-  height: 80px;
-  margin-top: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 1rem;
-  position: sticky;
-  top: 0;
-  z-index: 999;
-`;
-
-const NavbarContainer = styled.div`
-  display: flex;
-  justify-content: space-between;
-  height: 80px;
-  z-index: 1;
-  width: 100%;
-  padding: 0 24px;
-  max-width: 1100px;
-`;
-
-const NavLogo = styled(Link)`
-  color: #fff;
-  justify-self: flex-start;
-  cursor: pointer;
-  font-size: 1.5rem;
-  display: flex;
-  align-items: center;
-  margin-left: 24px;
-  font-weight: bold;
-  text-decoration: none;
-`;
-
-const MobileIcon = styled.div`
-  display: none;
-
-  @media screen and (max-width: 768px) {
-    display: block;
-    position: absolute;
-    top: 0;
-    right: 0;
-    transform: translate(-100%, 60%);
-    font-size: 1.8rem;
-    cursor: pointer;
-    color: #fff;
-  }
-`;
-
-const NavMenu = styled.ul`
-  display: flex;
-  align-items: center;
-  list-style: none;
-  text-align: center;
-  margin-right: -22px;
-
-  @media screen and (max-width: 768px) {
-    display: none;
-  }
-`;
-
-const NavItem = styled.li`
-  height: 80px;
-`;
-
-const NavLinks = styled(Link)`
-  color: #fff;
-  display: flex;
-  align-items: center;
-  text-decoration: none;
-  padding: 0 1rem;
-  height: 100%;
-  cursor: pointer;
-  transition: border-bottom 0.2s ease-in-out;
-
-  &:hover {
-    border-bottom: 3px solid #043C70;
-  }
-
-  &.active {
-    border-bottom: 3px solid #043C70;
-  }
-`;
-
-const NavBtn = styled.nav`
-  display: flex;
-  align-items: center;
-
-  @media screen and (max-width: 768px) {
-    display: none;
-  }
-`;
-
-const MobileMenu = styled.div`
-  display: none;
-  position: fixed;
-  top: 80px;
-  left: 0;
-  width: 100%;
-  height: calc(100vh - 80px);
-  background: rgba(0, 0, 0, 0.9);
-  z-index: 999;
-  flex-direction: column;
-  align-items: center;
-  padding-top: 50px;
-
-  @media screen and (max-width: 768px) {
-    display: ${({ isOpen }) => (isOpen ? 'flex' : 'none')};
-  }
-`;
-
-const MobileNavItem = styled.div`
-  padding: 20px 0;
-  width: 100%;
-  text-align: center;
-  border-bottom: 1px solid #333;
-`;
-
-const MobileNavLink = styled(Link)`
-  color: #fff;
-  font-size: 1.2rem;
-  text-decoration: none;
-  
-  &:hover {
-    color: #043C70;
-  }
-`;
-
-const NavBtnLink = styled(Link)`
-  border-radius: 50px;
-  background: #043C70;
-  white-space: nowrap;
-  padding: 10px 22px;
-  color: #C0C0C0;
-  font-size: 16px;
-  outline: none;
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
-  text-decoration: none;
-
-  &:hover {
-    transition: all 0.2s ease-in-out;
-    background: #fff;
-    color: #010606;
-  }
-`;
 
 // Estilização do container principal da página de eventos
 const EventsContainer = styled.div`
@@ -172,11 +20,10 @@ const EventsContainer = styled.div`
   overflow-y: auto;
 
   h1 {
-    margin-top: 100px;
+    margin-top: 150px;
     margin-bottom: 30px;
   }
 `;
-
 
 const CarouselWrapper = styled.div`
   position: relative;
@@ -260,7 +107,6 @@ const PrevButton = styled(NavButton)`
 const NextButton = styled(NavButton)`
   right: 10px;
 `;
-
 
 const CarouselCard = styled.div`
   min-width: 300px;
@@ -479,6 +325,12 @@ const SectionLabel = styled.h3`
   }
 `;
 
+const GlobalStyle = styled.div`
+  nav {
+    background: #1D1E21 !important;
+  }
+`;
+
 const EventsPage = () => {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -548,6 +400,7 @@ const [events, setEvents] = useState([
   // Efeito para buscar eventos ao carregar o componente
   useEffect(() => {
     fetchEvents();
+    window.scrollTo(0, 0);
   }, []);
 
 const fetchEvents = async () => {
@@ -561,13 +414,6 @@ const fetchEvents = async () => {
     console.error('Erro ao carregar eventos:', error);
   }
 };
-
-
-  // Função para lidar com a exclusão de eventos
-  // const handleDelete = async (id) => {
-  //   await deleteEvent(id);
-  //   fetchEvents();
-  // };
 
   const handleViewDetails = (event) => {
     console.log('Abrindo modal para evento:', event);
@@ -614,56 +460,9 @@ const fetchEvents = async () => {
   };
 
   return (
-    <>
-      <TransparentNav>
-        <NavbarContainer>
-          <NavLogo to="/">SkateFlow</NavLogo>
-          <MobileIcon onClick={toggle}>
-            <FaBars />
-          </MobileIcon>
-          <NavMenu>
-            <NavItem>
-              <NavLinks to="/">Home</NavLinks>
-            </NavItem>
-            <NavItem>
-              <NavLinks to="/events">Eventos</NavLinks>
-            </NavItem>
-            <NavItem>
-              <NavLinks to="/map">Mapa</NavLinks>
-            </NavItem>
-            <NavItem>
-              <NavLinks to="/articles">Artigos</NavLinks>
-            </NavItem>
-            <NavItem>
-              <NavLinks to="https://www.example.com">Mobile</NavLinks>
-            </NavItem>
-          </NavMenu>
-          <NavBtn>
-            <NavBtnLink to="/login">Login</NavBtnLink>
-          </NavBtn>
-        </NavbarContainer>
-      </TransparentNav>
-      
-      <MobileMenu isOpen={isOpen}>
-        <MobileNavItem>
-          <MobileNavLink to="/" onClick={toggle}>Home</MobileNavLink>
-        </MobileNavItem>
-        <MobileNavItem>
-          <MobileNavLink to="/events" onClick={toggle}>Eventos</MobileNavLink>
-        </MobileNavItem>
-        <MobileNavItem>
-          <MobileNavLink to="/map" onClick={toggle}>Mapa</MobileNavLink>
-        </MobileNavItem>
-        <MobileNavItem>
-          <MobileNavLink to="/articles" onClick={toggle}>Artigos</MobileNavLink>
-        </MobileNavItem>
-        <MobileNavItem>
-          <MobileNavLink to="https://www.example.com" onClick={toggle}>Mobile</MobileNavLink>
-        </MobileNavItem>
-        <MobileNavItem>
-          <MobileNavLink to="/login" onClick={toggle}>Login</MobileNavLink>
-        </MobileNavItem>
-      </MobileMenu>
+    <GlobalStyle>
+      <Sidebar isOpen={isOpen} toggle={toggle}/>
+      <Navbar toggle={toggle}/>
       <EventsContainer>
         <h1>Eventos</h1>
         <SearchContainer>
@@ -755,7 +554,7 @@ const fetchEvents = async () => {
           </div>
         )}
       </EventsContainer>
-    </>
+    </GlobalStyle>
   );
 };
 
