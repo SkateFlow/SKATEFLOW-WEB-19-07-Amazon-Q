@@ -2,10 +2,10 @@ import styled from 'styled-components';
 
 export const EventsHeroContainer = styled.section`
   background: #ffffff;
-  padding: 80px 0 0;
+  padding: 120px 0;
   position: relative;
   scroll-margin-top: 100px;
-  height: 100vh;
+  min-height: 80vh;
   display: flex;
   align-items: center;
 `;

@@ -8,13 +8,14 @@ import { Link as LinkS} from 'react-scroll'
 export const Nav = styled.nav`
     background: ${({scrollNav}) => (scrollNav ? '#000' : 'transparent')};
     height: 80px;
-    margin-top: -80px;
+    margin-top: 0;
     display: flex;
     justify-content: center;
     align-items: center;
     font-size: 1rem;
-    position: sticky;
+    position: fixed;
     top: 0;
+    width: 100%;
     z-index: 10;
     transition: 0.8s all ease;
 `
@@ -28,6 +29,10 @@ export const NavbarContainer = styled.div`
     padding: 0 50px;
     max-width: none;
     position: relative;
+    
+    @media screen and (max-width: 768px) {
+        padding: 0 10px;
+    }
 `;
 
 export const NavLogo = styled(LinkR)`
@@ -41,6 +46,10 @@ export const NavLogo = styled(LinkR)`
     margin-right: 40px;
     font-weight: bold;
     text-decoration: none;
+    
+    @media screen and (max-width: 768px) {
+        margin-left: 10px;
+    }
 `;
 
 // Menu icon container for mobile, it appears only with max-width: 768px
@@ -81,7 +90,7 @@ export const NavLinks = styled(LinkS)`
     display: flex;
     align-items: center;
     text-decoration: none;
-    padding: 0 1rem;
+    padding: 0 1.5rem;
     height: 100%;
     cursor: pointer;
     transition: all 0.2s ease-in-out;
@@ -100,7 +109,7 @@ export const NavLinksRouter = styled(LinkR)`
     display: flex;
     align-items: center;
     text-decoration: none;
-    padding: 0 1rem;
+    padding: 0 1.5rem;
     height: 100%;
     cursor: pointer;
     transition: all 0.2s ease-in-out;

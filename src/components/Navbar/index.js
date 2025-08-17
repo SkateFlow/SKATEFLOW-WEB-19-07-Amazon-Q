@@ -22,22 +22,18 @@ const Navbar = ({ toggle }) => {
     const [scrollNav, setScrollNav] = useState(false)
 
     const changeNav = () => {
-        let abortController = new AbortController();
         if (window.scrollY >= 80) {
             setScrollNav(true)
         } else {
             setScrollNav(false)
         }
-
-        //console.log(window)
-
-        return () => {
-            abortController.abort();
-        }
     }
 
     useEffect(() => {
         window.addEventListener('scroll', changeNav)
+        return () => {
+            window.removeEventListener('scroll', changeNav)
+        }
     }, [])
 
     // Function from react-scroll
@@ -68,9 +64,7 @@ const Navbar = ({ toggle }) => {
                         <NavMenu>
 
                             <NavItem>
-                                {location.pathname === '/events' ? (
-                                    <NavLinksRouter to="/events" className="active">Eventos</NavLinksRouter>
-                                ) : (
+                                {location.pathname === '/' ? (
                                     <NavLinks 
                                     to="events-hero"
                                     smooth={true}
@@ -78,6 +72,8 @@ const Navbar = ({ toggle }) => {
                                     spy={true}
                                     activeClass='active'
                                     exact='true'>Eventos</NavLinks>
+                                ) : (
+                                    <NavLinksRouter to="/events" className={location.pathname === '/events' ? 'active' : ''}>Eventos</NavLinksRouter>
                                 )}
                             </NavItem>
                             <NavItem>

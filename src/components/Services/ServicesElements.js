@@ -1,12 +1,13 @@
 import styled from 'styled-components'
 
 export const ServicesContainer = styled.div`
-    height: 100vh;
+    min-height: 80vh;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     background: #000;
+    padding: 120px 0;
 `
 
 export const ServicesWrapper = styled.div`
