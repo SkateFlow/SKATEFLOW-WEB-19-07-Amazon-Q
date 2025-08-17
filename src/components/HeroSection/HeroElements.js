@@ -31,7 +31,7 @@ export const HeroContent = styled.div`
     flex-direction: column;
     align-items: flex-start;
     width: 100%;
-    left: 85px;
+    left: 174px;
     
     @media screen and (max-width: 1024px) {
         align-items: center;
@@ -62,14 +62,10 @@ export const HeroH1 = styled.h1`
 
 export const HeroP = styled.p`
     margin-top: 24px;
-    color: #fff;
+    color: #ffffffff;
     font-size: 24px;
     text-align: center;
     max-width: 600px;
-
-    @media screen and (max-width: 768px) {
-        font-size: 24px;
-    }
 
     @media screen and (max-width: 480px) {
         font-size: 18px;

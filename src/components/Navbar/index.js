@@ -4,6 +4,7 @@ import { IconContext } from 'react-icons/lib';
 import { animateScroll as scroll } from 'react-scroll'
 import { useLocation } from 'react-router-dom';
 import logoSvg from '../../assets/images/logoof1.svg';
+import logoInvertSvg from '../../assets/images/logoofinver.svg';
 import {
     Nav,
     NavbarContainer,
@@ -14,7 +15,8 @@ import {
     NavLinks,
     NavLinksRouter,
     NavBtn,
-    NavBtnLink
+    NavBtnLink,
+    NavLeftSection
 } from './NavbarElements';
 
 const Navbar = ({ toggle }) => {
@@ -55,61 +57,62 @@ const Navbar = ({ toggle }) => {
             <IconContext.Provider value={{ color: '#fff' }}>
                 <Nav scrollNav={scrollNav}>
                     <NavbarContainer>
-                        <NavLogo to="/" onClick={toggleHome}>
-                            <img src={logoSvg} alt="SkateFlow" style={{ height: '70px' }} />
-                        </NavLogo>
-                        <MobileIcon onClick={toggle}>
-                            <FaBars />
-                        </MobileIcon>
-                        <NavMenu>
-
-                            <NavItem>
-                                {location.pathname === '/' ? (
+                        <NavLeftSection>
+                            <NavLogo to="/" onClick={toggleHome} scrollNav={scrollNav}>
+                                <img src={scrollNav ? logoInvertSvg : logoSvg} alt="SkateFlow" style={{ height: '70px', transition: 'all 0.8s ease' }} />
+                            </NavLogo>
+                            <NavMenu>
+                                <NavItem>
+                                    {location.pathname === '/' ? (
+                                        <NavLinks 
+                                        to="events-hero"
+                                        smooth={true}
+                                        duration={500}
+                                        spy={true}
+                                        activeClass='active'
+                                        exact='true'
+                                        scrollNav={scrollNav}>Eventos</NavLinks>
+                                    ) : (
+                                        <NavLinksRouter to="/events" className={location.pathname === '/events' ? 'active' : ''} scrollNav={scrollNav}>Eventos</NavLinksRouter>
+                                    )}
+                                </NavItem>
+                                <NavItem>
                                     <NavLinks 
-                                    to="events-hero"
+                                    to="about"
                                     smooth={true}
                                     duration={500}
                                     spy={true}
                                     activeClass='active'
                                     exact='true'
-                                    scrollNav={scrollNav}>Eventos</NavLinks>
-                                ) : (
-                                    <NavLinksRouter to="/events" className={location.pathname === '/events' ? 'active' : ''} scrollNav={scrollNav}>Eventos</NavLinksRouter>
-                                )}
-                            </NavItem>
-                            <NavItem>
+                                    scrollNav={scrollNav}> Mapa </NavLinks>
+                                </NavItem>
+                                <NavItem>
                                 <NavLinks 
-                                to="about"
-                                smooth={true}
-                                duration={500}
-                                spy={true}
-                                activeClass='active'
-                                exact='true'
-                                scrollNav={scrollNav}> Mapa </NavLinks>
-                            </NavItem>
-                            <NavItem>
-                            <NavLinks 
-                                to="services"
-                                smooth={true}
-                                duration={500}
-                                spy={true}
-                                activeClass='active'
-                                exact='true'
-                                scrollNav={scrollNav}> Artigos </NavLinks>
-                            </NavItem>
-                            <NavItem>
-                                <NavLinks 
-                                to="signup"
-                                smooth={true}
-                                duration={500}
-                                spy={true}
-                                activeClass='active'
-                                exact='true'
-                                scrollNav={scrollNav}> Mobile </NavLinks>
-                            </NavItem>
-                        </NavMenu>
+                                    to="services"
+                                    smooth={true}
+                                    duration={500}
+                                    spy={true}
+                                    activeClass='active'
+                                    exact='true'
+                                    scrollNav={scrollNav}> Artigos </NavLinks>
+                                </NavItem>
+                                <NavItem>
+                                    <NavLinks 
+                                    to="signup"
+                                    smooth={true}
+                                    duration={500}
+                                    spy={true}
+                                    activeClass='active'
+                                    exact='true'
+                                    scrollNav={scrollNav}> Mobile </NavLinks>
+                                </NavItem>
+                            </NavMenu>
+                        </NavLeftSection>
+                        <MobileIcon onClick={toggle} scrollNav={scrollNav}>
+                            <FaBars />
+                        </MobileIcon>
                         <NavBtn>
-                            <NavBtnLink to="/login"> Login</NavBtnLink>
+                            <NavBtnLink to="/login" scrollNav={scrollNav}> Login</NavBtnLink>
                         </NavBtn>
                     </NavbarContainer>
                 </Nav>

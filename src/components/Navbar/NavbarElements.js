@@ -6,7 +6,7 @@ import { Link as LinkS} from 'react-scroll'
 
 
 export const Nav = styled.nav`
-    background: ${({scrollNav}) => (scrollNav ? '#000' : 'transparent')};
+    background: ${({scrollNav}) => (scrollNav ? '#fff' : 'transparent')};
     height: 72px;
     margin-top: 0;
     display: flex;
@@ -22,11 +22,11 @@ export const Nav = styled.nav`
 
 export const NavbarContainer = styled.div`
     display: flex;
-    justify-content: flex-start;
+    justify-content: space-between;
     height: 72px;
     z-index: 1;
     width: 100%;
-    padding: 0 75px;
+    padding: 0 160px;
     max-width: none;
     position: relative;
     
@@ -35,8 +35,14 @@ export const NavbarContainer = styled.div`
     }
 `;
 
+export const NavLeftSection = styled.div`
+    display: flex;
+    align-items: center;
+    gap: 20px;
+`;
+
 export const NavLogo = styled(LinkR)`
-    color: #fff;
+    color: ${({scrollNav}) => (scrollNav ? '#000' : '#fff')};
     justify-self: flex-start;
     cursor: pointer;
     font-size: 1.5rem;
@@ -46,6 +52,7 @@ export const NavLogo = styled(LinkR)`
     margin-right: 40px;
     font-weight: bold;
     text-decoration: none;
+    transition: color 0.8s ease;
     
     @media screen and (max-width: 768px) {
         margin-left: 10px;
@@ -64,7 +71,8 @@ export const MobileIcon = styled.div`
         transform: translate(-100%, 60%);
         font-size: 1.8rem;
         cursor: pointer;
-        color: #fff;
+        color: ${({scrollNav}) => (scrollNav ? '#000' : '#fff')};
+        transition: color 0.8s ease;
     }
 `;
 
@@ -86,40 +94,42 @@ export const NavItem = styled.li`
 `;
 
 export const NavLinks = styled(LinkS)`
-    color: #fff;
+    color: ${({scrollNav}) => (scrollNav ? '#000' : '#fff')};
     display: flex;
     align-items: center;
     text-decoration: none;
     padding: 0 1.5rem;
     height: 100%;
     cursor: pointer;
-    transition: all 0.2s ease-in-out;
+    transition: all 0.8s ease;
+    font-weight: bold;
 
     &:hover {
-        color: ${({scrollNav}) => (scrollNav ? '#043C70' : '#888')};
+        color: ${({scrollNav}) => (scrollNav ? '#1a66cc' : '#888')};
     }
 
     &.active {
-        color: ${({scrollNav}) => (scrollNav ? '#043C70' : '#888')};
+        color: ${({scrollNav}) => (scrollNav ? '#1a66cc' : '#888')};
     }
 `;
 
 export const NavLinksRouter = styled(LinkR)`
-    color: #fff;
+    color: ${({scrollNav}) => (scrollNav ? '#000' : '#fff')};
     display: flex;
     align-items: center;
     text-decoration: none;
     padding: 0 1.5rem;
     height: 100%;
     cursor: pointer;
-    transition: all 0.2s ease-in-out;
+    transition: all 0.8s ease;
+    font-weight: bold;
 
     &:hover {
-        color: ${({scrollNav}) => (scrollNav ? '#043C70' : '#888')};
+        color: ${({scrollNav}) => (scrollNav ? '#1a66cc' : '#888')};
     }
 
     &.active {
-        color: ${({scrollNav}) => (scrollNav ? '#043C70' : '#888')};
+        color: ${({scrollNav}) => (scrollNav ? '#1a66cc' : '#888')};
     }
 `;
 
@@ -127,10 +137,6 @@ export const NavLinksRouter = styled(LinkR)`
 export const NavBtn = styled.nav`
     display: flex;
     align-items: center;
-    position: absolute;
-    right: 75px;
-    top: 50%;
-    transform: translateY(-50%);
 
     @media screen and (max-width: 768px) {
         display: none;
@@ -141,17 +147,17 @@ export const NavBtnLink = styled(LinkR)`
     background: transparent;
     white-space: nowrap;
     padding: 10px 22px;
-    color: #fff;
+    color: ${({scrollNav}) => (scrollNav ? '#000' : '#fff')};
     font-size: 16px;
     outline: none;
-    border: 1px solid #fff;
+    border: ${({scrollNav}) => (scrollNav ? '1px solid #000' : '1px solid #fff')};
     cursor: pointer;
-    transition: all 0.2s ease-in-out;
+    transition: all 0.8s ease;
     text-decoration: none;
+    font-weight: bold;
 
     &:hover {
-        transition: all 0.2s ease-in-out;
-        background: #fff;
-        color: #000;
+        background: ${({scrollNav}) => (scrollNav ? '#000' : '#fff')};
+        color: ${({scrollNav}) => (scrollNav ? '#fff' : '#000')};
     }
 `;

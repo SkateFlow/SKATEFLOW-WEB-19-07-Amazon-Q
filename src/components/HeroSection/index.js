@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Img from '../../assets/images/inicial1.svg'; // Caminho da imagem atualizado
-import shape1 from '../../assets/images/shape1.svg';
-import shape2 from '../../assets/images/shape2.svg';
+import shape1 from '../../assets/images/shape1.png';
+import shape2 from '../../assets/images/shape2.png';
 import FlipCard from '../FlipCard';
 import {
     HeroContainer,
@@ -12,6 +12,16 @@ import {
 } from './HeroElements';
 
 const HeroSection = () => {
+    const [showCard, setShowCard] = useState(window.innerWidth > 960);
+
+    useEffect(() => {
+        const handleResize = () => {
+            setShowCard(window.innerWidth > 960);
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     return (
         <HeroContainer id="home">
@@ -38,6 +48,7 @@ const HeroSection = () => {
                 </HeroP>
 
             </HeroContent>
+            {showCard && (
             <div style={{
                 position: 'absolute',
                 right: '350px',
@@ -50,6 +61,7 @@ const HeroSection = () => {
                     backImageSrc={shape2}
                 />
             </div>
+            )}
         </HeroContainer>
     );
 }

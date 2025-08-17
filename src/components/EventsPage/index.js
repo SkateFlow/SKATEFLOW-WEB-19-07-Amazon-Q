@@ -415,7 +415,7 @@ const fetchEvents = async () => {
 };
 
   const handleViewDetails = (event) => {
-    console.log('Abrindo modal para evento:', event);
+    console.log('Abrindo modal para evento:', encodeURIComponent(JSON.stringify(event)));
     setSelectedEvent(event);
   };
 

@@ -16,9 +16,9 @@ const FlipCardInner = styled.div`
   width: 100%;
   height: 100%;
   text-align: center;
-  transition: transform 0.7s;
+  transition: transform 1s;
   transform-style: preserve-3d;
-  transform: ${props => props.isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)'};
+  transform: ${props => props.isFlipped ? 'rotateY(360deg)' : 'rotateY(0deg)'};
 `;
 
 const CardSide = styled.div`
@@ -59,6 +59,10 @@ const FlipCard = ({ imageSrc, backImageSrc, className }) => {
     const img = new Image();
     img.onload = () => {
       setImageLoaded(true);
+    };
+    img.onerror = () => {
+      console.error('Failed to load image:', imageSrc);
+      setImageLoaded(false);
     };
     img.src = imageSrc;
   }, [imageSrc]);
