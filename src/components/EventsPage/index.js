@@ -9,18 +9,17 @@ import placeholderImage from '../../assets/images/ph.svg';
 
 // Estilização do container principal da página de eventos
 const EventsContainer = styled.div`
-  height: 1080px;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   background-color: #1D1E21;
-  padding: 20px 0;
+  padding: 100px 0 20px;
   color: white;
-  margin-top:-80px;
   overflow-y: auto;
 
   h1 {
-    margin-top: 150px;
+    margin-top: 20px;
     margin-bottom: 30px;
   }
 `;

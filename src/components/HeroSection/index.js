@@ -1,5 +1,8 @@
 import React from 'react';
 import Img from '../../assets/images/inicial1.svg'; // Caminho da imagem atualizado
+import shape1 from '../../assets/images/shape1.svg';
+import shape2 from '../../assets/images/shape2.svg';
+import FlipCard from '../FlipCard';
 import {
     HeroContainer,
     HeroBg,
@@ -35,6 +38,18 @@ const HeroSection = () => {
                 </HeroP>
 
             </HeroContent>
+            <div style={{
+                position: 'absolute',
+                right: '350px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                zIndex: 4
+            }}>
+                <FlipCard 
+                    imageSrc={shape1}
+                    backImageSrc={shape2}
+                />
+            </div>
         </HeroContainer>
     );
 }

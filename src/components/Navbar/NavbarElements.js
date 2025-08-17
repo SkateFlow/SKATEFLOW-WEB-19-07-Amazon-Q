@@ -7,7 +7,7 @@ import { Link as LinkS} from 'react-scroll'
 
 export const Nav = styled.nav`
     background: ${({scrollNav}) => (scrollNav ? '#000' : 'transparent')};
-    height: 80px;
+    height: 72px;
     margin-top: 0;
     display: flex;
     justify-content: center;
@@ -23,10 +23,10 @@ export const Nav = styled.nav`
 export const NavbarContainer = styled.div`
     display: flex;
     justify-content: flex-start;
-    height: 80px;
+    height: 72px;
     z-index: 1;
     width: 100%;
-    padding: 0 50px;
+    padding: 0 75px;
     max-width: none;
     position: relative;
     
@@ -82,7 +82,7 @@ export const NavMenu = styled.ul`
 `;
 
 export const NavItem = styled.li`
-    height: 80px;
+    height: 72px;
 `;
 
 export const NavLinks = styled(LinkS)`
@@ -96,11 +96,11 @@ export const NavLinks = styled(LinkS)`
     transition: all 0.2s ease-in-out;
 
     &:hover {
-        color: #043C70;
+        color: ${({scrollNav}) => (scrollNav ? '#043C70' : '#888')};
     }
 
     &.active {
-        color: #043C70;
+        color: ${({scrollNav}) => (scrollNav ? '#043C70' : '#888')};
     }
 `;
 
@@ -115,11 +115,11 @@ export const NavLinksRouter = styled(LinkR)`
     transition: all 0.2s ease-in-out;
 
     &:hover {
-        color: #043C70;
+        color: ${({scrollNav}) => (scrollNav ? '#043C70' : '#888')};
     }
 
     &.active {
-        color: #043C70;
+        color: ${({scrollNav}) => (scrollNav ? '#043C70' : '#888')};
     }
 `;
 
@@ -128,7 +128,7 @@ export const NavBtn = styled.nav`
     display: flex;
     align-items: center;
     position: absolute;
-    right: 50px;
+    right: 75px;
     top: 50%;
     transform: translateY(-50%);
 

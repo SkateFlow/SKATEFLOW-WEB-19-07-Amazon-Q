@@ -71,9 +71,10 @@ const Navbar = ({ toggle }) => {
                                     duration={500}
                                     spy={true}
                                     activeClass='active'
-                                    exact='true'>Eventos</NavLinks>
+                                    exact='true'
+                                    scrollNav={scrollNav}>Eventos</NavLinks>
                                 ) : (
-                                    <NavLinksRouter to="/events" className={location.pathname === '/events' ? 'active' : ''}>Eventos</NavLinksRouter>
+                                    <NavLinksRouter to="/events" className={location.pathname === '/events' ? 'active' : ''} scrollNav={scrollNav}>Eventos</NavLinksRouter>
                                 )}
                             </NavItem>
                             <NavItem>
@@ -84,7 +85,7 @@ const Navbar = ({ toggle }) => {
                                 spy={true}
                                 activeClass='active'
                                 exact='true'
-                                > Mapa </NavLinks>
+                                scrollNav={scrollNav}> Mapa </NavLinks>
                             </NavItem>
                             <NavItem>
                             <NavLinks 
@@ -93,7 +94,8 @@ const Navbar = ({ toggle }) => {
                                 duration={500}
                                 spy={true}
                                 activeClass='active'
-                                exact='true'> Artigos </NavLinks>
+                                exact='true'
+                                scrollNav={scrollNav}> Artigos </NavLinks>
                             </NavItem>
                             <NavItem>
                                 <NavLinks 
@@ -102,7 +104,8 @@ const Navbar = ({ toggle }) => {
                                 duration={500}
                                 spy={true}
                                 activeClass='active'
-                                exact='true'> Mobile </NavLinks>
+                                exact='true'
+                                scrollNav={scrollNav}> Mobile </NavLinks>
                             </NavItem>
                         </NavMenu>
                         <NavBtn>

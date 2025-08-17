@@ -31,7 +31,7 @@ export const HeroContent = styled.div`
     flex-direction: column;
     align-items: flex-start;
     width: 100%;
-    left: 70px;
+    left: 85px;
     
     @media screen and (max-width: 1024px) {
         align-items: center;
