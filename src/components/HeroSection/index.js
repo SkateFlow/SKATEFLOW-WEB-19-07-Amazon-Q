@@ -3,6 +3,7 @@ import Img from '../../assets/images/inicial1.svg'; // Caminho da imagem atualiz
 import shape1 from '../../assets/images/shape1.png';
 import shape2 from '../../assets/images/shape2.png';
 import FlipCard from '../FlipCard';
+import FadeContent from '../FadeContent';
 import {
     HeroContainer,
     HeroBg,
@@ -39,13 +40,22 @@ const HeroSection = () => {
             </HeroBg>
             <HeroContent>
                 <HeroH1> Bem Vindo à SkateFlow </HeroH1>
-                <HeroP>
-                    Somos uma comunidade, onde você, skatista, pode encontrar outros skatistas!
-                </HeroP>
-                <HeroP>
-                    Tenha acesso a pistas compartilhadas por usuários, veja e agende seus ingressos para eventos 
-                    que estamos divulgando e leia artigos escritos por nós!
-                </HeroP>
+                <FadeContent
+                    blur={true}
+                    duration={800}
+                    easing="ease-out"
+                    delay={0}
+                    threshold={0.1}
+                    initialOpacity={0}
+                >
+                    <HeroP>
+                        Somos uma comunidade, onde você, skatista, pode encontrar outros skatistas!
+                    </HeroP>
+                    <HeroP>
+                        Tenha acesso a pistas compartilhadas por usuários, veja e agende seus ingressos para eventos 
+                        que estamos divulgando e leia artigos escritos por nós!
+                    </HeroP>
+                </FadeContent>
 
             </HeroContent>
             {showCard && (

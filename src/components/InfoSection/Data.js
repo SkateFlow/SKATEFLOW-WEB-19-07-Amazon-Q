@@ -35,7 +35,7 @@ export const homeObjTwo = {
     dark: true,
     primary: true,
     darkText: false,
-    linkTo: '/events', // Link aleatório
+    linkTo: '/events', // Link para eventos
 };
 
 export const homeObjThree = {
@@ -54,5 +54,5 @@ export const homeObjThree = {
     dark: false,
     primary: false,
     darkText: true,
-    linkTo: 'https://www.example.com', // Outro link aleatório
+    linkTo: 'https://www.example.com', // Link para download do app
 };

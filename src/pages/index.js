@@ -4,7 +4,8 @@ import EventsHeroSection from '../components/EventsHeroSection'
 import Navbar from '../components/Navbar'
 import Sidebar from '../components/Sidebar'
 import InfoSection from '../components/InfoSection'
-import { homeObjOne, homeObjThree } from '../components/InfoSection/Data'
+import { homeObjThree } from '../components/InfoSection/Data'
+import MapPreview from '../components/MapPreview'
 import RevealBento from '../components/RevealBento'
 import Footer from '../components/Footer'
 
@@ -21,7 +22,9 @@ const Home = () => {
             <Navbar toggle={toggle}/>
             <HeroSection/>
             <EventsHeroSection/>
-            <InfoSection {...homeObjOne}/>
+            <div style={{ padding: '80px 160px', background: '#fff' }}>
+                <MapPreview />
+            </div>
             <RevealBento/>
             <InfoSection {...homeObjThree}/>
             <Footer/>

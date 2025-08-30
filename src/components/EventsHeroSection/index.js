@@ -16,6 +16,7 @@ import {
   StatItem,
   StatNumber,
   StatLabel,
+  EventCard,
   ImageContainer,
   HeroImage,
   OverlayCard,
@@ -67,30 +68,32 @@ const EventsHeroSection = () => {
             </StatsContainer>
           </TextContent>
 
-          <ImageContainer>
-            <HeroImage src={placeholderImage} alt="Evento de Skateboard" />
-            
-            <OverlayCard>
-              <CardTitle>Próximo Evento em Destaque</CardTitle>
+          <EventCard id="CardEvent">
+            <ImageContainer>
+              <HeroImage src={placeholderImage} alt="Evento de Skateboard" />
               
-              <EventInfo>
-                <EventDetail>
-                  <FaCalendarAlt />
-                  <span>15 de Setembro, 2024</span>
-                </EventDetail>
+              <OverlayCard>
+                <CardTitle>Próximo Evento em Destaque</CardTitle>
                 
-                <EventDetail>
-                  <FaMapMarkerAlt />
-                  <span>Skate Park Central, São Paulo</span>
-                </EventDetail>
-              </EventInfo>
-              
-              <ViewButton>Ver Detalhes</ViewButton>
-            </OverlayCard>
+                <EventInfo>
+                  <EventDetail>
+                    <FaCalendarAlt />
+                    <span>15 de Setembro, 2024</span>
+                  </EventDetail>
+                  
+                  <EventDetail>
+                    <FaMapMarkerAlt />
+                    <span>Skate Park Central, São Paulo</span>
+                  </EventDetail>
+                </EventInfo>
+                
+                <ViewButton>Ver Detalhes</ViewButton>
+              </OverlayCard>
 
-            <DecorativeElement className="top" />
-            <DecorativeElement className="bottom" />
-          </ImageContainer>
+              <DecorativeElement className="top" />
+              <DecorativeElement className="bottom" />
+            </ImageContainer>
+          </EventCard>
         </ContentGrid>
       </EventsHeroContent>
     </EventsHeroContainer>

@@ -59,7 +59,7 @@ export const NavLogo = styled(LinkR)`
     }
 `;
 
-// Menu icon container for mobile, it appears only with max-width: 768px
+// Container do ícone do menu para mobile, aparece apenas com max-width: 768px
 export const MobileIcon = styled.div`
     display: none;
 
@@ -76,7 +76,7 @@ export const MobileIcon = styled.div`
     }
 `;
 
-// NavMenu for browser: it disappears when max-width: 768px
+// NavMenu para navegador: desaparece quando max-width: 768px
 export const NavMenu = styled.ul`
     display: flex;
     align-items: center;
@@ -101,7 +101,7 @@ export const NavLinks = styled(LinkS)`
     padding: 0 1.5rem;
     height: 100%;
     cursor: pointer;
-    transition: all 0.8s ease;
+    transition: all 0.9s ease;
     font-weight: bold;
 
     &:hover {
@@ -133,7 +133,7 @@ export const NavLinksRouter = styled(LinkR)`
     }
 `;
 
-// NavBtn for browser: it disappears when max-width: 768px
+// NavBtn para navegador: desaparece quando max-width: 768px
 export const NavBtn = styled.nav`
     display: flex;
     align-items: center;

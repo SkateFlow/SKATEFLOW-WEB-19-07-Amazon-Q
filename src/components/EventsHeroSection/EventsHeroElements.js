@@ -11,15 +11,19 @@ export const EventsHeroContainer = styled.section`
 `;
 
 export const EventsHeroContent = styled.div`
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 16px;
+  max-width: none;
+  margin: 0;
+  padding: 0 160px;
+  
+  @media (max-width: 768px) {
+    padding: 0 20px;
+  }
 `;
 
 export const ContentGrid = styled.div`
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 48px;
+  grid-template-columns: 1fr 1.3fr;
+  gap: 300px;
   align-items: center;
 
   @media (max-width: 1024px) {
@@ -122,8 +126,24 @@ export const StatLabel = styled.div`
   color: rgba(0, 0, 0, 0.6);
 `;
 
+export const EventCard = styled.div`
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+  margin-left: 60px;
+  
+  &:hover {
+    transform: translateY(-2px);
+  }
+  
+  @media (max-width: 1024px) {
+    margin-left: 0;
+  }
+`;
+
 export const ImageContainer = styled.div`
   position: relative;
+  width: 100%;
 `;
 
 export const HeroImage = styled.img`
