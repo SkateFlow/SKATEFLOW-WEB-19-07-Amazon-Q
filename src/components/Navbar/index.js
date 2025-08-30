@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { FaBars } from 'react-icons/fa'
+import { FaBars, FaUser, FaChevronDown } from 'react-icons/fa'
 import { IconContext } from 'react-icons/lib';
 import { animateScroll as scroll } from 'react-scroll'
 import { useLocation } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import logoSvg from '../../assets/images/logoof1.svg';
 import logoInvertSvg from '../../assets/images/logoofinver.svg';
 import {
@@ -16,12 +17,19 @@ import {
     NavLinksRouter,
     NavBtn,
     NavBtnLink,
-    NavLeftSection
+    NavLeftSection,
+    ProfileContainer,
+    ProfileButton,
+    ProfileDropdown,
+    ProfileEmail,
+    LogoutButton
 } from './NavbarElements';
 
-const Navbar = ({ toggle }) => {
+const Navbar = ({ toggle, scrollNav: forceScrollNav }) => {
     const location = useLocation();
     const [scrollNav, setScrollNav] = useState(false)
+    const [showDropdown, setShowDropdown] = useState(false)
+    const { isAuthenticated, user, logout } = useAuth();
 
     const changeNav = () => {
         if (window.scrollY >= 80) {
@@ -32,11 +40,15 @@ const Navbar = ({ toggle }) => {
     }
 
     useEffect(() => {
-        window.addEventListener('scroll', changeNav)
-        return () => {
-            window.removeEventListener('scroll', changeNav)
+        if (forceScrollNav === undefined) {
+            window.addEventListener('scroll', changeNav)
+            return () => {
+                window.removeEventListener('scroll', changeNav)
+            }
         }
-    }, [])
+    }, [forceScrollNav])
+
+    const finalScrollNav = forceScrollNav !== undefined ? forceScrollNav : scrollNav;
 
     // Function from react-scroll
     const toggleHome = () => {
@@ -55,11 +67,11 @@ const Navbar = ({ toggle }) => {
         
         <>
             <IconContext.Provider value={{ color: '#fff' }}>
-                <Nav scrollNav={scrollNav}>
+                <Nav scrollNav={finalScrollNav}>
                     <NavbarContainer>
                         <NavLeftSection>
-                            <NavLogo to="/" onClick={toggleHome} scrollNav={scrollNav}>
-                                <img src={scrollNav ? logoInvertSvg : logoSvg} alt="SkateFlow" style={{ height: '70px', transition: 'all 0.8s ease' }} />
+                            <NavLogo to="/" onClick={toggleHome} scrollNav={finalScrollNav}>
+                                <img src={finalScrollNav ? logoInvertSvg : logoSvg} alt="SkateFlow" style={{ height: '70px', transition: 'all 0.8s ease' }} />
                             </NavLogo>
                             <NavMenu>
                                 <NavItem>
@@ -71,9 +83,9 @@ const Navbar = ({ toggle }) => {
                                         spy={true}
                                         activeClass='active'
                                         exact='true'
-                                        scrollNav={scrollNav}>Eventos</NavLinks>
+                                        scrollNav={finalScrollNav}>Eventos</NavLinks>
                                     ) : (
-                                        <NavLinksRouter to="/events" className={location.pathname === '/events' ? 'active' : ''} scrollNav={scrollNav}>Eventos</NavLinksRouter>
+                                        <NavLinksRouter to="/events" className={location.pathname === '/events' ? 'active' : ''} scrollNav={finalScrollNav}>Eventos</NavLinksRouter>
                                     )}
                                 </NavItem>
                                 <NavItem>
@@ -84,7 +96,7 @@ const Navbar = ({ toggle }) => {
                                     spy={true}
                                     activeClass='active'
                                     exact='true'
-                                    scrollNav={scrollNav}> Mapa </NavLinks>
+                                    scrollNav={finalScrollNav}>Maps</NavLinks>
                                 </NavItem>
                                 <NavItem>
                                 <NavLinks 
@@ -94,7 +106,7 @@ const Navbar = ({ toggle }) => {
                                     spy={true}
                                     activeClass='active'
                                     exact='true'
-                                    scrollNav={scrollNav}> Artigos </NavLinks>
+                                    scrollNav={finalScrollNav}>About</NavLinks>
                                 </NavItem>
                                 <NavItem>
                                     <NavLinks 
@@ -104,15 +116,35 @@ const Navbar = ({ toggle }) => {
                                     spy={true}
                                     activeClass='active'
                                     exact='true'
-                                    scrollNav={scrollNav}> Mobile </NavLinks>
+                                    scrollNav={finalScrollNav}>Mobile</NavLinks>
                                 </NavItem>
                             </NavMenu>
                         </NavLeftSection>
-                        <MobileIcon onClick={toggle} scrollNav={scrollNav}>
+                        <MobileIcon onClick={toggle} scrollNav={finalScrollNav}>
                             <FaBars />
                         </MobileIcon>
                         <NavBtn>
-                            <NavBtnLink to="/login" scrollNav={scrollNav}> Login</NavBtnLink>
+                            {isAuthenticated ? (
+                                <ProfileContainer>
+                                    <ProfileButton 
+                                        onClick={() => setShowDropdown(!showDropdown)}
+                                        scrollNav={finalScrollNav}
+                                    >
+                                        <FaUser />
+                                        <FaChevronDown style={{ marginLeft: '8px', fontSize: '12px' }} />
+                                    </ProfileButton>
+                                    {showDropdown && (
+                                        <ProfileDropdown>
+                                            <ProfileEmail>{user.email}</ProfileEmail>
+                                            <LogoutButton onClick={() => { logout(); setShowDropdown(false); }}>
+                                                Logout
+                                            </LogoutButton>
+                                        </ProfileDropdown>
+                                    )}
+                                </ProfileContainer>
+                            ) : (
+                                <NavBtnLink to="/login" scrollNav={finalScrollNav}>Login</NavBtnLink>
+                            )}
                         </NavBtn>
                     </NavbarContainer>
                 </Nav>

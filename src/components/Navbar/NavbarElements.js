@@ -31,7 +31,7 @@ export const NavbarContainer = styled.div`
     position: relative;
     
     @media screen and (max-width: 768px) {
-        padding: 0 10px;
+        padding: 0 20px;
     }
 `;
 
@@ -55,7 +55,7 @@ export const NavLogo = styled(LinkR)`
     transition: color 0.8s ease;
     
     @media screen and (max-width: 768px) {
-        margin-left: 10px;
+        margin-left: 0;
     }
 `;
 
@@ -159,5 +159,68 @@ export const NavBtnLink = styled(LinkR)`
     &:hover {
         background: ${({scrollNav}) => (scrollNav ? '#000' : '#fff')};
         color: ${({scrollNav}) => (scrollNav ? '#fff' : '#000')};
+    }
+`;
+
+export const ProfileContainer = styled.div`
+    position: relative;
+`;
+
+export const ProfileButton = styled.button`
+    border-radius: 50px;
+    background: transparent;
+    white-space: nowrap;
+    padding: 10px 22px;
+    color: ${({scrollNav}) => (scrollNav ? '#000' : '#fff')};
+    font-size: 16px;
+    outline: none;
+    border: ${({scrollNav}) => (scrollNav ? '1px solid #000' : '1px solid #fff')};
+    cursor: pointer;
+    transition: all 0.8s ease;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+
+    &:hover {
+        background: ${({scrollNav}) => (scrollNav ? '#000' : '#fff')};
+        color: ${({scrollNav}) => (scrollNav ? '#fff' : '#000')};
+    }
+`;
+
+export const ProfileDropdown = styled.div`
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    min-width: 200px;
+    z-index: 1000;
+    margin-top: 8px;
+`;
+
+export const ProfileEmail = styled.div`
+    padding: 12px 16px;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 14px;
+    color: #4a5568;
+    font-weight: 500;
+`;
+
+export const LogoutButton = styled.button`
+    width: 100%;
+    padding: 12px 16px;
+    background: none;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    font-size: 14px;
+    color: #e53e3e;
+    font-weight: 500;
+    transition: background 0.2s ease;
+
+    &:hover {
+        background: #f7fafc;
     }
 `;

@@ -1,6 +1,6 @@
 import logomap from '../../assets/images/logomap.svg';
 import placeholder from '../../assets/images/ph.svg';
-import appIcon from '../../assets/images/app.svg';
+import FloatingPhone from '../FloatingPhone';
 
 export const homeObjOne = {
     id: 'about',
@@ -48,7 +48,8 @@ export const homeObjThree = {
     description: "Com o SkateFlow mobile, você consegue agendar seus ingressos para ir a eventos, avaliar pistas e ver suas avaliações feitas por outros usuários e muito mais!",
     buttonLabel: 'Baixar',
     imgStart: false,
-    img: appIcon,
+    img: FloatingPhone,
+    isComponent: true,
     alt: 'GugaSignUp',
     dark: false,
     primary: false,

@@ -5,7 +5,7 @@ import Navbar from '../components/Navbar'
 import Sidebar from '../components/Sidebar'
 import InfoSection from '../components/InfoSection'
 import { homeObjOne, homeObjThree } from '../components/InfoSection/Data'
-import Services from '../components/Services'
+import RevealBento from '../components/RevealBento'
 import Footer from '../components/Footer'
 
 const Home = () => {
@@ -22,7 +22,7 @@ const Home = () => {
             <HeroSection/>
             <EventsHeroSection/>
             <InfoSection {...homeObjOne}/>
-            <Services/>
+            <RevealBento/>
             <InfoSection {...homeObjThree}/>
             <Footer/>
         </>

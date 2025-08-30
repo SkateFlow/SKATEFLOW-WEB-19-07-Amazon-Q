@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Container, FormWrap, Icon, FormContent, Form, FormH1, FormInput, FormButton, BackButton } from './LoginElements';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import api from '../utils/api';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -17,28 +16,15 @@ const Login = () => {
     setLoading(true);
     setErrorMessage('');
 
-    try {
-      const response = await api.post('/admin/login', { 
-        username: email, 
-        password: password 
-      });
-
-      if (response.status === 200) {
-        // Salvar dados do usuário no contexto de autenticação
-        login({
-          ...response.data,
-          role: 'ADMIN'
-        });
-        navigate('/adminhome');
-      } else {
-        setErrorMessage('Email ou senha incorretos');
-      }
-    } catch (error) {
-      setErrorMessage('Erro ao conectar-se ao servidor');
-      console.error('Erro de login:', error);
-    } finally {
-      setLoading(false);
+    // Login simples para demonstração
+    if (email && password) {
+      login(email);
+      navigate('/');
+    } else {
+      setErrorMessage('Preencha email e senha');
     }
+    
+    setLoading(false);
   };
 
   return (

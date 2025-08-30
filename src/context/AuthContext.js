@@ -1,56 +1,44 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const AuthContext = createContext();
 
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth deve ser usado dentro de AuthProvider');
+  }
+  return context;
+};
+
 export const AuthProvider = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    // Verificar se há um usuário no localStorage ao carregar a página
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      setCurrentUser(JSON.parse(storedUser));
+    const savedUser = localStorage.getItem('skateflow_user');
+    if (savedUser) {
+      const userData = JSON.parse(savedUser);
+      setUser(userData);
+      setIsAuthenticated(true);
     }
-    setLoading(false);
   }, []);
 
-  // Login do usuário
-  const login = (userData) => {
-    localStorage.setItem('user', JSON.stringify(userData));
-    setCurrentUser(userData);
+  const login = (email) => {
+    const userData = { email };
+    setUser(userData);
+    setIsAuthenticated(true);
+    localStorage.setItem('skateflow_user', JSON.stringify(userData));
   };
 
-  // Logout do usuário
   const logout = () => {
-    localStorage.removeItem('user');
-    setCurrentUser(null);
+    setUser(null);
+    setIsAuthenticated(false);
+    localStorage.removeItem('skateflow_user');
   };
 
-  // Verificar se o usuário está autenticado
-  const isAuthenticated = () => {
-    return !!currentUser;
-  };
-
-  // Verificar se o usuário é admin
-  const isAdmin = () => {
-    return currentUser?.role === 'ADMIN';
-  };
-
-  const value = {
-    currentUser,
-    login,
-    logout,
-    isAuthenticated,
-    isAdmin,
-    loading
-  };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={{ user, isAuthenticated, login, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
 };
-
-export const useAuth = () => {
-  return useContext(AuthContext);
-};
-
-export default AuthContext;

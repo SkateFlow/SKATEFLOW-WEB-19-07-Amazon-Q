@@ -75,7 +75,7 @@ const NavButton = styled.button`
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  background: #2e2e2eff;
+  background: #242424ff;
   color: white;
   border: none;
   width: 40px;
@@ -110,10 +110,10 @@ const NextButton = styled(NavButton)`
 const CarouselCard = styled.div`
   min-width: 300px;
   width: 300px;
-  background: #424242ff;
+  background: #2c2c2cff;
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 3px rgba(37, 37, 37, 0.1);
   transition: all 0.3s ease;
   scroll-snap-align: start;
   cursor: pointer;
@@ -158,7 +158,7 @@ const CardTitle = styled.h2`
 `;
 
 const Badge = styled.span`
-  background: #253d8fff;
+  background: #2f53d8ff;
   color: white;
   padding: 4px 8px;
   border-radius: 12px;

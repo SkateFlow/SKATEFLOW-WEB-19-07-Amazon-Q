@@ -18,7 +18,7 @@ import styled from 'styled-components';
 
 const StyledButton = styled(Link)`
     background: #000; /* Fundo preto */
-    color: #fff; /* Texto branco */
+    color: #ffffffff; /* Texto branco */
     padding: 12px 30px;
     font-size: 16px;
     border: none;
@@ -48,7 +48,8 @@ const InfoSection = ({
     primary,
     dark,
     dark2,
-    linkTo
+    linkTo,
+    isComponent
 }) => {
     return (
         <InfoContainer lightBg={lightBg} id={id}>
@@ -73,7 +74,7 @@ const InfoSection = ({
                     </Column1>
                     <Column2>
                         <ImgWrap>
-                            <Img src={img} alt={alt} />
+                            {isComponent ? React.createElement(img) : <Img src={img} alt={alt} />}
                         </ImgWrap>
                     </Column2>
                 </InfoRow>
