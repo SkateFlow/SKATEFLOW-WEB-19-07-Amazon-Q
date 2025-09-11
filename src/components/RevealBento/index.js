@@ -10,6 +10,10 @@ const Container = styled.div`
   padding: 48px 16px;
   color: #1a202c;
   
+  @media (max-width: 1200px) {
+    padding: 24px 8px;
+  }
+  
   @media (max-width: 768px) {
     padding: 32px 12px;
     min-height: auto;
@@ -79,6 +83,10 @@ const Block = styled.div`
     transform: ${props => props.hoverRotate ? `rotate(${props.hoverRotate}) scale(1.1)` : 'none'};
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     border-color: #a0aec0;
+  }
+  
+  @media (max-width: 1200px) {
+    padding: 12px;
   }
   
   @media (max-width: 768px) {

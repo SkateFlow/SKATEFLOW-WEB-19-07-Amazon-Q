@@ -8,6 +8,20 @@ export const EventsHeroContainer = styled.section`
   min-height: 80vh;
   display: flex;
   align-items: center;
+  
+  @media (max-width: 1200px) {
+    padding: 60px 0;
+  }
+  
+  @media (max-width: 768px) {
+    padding: 60px 0;
+    min-height: 60vh;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 40px 0;
+    min-height: 50vh;
+  }
 `;
 
 export const EventsHeroContent = styled.div`
@@ -15,8 +29,20 @@ export const EventsHeroContent = styled.div`
   margin: 0;
   padding: 0 160px;
   
+  @media (max-width: 1200px) {
+    padding: 0 80px;
+  }
+  
+  @media (max-width: 960px) {
+    padding: 0 80px;
+  }
+  
   @media (max-width: 768px) {
-    padding: 0 20px;
+    padding: 0 12px;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 0 8px;
   }
 `;
 
@@ -136,8 +162,14 @@ export const EventCard = styled.div`
     transform: translateY(-2px);
   }
   
-  @media (max-width: 1024px) {
+  @media (max-width: 1120px) {
+    display: none;
+  }
+  
+  @media (max-width: 768px) {
+    display: block;
     margin-left: 0;
+    margin-right: 0;
   }
 `;
 

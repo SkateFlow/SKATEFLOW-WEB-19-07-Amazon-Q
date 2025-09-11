@@ -3,7 +3,7 @@ import Img from '../../assets/images/inicial1.svg'; // Caminho da imagem atualiz
 import shape1 from '../../assets/images/shape1.png';
 import shape2 from '../../assets/images/shape2.png';
 import FlipCard from '../FlipCard';
-import FadeContent from '../FadeContent';
+
 import {
     HeroContainer,
     HeroBg,
@@ -13,11 +13,11 @@ import {
 } from './HeroElements';
 
 const HeroSection = () => {
-    const [showCard, setShowCard] = useState(window.innerWidth > 960);
+    const [showCard, setShowCard] = useState(window.innerWidth > 1200);
 
     useEffect(() => {
         const handleResize = () => {
-            setShowCard(window.innerWidth > 960);
+            setShowCard(window.innerWidth > 1200);
         };
 
         window.addEventListener('resize', handleResize);
@@ -40,14 +40,6 @@ const HeroSection = () => {
             </HeroBg>
             <HeroContent>
                 <HeroH1> Bem Vindo à SkateFlow </HeroH1>
-                <FadeContent
-                    blur={true}
-                    duration={800}
-                    easing="ease-out"
-                    delay={0}
-                    threshold={0.1}
-                    initialOpacity={0}
-                >
                     <HeroP>
                         Somos uma comunidade, onde você, skatista, pode encontrar outros skatistas!
                     </HeroP>
@@ -55,7 +47,6 @@ const HeroSection = () => {
                         Tenha acesso a pistas compartilhadas por usuários, veja e agende seus ingressos para eventos 
                         que estamos divulgando e leia artigos escritos por nós!
                     </HeroP>
-                </FadeContent>
 
             </HeroContent>
             {showCard && (

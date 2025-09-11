@@ -33,6 +33,10 @@ export const HeroContent = styled.div`
     width: 100%;
     left: 174px;
     
+    @media screen and (max-width: 1200px) {
+        padding: 4px 25px;
+    }
+    
     @media screen and (max-width: 1024px) {
         align-items: center;
         left: 50%;

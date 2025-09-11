@@ -26,12 +26,24 @@ export const NavbarContainer = styled.div`
     height: 72px;
     z-index: 1;
     width: 100%;
-    padding: 0 160px;
+    padding: 0 180px;
     max-width: none;
     position: relative;
     
+    @media screen and (max-width: 1200px) {
+        padding: 0 80px;
+    }
+    
+    @media screen and (max-width: 960px) {
+        padding: 0 80px;
+    }
+    
     @media screen and (max-width: 768px) {
-        padding: 0 20px;
+        padding: 0 12px;
+    }
+    
+    @media screen and (max-width: 480px) {
+        padding: 0 8px;
     }
 `;
 

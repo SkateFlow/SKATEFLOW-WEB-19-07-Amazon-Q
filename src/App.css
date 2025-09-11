@@ -13,3 +13,47 @@ body, html {
   color: red;
   margin-top: 10px;
 }
+
+/* Responsive padding adjustments */
+@media screen and (max-width: 1200px) {
+  .main-content {
+    padding: 40px 80px !important;
+  }
+  
+  div[style*="padding: 80px 160px"] {
+    padding: 40px 80px !important;
+  }
+}
+
+@media screen and (max-width: 960px) {
+  .main-content {
+    padding: 80px 80px !important;
+  }
+  
+  div[style*="padding: 80px 160px"] {
+    padding: 80px 80px !important;
+  }
+}
+@media screen and (max-width: 768px) {
+  /* Reduce padding for main page container */
+  .main-content {
+    padding: 40px 12px !important;
+  }
+  
+  /* Reduce padding for map preview section */
+  div[style*="padding: 80px 160px"] {
+    padding: 40px 12px !important;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  /* Further reduce padding for mobile */
+  .main-content {
+    padding: 20px 8px !important;
+  }
+  
+  /* Reduce padding for map preview section on mobile */
+  div[style*="padding: 80px 160px"] {
+    padding: 20px 8px !important;
+  }
+}
