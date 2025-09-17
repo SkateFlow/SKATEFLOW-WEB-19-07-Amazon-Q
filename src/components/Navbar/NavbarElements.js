@@ -26,24 +26,24 @@ export const NavbarContainer = styled.div`
     height: 72px;
     z-index: 1;
     width: 100%;
-    padding: 0 180px;
+    padding: 0 205px 0 165px;
     max-width: none;
     position: relative;
     
     @media screen and (max-width: 1200px) {
-        padding: 0 80px;
+        padding: 0 80px 0 88px;
     }
     
     @media screen and (max-width: 960px) {
-        padding: 0 80px;
+        padding: 0 80px 0 88px;
     }
     
     @media screen and (max-width: 768px) {
-        padding: 0 12px;
+        padding: 0 12px 0 13.2px;
     }
     
     @media screen and (max-width: 480px) {
-        padding: 0 8px;
+        padding: 0 8px 0 8.8px;
     }
 `;
 
@@ -60,15 +60,11 @@ export const NavLogo = styled(LinkR)`
     font-size: 1.5rem;
     display: flex;
     align-items: center;
-    margin-left: 24px;
+    margin-left: 0;
     margin-right: 40px;
     font-weight: bold;
     text-decoration: none;
     transition: color 0.8s ease;
-    
-    @media screen and (max-width: 768px) {
-        margin-left: 0;
-    }
 `;
 
 // Container do ícone do menu para mobile, aparece apenas com max-width: 768px
@@ -218,6 +214,26 @@ export const ProfileEmail = styled.div`
     font-size: 14px;
     color: #4a5568;
     font-weight: 500;
+`;
+
+export const AdminLink = styled(LinkR)`
+    width: 100%;
+    padding: 12px 16px;
+    background: none;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    font-size: 14px;
+    color: #4a5568;
+    font-weight: 500;
+    text-decoration: none;
+    display: block;
+    transition: background 0.2s ease;
+    border-bottom: 1px solid #e2e8f0;
+
+    &:hover {
+        background: #f7fafc;
+    }
 `;
 
 export const LogoutButton = styled.button`

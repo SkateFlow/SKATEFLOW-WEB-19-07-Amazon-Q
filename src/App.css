@@ -1,8 +1,10 @@
+@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap');
+
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  font-family: 'Encode Sans Expanded', sans-serif;
+  font-family: 'Lexend', sans-serif;
 }
 
 body, html {
@@ -15,6 +17,25 @@ body, html {
 }
 
 /* Responsive padding adjustments */
+/* 50% screen stretch - reduce padding by 50% */
+@media screen and (max-width: 1600px) and (min-width: 1201px) {
+  .main-content {
+    padding: 40px 80px !important;
+  }
+  
+  div[style*="padding: 80px 160px"] {
+    padding: 40px 80px !important;
+  }
+  
+  .InfoWrapper {
+    padding: 60px 12px !important;
+  }
+  
+  .HeroContent {
+    padding: 4px 25px !important;
+  }
+}
+
 @media screen and (max-width: 1200px) {
   .main-content {
     padding: 40px 80px !important;

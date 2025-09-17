@@ -22,6 +22,7 @@ import {
     ProfileButton,
     ProfileDropdown,
     ProfileEmail,
+    AdminLink,
     LogoutButton
 } from './NavbarElements';
 
@@ -136,6 +137,9 @@ const Navbar = ({ toggle, scrollNav: forceScrollNav }) => {
                                     {showDropdown && (
                                         <ProfileDropdown>
                                             <ProfileEmail>{user.email}</ProfileEmail>
+                                            <AdminLink to="/admin" onClick={() => setShowDropdown(false)}>
+                                                Área do Administrador
+                                            </AdminLink>
                                             <LogoutButton onClick={() => { logout(); setShowDropdown(false); }}>
                                                 Logout
                                             </LogoutButton>

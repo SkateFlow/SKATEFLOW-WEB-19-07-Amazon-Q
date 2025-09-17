@@ -20,6 +20,10 @@ export const InfoWrapper = styled.div`
     padding: 120px 24px;
     justify-content: center;
     
+    @media screen and (max-width: 1600px) and (min-width: 1201px) {
+        padding: 20px 12px;
+    }
+    
     @media screen and (max-width: 1200px) {
         padding: 60px 12px;
     }

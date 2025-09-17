@@ -10,6 +10,8 @@ const SidebarContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
+  height: 100vh;
+  position: relative;
 `;
 
 const LogoContainer = styled.div`
@@ -41,6 +43,22 @@ const NavLink = styled(Link)`
   }
 `;
 
+const ExitLink = styled(Link)`
+  color: #adb5bd;
+  padding: 15px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background 0.3s, color 0.3s;
+  width: 100%;
+  text-align: center;
+  position: absolute;
+  bottom: 20px;
+  &:hover {
+    background-color: #495057;
+    color: white;
+  }
+`;
+
 const Sidebar = () => {
   return (
     <SidebarContainer>
@@ -52,6 +70,7 @@ const Sidebar = () => {
       <NavLink to="/adminarticle">Artigos</NavLink>
       <NavLink to="/admin">Eventos</NavLink>
       <NavLink to="/admins">Usuários</NavLink>
+      <ExitLink to="/">Sair</ExitLink>
     </SidebarContainer>
   );
 };
