@@ -147,7 +147,7 @@ const Navbar = ({ toggle, scrollNav: forceScrollNav }) => {
                                     )}
                                 </ProfileContainer>
                             ) : (
-                                <NavBtnLink to="/login" scrollNav={finalScrollNav}>Login</NavBtnLink>
+                                <NavBtnLink to="/login" scrollNav={finalScrollNav}>Log in</NavBtnLink>
                             )}
                         </NavBtn>
                     </NavbarContainer>

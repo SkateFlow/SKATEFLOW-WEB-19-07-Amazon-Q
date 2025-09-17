@@ -122,6 +122,11 @@ export const BackButton = styled(Link)`
     margin-top: 24px;
     color: #fff;
     font-size: 14px;
+    text-decoration: none;
+    
+    &:hover {
+        text-decoration: underline;
+    }
 `
 
 export const ForgetButton = styled(Link)`
