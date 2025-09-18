@@ -6,6 +6,7 @@ import { useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import logoSvg from '../../assets/images/logoof1.svg';
 import logoInvertSvg from '../../assets/images/logoofinver.svg';
+import { AnimatedScrollLink, AnimatedRouterLink } from './AnimatedNavLink';
 import {
     Nav,
     NavbarContainer,
@@ -13,8 +14,6 @@ import {
     MobileIcon,
     NavMenu,
     NavItem,
-    NavLinks,
-    NavLinksRouter,
     NavBtn,
     NavBtnLink,
     NavLeftSection,
@@ -77,47 +76,47 @@ const Navbar = ({ toggle, scrollNav: forceScrollNav }) => {
                             <NavMenu>
                                 <NavItem>
                                     {location.pathname === '/' ? (
-                                        <NavLinks 
+                                        <AnimatedScrollLink 
                                         to="events-hero"
                                         smooth={true}
                                         duration={500}
                                         spy={true}
                                         activeClass='active'
                                         exact='true'
-                                        scrollNav={finalScrollNav}>Eventos</NavLinks>
+                                        scrollNav={finalScrollNav}>Eventos</AnimatedScrollLink>
                                     ) : (
-                                        <NavLinksRouter to="/events" className={location.pathname === '/events' ? 'active' : ''} scrollNav={finalScrollNav}>Eventos</NavLinksRouter>
+                                        <AnimatedRouterLink to="/events" isActive={location.pathname === '/events'} scrollNav={finalScrollNav}>Eventos</AnimatedRouterLink>
                                     )}
                                 </NavItem>
                                 <NavItem>
-                                    <NavLinks 
+                                    <AnimatedScrollLink 
                                     to="about"
                                     smooth={true}
                                     duration={500}
                                     spy={true}
                                     activeClass='active'
                                     exact='true'
-                                    scrollNav={finalScrollNav}>Maps</NavLinks>
+                                    scrollNav={finalScrollNav}>Maps</AnimatedScrollLink>
                                 </NavItem>
                                 <NavItem>
-                                <NavLinks 
+                                <AnimatedScrollLink 
                                     to="services"
                                     smooth={true}
                                     duration={500}
                                     spy={true}
                                     activeClass='active'
                                     exact='true'
-                                    scrollNav={finalScrollNav}>About</NavLinks>
+                                    scrollNav={finalScrollNav}>About</AnimatedScrollLink>
                                 </NavItem>
                                 <NavItem>
-                                    <NavLinks 
+                                    <AnimatedScrollLink 
                                     to="signup"
                                     smooth={true}
                                     duration={500}
                                     spy={true}
                                     activeClass='active'
                                     exact='true'
-                                    scrollNav={finalScrollNav}>Mobile</NavLinks>
+                                    scrollNav={finalScrollNav}>Mobile</AnimatedScrollLink>
                                 </NavItem>
                             </NavMenu>
                         </NavLeftSection>
