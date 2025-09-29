@@ -406,14 +406,3 @@ const EventPopup = ({ event, onClose }) => {
 };
 
 export default EventPopup;
-              <span>ir ao site</span>
-              <FaExternalLinkAlt size={16} />
-            </WebsiteButton>
-          </RightSection>
-        </PopupBody>
-      </PopupContent>
-    </PopupOverlay>
-  );
-};
-
-export default EventPopup;
