@@ -289,7 +289,7 @@ const WebsiteButton = styled.button`
 
 const EventCarousel = ({ images = [] }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const validImages = images.length > 0 ? images : ['https://via.placeholder.com/400x192?text=Sem+Imagem'];
+  const validImages = images.length > 0 ? images : ['https://via.placeholder.com/400x280?text=Sem+Imagem'];
 
   const goToPrevious = () => {
     setCurrentIndex(prevIndex => 
@@ -317,7 +317,7 @@ const EventCarousel = ({ images = [] }) => {
               src={image}
               alt={`Event image ${index + 1}`}
               onError={(e) => {
-                e.target.src = 'https://via.placeholder.com/400x192?text=Erro+ao+Carregar';
+                e.target.src = 'https://via.placeholder.com/400x280?text=Erro+ao+Carregar';
               }}
             />
             <ImageOverlay />
@@ -352,7 +352,7 @@ const EventCarousel = ({ images = [] }) => {
 
 const EventPopup = ({ event, onClose }) => {
   const [isClosing, setIsClosing] = useState(false);
-  const images = event.imagemEvento ? [event.imagemEvento] : [event.imagemEvento || 'https://via.placeholder.com/400x192?text=Sem+Imagem'];
+  const images = event.imagemEvento ? [event.imagemEvento] : ['https://via.placeholder.com/400x280?text=Sem+Imagem'];
   
   const handleClose = () => {
     setIsClosing(true);
@@ -395,6 +395,17 @@ const EventPopup = ({ event, onClose }) => {
             </ContentSection>
             
             <WebsiteButton onClick={() => event.website && window.open(event.website, '_blank')}>
+              <span>ir ao site</span>
+              <FaExternalLinkAlt size={16} />
+            </WebsiteButton>
+          </RightSection>
+        </PopupBody>
+      </PopupContent>
+    </PopupOverlay>
+  );
+};
+
+export default EventPopup;
               <span>ir ao site</span>
               <FaExternalLinkAlt size={16} />
             </WebsiteButton>

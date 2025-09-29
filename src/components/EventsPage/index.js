@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef, useCallback } from 'react';
 import styled from 'styled-components';
 import { FaChevronLeft, FaChevronRight, FaSearch } from 'react-icons/fa';
 import { getEvents } from '../../services/eventService';
-import EventPopup from '../EventPopup';
+import EventPopup from '../EventPopupDescriptopn';
 import Navbar from '../Navbar';
 import Sidebar from '../Sidebar';
 import placeholderImage from '../../assets/images/ph.svg';
