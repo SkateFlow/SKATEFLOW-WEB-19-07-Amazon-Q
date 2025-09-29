@@ -22,7 +22,7 @@ const Home = () => {
             <Navbar toggle={toggle}/>
             <HeroSection/>
             <EventsHeroSection/>
-            <div className="main-content" style={{ padding: '80px 160px', background: '#fff' }}>
+            <div id="map-preview" className="main-content" style={{ padding: '80px 160px', background: '#fff' }}>
                 <MapPreview />
             </div>
             <RevealBento/>

@@ -9,7 +9,7 @@ import { fetchSkateParks } from '../services/skateParksService';
 
 const PageContainer = styled.div`
   min-height: 100vh;
-  background: #ffffff;
+  background: #f7fafc;
   display: flex;
   flex-direction: column;
 `;
@@ -26,8 +26,8 @@ const MainContent = styled.div`
 
 const SidePanel = styled.div`
   width: 400px;
-  background: #f8f9fa;
-  border-right: 1px solid #e2e8f0;
+  background: #edf2f7;
+  border-right: 1px solid #cbd5e0;
   display: flex;
   flex-direction: column;
   
@@ -44,18 +44,18 @@ const MapPanel = styled.div`
 
 const Header = styled.div`
   padding: 24px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid #cbd5e0;
 `;
 
 const Title = styled.h1`
   font-size: 24px;
   font-weight: bold;
-  color: #1a202c;
+  color: #2d3748;
   margin: 0 0 8px 0;
 `;
 
 const Subtitle = styled.p`
-  color: #718096;
+  color: #4a5568;
   margin: 0 0 16px 0;
 `;
 
@@ -67,9 +67,10 @@ const SearchContainer = styled.div`
 const SearchInput = styled.input`
   width: 100%;
   padding: 12px 12px 12px 40px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #cbd5e0;
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.7);
+  background: #ffffff;
+  color: #2d3748;
   font-size: 14px;
   
   &:focus {
@@ -83,7 +84,7 @@ const SearchIcon = styled(FaSearch)`
   left: 12px;
   top: 50%;
   transform: translateY(-50%);
-  color: #718096;
+  color: #4a5568;
   width: 16px;
   height: 16px;
 `;
@@ -103,7 +104,7 @@ const FilterGroup = styled.div`
 const FilterLabel = styled.span`
   font-size: 14px;
   font-weight: 500;
-  color: #4a5568;
+  color: #2d3748;
 `;
 
 const FilterBadges = styled.div`
@@ -117,9 +118,9 @@ const FilterBadge = styled.button`
   border-radius: 16px;
   font-size: 12px;
   font-weight: 500;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #cbd5e0;
   background: ${props => props.active ? '#3182ce' : '#ffffff'};
-  color: ${props => props.active ? '#ffffff' : '#4a5568'};
+  color: ${props => props.active ? '#ffffff' : '#2d3748'};
   cursor: pointer;
   transition: all 0.2s ease;
   
@@ -166,14 +167,14 @@ const SpotImage = styled.img`
 
 const SpotName = styled.h3`
   font-weight: 600;
-  color: #1a202c;
+  color: #2d3748;
   margin: 0 0 8px 0;
   font-size: 16px;
 `;
 
 const SpotDescription = styled.p`
   font-size: 14px;
-  color: #718096;
+  color: #4a5568;
   margin: 0 0 8px 0;
   line-height: 1.4;
 `;
@@ -183,7 +184,7 @@ const SpotLocation = styled.div`
   align-items: center;
   gap: 4px;
   font-size: 12px;
-  color: #718096;
+  color: #4a5568;
   margin-bottom: 8px;
 `;
 
@@ -202,10 +203,30 @@ const StatItem = styled.div`
 
 const FooterStats = styled.div`
   padding: 16px 24px;
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid #cbd5e0;
   text-align: center;
   font-size: 14px;
-  color: #718096;
+  color: #4a5568;
+`;
+
+const NotificationMessage = styled.div`
+  position: fixed;
+  top: 84px;
+  left: 50%;
+  transform: translateX(-50%) translateY(${props => props.show ? '0' : '-100%'});
+  background: #11406dff;
+  color: white;
+  padding: 16px 32px;
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 1000;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+  display: inline-block;
+  width: auto;
+  min-width: fit-content;
+  opacity: ${props => props.show ? 1 : 0};
+  transition: all 0.3s ease;
 `;
 
 
@@ -218,8 +239,24 @@ const Map = () => {
   const [difficultyFilter, setDifficultyFilter] = useState('todos');
   const [spots, setSpots] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showNotification, setShowNotification] = useState(false);
 
   const toggle = () => setIsOpen(!isOpen);
+  
+  const showAlreadyHereMessage = () => {
+    setShowNotification(true);
+    setTimeout(() => {
+      setShowNotification(false);
+    }, 3000);
+  };
+  
+  // Expor função globalmente para o navbar
+  useEffect(() => {
+    window.showMapNotification = showAlreadyHereMessage;
+    return () => {
+      delete window.showMapNotification;
+    };
+  }, []);
 
   useEffect(() => {
     loadSkateParks();
@@ -257,6 +294,9 @@ const Map = () => {
       <ScrollToTop />
       <Sidebar isOpen={isOpen} toggle={toggle} />
       <Navbar toggle={toggle} scrollNav={true} />
+      <NotificationMessage show={showNotification}>
+        Você já está nessa página!
+      </NotificationMessage>
       
       <MainContent>
         <SidePanel>
@@ -309,11 +349,11 @@ const Map = () => {
           
           <SpotsList>
             {loading ? (
-              <div style={{ textAlign: 'center', padding: '48px 0', color: '#718096' }}>
+              <div style={{ textAlign: 'center', padding: '48px 0', color: '#4a5568' }}>
                 Carregando pistas reais do Brasil...
               </div>
             ) : filteredSpots.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '48px 0', color: '#718096' }}>
+              <div style={{ textAlign: 'center', padding: '48px 0', color: '#4a5568' }}>
                 Nenhuma pista encontrada com os filtros aplicados.
               </div>
             ) : (
@@ -333,11 +373,11 @@ const Map = () => {
                   <SpotStats>
                     <StatItem>
                       <FaStar color="#3182ce" />
-                      <span>{spot.rating}</span>
+                      <span style={{ color: '#4a5568' }}>{spot.rating}</span>
                     </StatItem>
                     <StatItem>
-                      <FaHeart color="#718096" />
-                      <span>{spot.likes}</span>
+                      <FaHeart color="#4a5568" />
+                      <span style={{ color: '#4a5568' }}>{spot.likes}</span>
                     </StatItem>
                   </SpotStats>
                 </SpotCard>

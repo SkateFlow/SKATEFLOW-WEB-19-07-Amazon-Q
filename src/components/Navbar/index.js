@@ -89,14 +89,28 @@ const Navbar = ({ toggle, scrollNav: forceScrollNav }) => {
                                     )}
                                 </NavItem>
                                 <NavItem>
-                                    <AnimatedScrollLink 
-                                    to="about"
-                                    smooth={true}
-                                    duration={500}
-                                    spy={true}
-                                    activeClass='active'
-                                    exact='true'
-                                    scrollNav={finalScrollNav}>Maps</AnimatedScrollLink>
+                                    {location.pathname === '/' ? (
+                                        <AnimatedScrollLink 
+                                        to="map-preview"
+                                        smooth={true}
+                                        duration={500}
+                                        spy={true}
+                                        activeClass='active'
+                                        exact='true'
+                                        scrollNav={finalScrollNav}>Pistas</AnimatedScrollLink>
+                                    ) : location.pathname === '/map' ? (
+                                        <AnimatedRouterLink 
+                                        to="#" 
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            if (window.showMapNotification) {
+                                                window.showMapNotification();
+                                            }
+                                        }}
+                                        scrollNav={finalScrollNav}>Pistas</AnimatedRouterLink>
+                                    ) : (
+                                        <AnimatedRouterLink to="/map" scrollNav={finalScrollNav}>Pistas</AnimatedRouterLink>
+                                    )}
                                 </NavItem>
                                 <NavItem>
                                 <AnimatedScrollLink 
@@ -106,7 +120,7 @@ const Navbar = ({ toggle, scrollNav: forceScrollNav }) => {
                                     spy={true}
                                     activeClass='active'
                                     exact='true'
-                                    scrollNav={finalScrollNav}>About</AnimatedScrollLink>
+                                    scrollNav={finalScrollNav}>Sobre nós</AnimatedScrollLink>
                                 </NavItem>
                                 <NavItem>
                                     <AnimatedScrollLink 
