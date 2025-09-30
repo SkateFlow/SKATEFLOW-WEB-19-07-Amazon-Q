@@ -9,11 +9,8 @@ import Login from './pages/login';
 import Map from './pages/map';
 import EventsPage from './components/EventsPage'; 
 // Páginas administrativas
-import AdminPage from './components/AdminPage';
-import AdminHome from './components/AdminHome';
+import { Dashboard, Eventos, Pistas, Usuarios } from './pages/admin';
 import CreateAdmin from './components/CreateAdmin';
-import ArticleAdminPage from './components/AdminPage/ArticleAdminPage';
-import AdminManagementPage from './components/AdminPage/AdminManagementPage';
 
 function App() {
   return (
@@ -27,11 +24,11 @@ function App() {
           <Route path={ROUTES.EVENTS} element={<EventsPage />} />
           
           {/* Rotas administrativas */}
-          <Route path={ROUTES.ADMIN} element={<AdminPage />} />
-          <Route path={ROUTES.ADMIN_HOME} element={<AdminHome />} />
+          <Route path={ROUTES.ADMIN} element={<Eventos />} />
+          <Route path={ROUTES.ADMIN_HOME} element={<Dashboard />} />
           <Route path={ROUTES.CREATE_ADMIN} element={<CreateAdmin />} />
-          <Route path={ROUTES.ADMIN_ARTICLE} element={<ArticleAdminPage />} />
-          <Route path={ROUTES.ADMIN_MANAGEMENT} element={<AdminManagementPage />} />
+          <Route path={ROUTES.ADMIN_ARTICLE} element={<Pistas />} />
+          <Route path={ROUTES.ADMIN_MANAGEMENT} element={<Usuarios />} />
         </Routes>
       </Router>
     </AuthProvider>

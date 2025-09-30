@@ -1,28 +1,30 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
-import logo from '../../assets/images/system-logo_24_x_24.png';
+
 
 const SidebarContainer = styled.div`
   width: 250px;
-  background-color: #343a40;
+  background-color:rgb(0, 42, 85);
   color: white;
   display: flex;
   flex-direction: column;
   align-items: center;
   height: 100vh;
-  position: relative;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
 `;
 
 const LogoContainer = styled.div`
+  color: #5e5e5e;
   display: flex;
   justify-content: center;
   align-items: center;
   padding: 20px;
-  border-bottom: 1px solid #495057;
-  img {
-    margin-right: 8px;
-  }
+  border-bottom: 1px solid #5e5e5e;
+
   span {
     font-weight: bold;
     font-size: 1.2rem;
@@ -30,21 +32,25 @@ const LogoContainer = styled.div`
 `;
 
 const NavLink = styled(Link)`
-  color: #adb5bd;
-  padding: 15px;
+  
+  color:#5e5e5e;
+  padding: 16px;
+  padding-left: 30px;
   font-weight: 500;
   text-decoration: none;
   transition: background 0.3s, color 0.3s;
   width: 100%;
-  text-align: center;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 10px;
   &:hover {
-    background-color: #495057;
-    color: white;
+    color: rgb(0, 93, 199) ;
   }
 `;
 
 const ExitLink = styled(Link)`
-  color: #adb5bd;
+  color: #5e5e5e;
   padding: 15px;
   font-weight: 500;
   text-decoration: none;
@@ -54,23 +60,32 @@ const ExitLink = styled(Link)`
   position: absolute;
   bottom: 20px;
   &:hover {
-    background-color: #495057;
-    color: white;
+    color: rgb(109, 0, 0);
   }
 `;
+
+
+
 
 const Sidebar = () => {
   return (
     <SidebarContainer>
       <LogoContainer>
-        <img src={logo} alt="logo" width="24" height="24"  />
-        <span>AdminFlow</span>
+        <span>SkateFlow ADM</span>
       </LogoContainer>
-      <NavLink to="/adminhome">Dashboard</NavLink>
-      <NavLink to="/adminarticle">Artigos</NavLink>
-      <NavLink to="/admin">Eventos</NavLink>
-      <NavLink to="/admins">Usuários</NavLink>
-      <ExitLink to="/">Sair</ExitLink>
+      <NavLink to="/adminhome">
+        <span>☷</span> Dashboard
+      </NavLink>
+      <NavLink to="/adminarticle">
+        <span>⛷</span> Pistas
+      </NavLink>
+      <NavLink to="/admin">
+        <span>★</span> Eventos
+      </NavLink>
+      <NavLink to="/admins">
+        <span>⚙</span> Usuários
+      </NavLink>
+      <ExitLink to="/">↩ Sair</ExitLink>
     </SidebarContainer>
   );
 };

@@ -8,6 +8,25 @@ export const fetchSkateParks = async () => {
   return getFallbackData();
 };
 
+export const getSkateparks = async () => {
+  return [];
+};
+
+export const createSkatepark = async (pista) => {
+  console.log('Criando pista:', pista);
+  return { success: true, id: Date.now() };
+};
+
+export const updateSkatepark = async (pista) => {
+  console.log('Atualizando pista:', pista);
+  return { success: true };
+};
+
+export const deleteSkatepark = async (pistaId) => {
+  console.log('Deletando pista:', pistaId);
+  return { success: true };
+};
+
 // Dados de fallback caso a API falhe
 const getFallbackData = () => [
   {
