@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { FiEdit, FiTrash, FiEye, FiEyeOff } from 'react-icons/fi';
 import SidebarAdmin from '../../../components/SidebarAdmin';
 import SearchBar from '../../../components/SearchBar';
+import EditPistaModal from '../../../components/EditPistaModal';
 
 const AdminContainer = styled.div`
   background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
@@ -178,20 +179,53 @@ const EmptySubtext = styled.p`
 
 const Pistas = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [editingPista, setEditingPista] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [pistas, setPistas] = useState([
     {
       id: 1,
       nome: 'Skate Park Central',
       localizacao: 'Centro da Cidade',
+      rua: 'Rua Augusta, 1000',
+      bairro: 'Centro',
+      cep: '01305-100',
+      numero: '1000',
       descricao: 'Pista completa com bowls e street',
+      latitude: '-23.5505',
+      longitude: '-46.6333',
+      publica: true,
+      fotos: ['', '', ''],
       active: true
     },
     {
       id: 2,
       nome: 'Pista da Praça',
       localizacao: 'Praça da Sé',
+      rua: 'Praça da Sé, s/n',
+      bairro: 'Sé',
+      cep: '01001-000',
+      numero: 's/n',
       descricao: 'Pista de street skating',
+      latitude: '-23.5489',
+      longitude: '-46.6388',
+      publica: false,
+      fotos: ['', '', ''],
       active: false
+    },
+    {
+      id: 3,
+      nome: 'Bowl do Ibirapuera',
+      localizacao: 'Parque Ibirapuera',
+      rua: 'Av. Paulista, 1578',
+      bairro: 'Bela Vista',
+      cep: '01310-200',
+      numero: '1578',
+      descricao: 'Bowl profissional para skatistas experientes',
+      latitude: '-23.5618',
+      longitude: '-46.6565',
+      publica: true,
+      fotos: ['', '', ''],
+      active: true
     }
   ]);
 
@@ -200,7 +234,17 @@ const Pistas = () => {
   };
 
   const handleEdit = (pistaId) => {
-    console.log('Editar pista:', pistaId);
+    const pista = pistas.find(p => p.id === pistaId);
+    setEditingPista(pista);
+    setIsModalOpen(true);
+  };
+
+  const handleSavePista = (updatedPista) => {
+    setPistas(pistas.map(pista => 
+      pista.id === updatedPista.id ? updatedPista : pista
+    ));
+    setIsModalOpen(false);
+    setEditingPista(null);
   };
 
   const toggleStatus = (pistaId) => {
@@ -215,6 +259,8 @@ const Pistas = () => {
     return pistas.filter(pista =>
       pista.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
       pista.localizacao.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      pista.rua.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      pista.bairro.toLowerCase().includes(searchTerm.toLowerCase()) ||
       pista.descricao.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [pistas, searchTerm]);
@@ -255,7 +301,7 @@ const Pistas = () => {
                 <PistaInfo>
                   <InfoRow>
                     <InfoLabel>Localização:</InfoLabel>
-                    <span>{pista.localizacao}</span>
+                    <span>{pista.rua || pista.localizacao}</span>
                   </InfoRow>
                   <InfoRow>
                     <InfoLabel>Descrição:</InfoLabel>
@@ -288,6 +334,16 @@ const Pistas = () => {
           </PistaGrid>
         )}
       </ContentContainer>
+      
+      <EditPistaModal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setEditingPista(null);
+        }}
+        pista={editingPista}
+        onSave={handleSavePista}
+      />
     </AdminContainer>
   );
 };

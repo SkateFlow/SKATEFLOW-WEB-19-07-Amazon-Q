@@ -134,9 +134,9 @@ const Sidebar = () => {
   const location = useLocation();
 
   const menuItems = [
-    { icon: FiHome, title: "Dashboard", path: "/adminhome" },
+    { icon: FiHome, title: "Dashboard", path: "/admin" },
     { icon: FiMapPin, title: "Pistas", path: "/adminarticle" },
-    { icon: FiCalendar, title: "Eventos", path: "/admin" },
+    { icon: FiCalendar, title: "Eventos", path: "/adminhome" },
     { icon: FiUsers, title: "Usuários", path: "/admins" }
   ];
 

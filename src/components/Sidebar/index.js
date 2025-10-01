@@ -1,5 +1,5 @@
 import React from 'react'
-import logoSvg from '../../assets/images/logoof1.svg';
+import logoInvertSvg from '../../assets/images/logoofinver.svg';
 import {
     SidebarContainer,
     Icon,
@@ -20,15 +20,15 @@ const Sidebar = ({ isOpen, toggle }) => {
             <CloseIcon/>
         </Icon>
         <SidebarWrapper onClick={(e) => e.stopPropagation()}>
-            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '40px' }}>
-                <img src={logoSvg} alt="SkateFlow" style={{ height: '60px' }} />
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px', borderBottom: '1px solid rgba(26,35,126,0.1)' }}>
+                <img src={logoInvertSvg} alt="SkateFlow" style={{ height: '50px' }} />
             </div>
             <SidebarMenu>
                 <SidebarLink to="/" onClick={toggle}>Home</SidebarLink>
                 <SidebarLink to="/events" onClick={toggle}>Eventos</SidebarLink>
-                <SidebarLink to="/map" onClick={toggle}>Mapa</SidebarLink>
-                <SidebarLink to="/articles" onClick={toggle}>Artigos</SidebarLink>
-                <SidebarLink to="https://www.example.com" onClick={toggle}>Mobile</SidebarLink>
+                <SidebarLink to="/map" onClick={toggle}>Pistas</SidebarLink>
+                <SidebarLink to="#services" onClick={toggle}>Sobre nós</SidebarLink>
+                <SidebarLink to="#signup" onClick={toggle}>Mobile</SidebarLink>
             </SidebarMenu>
             <SideBtnWrap>
                 <SidebarRoute to="/login" onClick={toggle}>Login</SidebarRoute>

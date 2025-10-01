@@ -123,7 +123,7 @@ const Navbar = ({ toggle, scrollNav: forceScrollNav }) => {
                     <NavbarContainer>
                         <NavLeftSection>
                             <NavLogo to="/" onClick={toggleHome} scrollNav={finalScrollNav}>
-                                <img src={finalScrollNav ? logoInvertSvg : logoSvg} alt="SkateFlow" style={{ height: '70px', transition: 'all 0.8s ease' }} />
+                                <img src={finalScrollNav ? logoInvertSvg : logoSvg} alt="SkateFlow" style={{ height: '70px', transition: 'all 1.2s ease' }} />
                             </NavLogo>
                             <NavMenu>
                                 <NavItem>
@@ -187,7 +187,7 @@ const Navbar = ({ toggle, scrollNav: forceScrollNav }) => {
                             </NavMenu>
                         </NavLeftSection>
                         <MobileIcon onClick={toggle} scrollNav={finalScrollNav}>
-                            <FaBars />
+                            <FaBars style={{ color: finalScrollNav ? '#000' : '#fff', transition: 'all 1.2s ease' }} />
                         </MobileIcon>
                         <NavBtn>
                             {isAuthenticated ? (

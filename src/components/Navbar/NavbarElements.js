@@ -18,7 +18,7 @@ export const Nav = styled.nav`
     top: 0;
     width: 100%;
     z-index: 10;
-    transition: background 0.3s ease;
+    transition: background 1.2s ease;
 `
 
 export const NavbarContainer = styled.div`
