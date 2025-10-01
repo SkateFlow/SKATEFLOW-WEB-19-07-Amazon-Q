@@ -1,6 +1,7 @@
 import styled from 'styled-components'
 import { Link as LinkR } from 'react-router-dom'
 import { Link as LinkS} from 'react-scroll'
+import { motion } from 'framer-motion'
 
 
 
@@ -17,7 +18,7 @@ export const Nav = styled.nav`
     top: 0;
     width: 100%;
     z-index: 10;
-    transition: 0.8s all ease;
+    transition: background 0.3s ease;
 `
 
 export const NavbarContainer = styled.div`
@@ -64,7 +65,7 @@ export const NavLogo = styled(LinkR)`
     margin-right: 40px;
     font-weight: bold;
     text-decoration: none;
-    transition: color 0.8s ease;
+    transition: color 0.3s ease;
 `;
 
 // Container do ícone do menu para mobile, aparece apenas com max-width: 768px
@@ -80,7 +81,7 @@ export const MobileIcon = styled.div`
         font-size: 1.8rem;
         cursor: pointer;
         color: ${({scrollNav}) => (scrollNav ? '#000' : '#fff')};
-        transition: color 0.8s ease;
+        transition: color 0.3s ease;
     }
 `;
 
@@ -109,7 +110,7 @@ export const NavLinks = styled(LinkS)`
     padding: 0 1.5rem;
     height: 100%;
     cursor: pointer;
-    transition: all 0.9s ease;
+    transition: all 0.3s ease;
     font-weight: bold;
 
     &:hover {
@@ -129,7 +130,7 @@ export const NavLinksRouter = styled(LinkR)`
     padding: 0 1.5rem;
     height: 100%;
     cursor: pointer;
-    transition: all 0.8s ease;
+    transition: all 0.3s ease;
     font-weight: bold;
 
     &:hover {
@@ -160,7 +161,7 @@ export const NavBtnLink = styled(LinkR)`
     outline: none;
     border: ${({scrollNav}) => (scrollNav ? '1px solid #000' : '1px solid #fff')};
     cursor: pointer;
-    transition: all 0.8s ease;
+    transition: all 0.3s ease;
     text-decoration: none;
     font-weight: bold;
 
@@ -184,7 +185,7 @@ export const ProfileButton = styled.button`
     outline: none;
     border: ${({scrollNav}) => (scrollNav ? '1px solid #000' : '1px solid #fff')};
     cursor: pointer;
-    transition: all 0.8s ease;
+    transition: all 0.3s ease;
     font-weight: bold;
     display: flex;
     align-items: center;
@@ -195,7 +196,7 @@ export const ProfileButton = styled.button`
     }
 `;
 
-export const ProfileDropdown = styled.div`
+export const ProfileDropdown = styled(motion.div)`
     position: absolute;
     top: 100%;
     right: 0;
@@ -206,6 +207,7 @@ export const ProfileDropdown = styled.div`
     min-width: 200px;
     z-index: 1000;
     margin-top: 8px;
+    overflow: hidden;
 `;
 
 export const ProfileEmail = styled.div`
@@ -216,7 +218,7 @@ export const ProfileEmail = styled.div`
     font-weight: 500;
 `;
 
-export const AdminLink = styled(LinkR)`
+export const AdminLink = styled(motion(LinkR))`
     width: 100%;
     padding: 12px 16px;
     background: none;
@@ -236,7 +238,7 @@ export const AdminLink = styled(LinkR)`
     }
 `;
 
-export const LogoutButton = styled.button`
+export const LogoutButton = styled(motion.button)`
     width: 100%;
     padding: 12px 16px;
     background: none;

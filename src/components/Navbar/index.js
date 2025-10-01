@@ -7,6 +7,7 @@ import { useAuth } from '../../context/AuthContext';
 import logoSvg from '../../assets/images/logoof1.svg';
 import logoInvertSvg from '../../assets/images/logoofinver.svg';
 import { AnimatedScrollLink, AnimatedRouterLink } from './AnimatedNavLink';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
     Nav,
     NavbarContainer,
@@ -29,7 +30,58 @@ const Navbar = ({ toggle, scrollNav: forceScrollNav }) => {
     const location = useLocation();
     const [scrollNav, setScrollNav] = useState(false)
     const [showDropdown, setShowDropdown] = useState(false)
+    const [hideTimeout, setHideTimeout] = useState(null)
     const { isAuthenticated, user, logout } = useAuth();
+
+    const dropdownVariants = {
+        open: {
+            scaleY: 1,
+            opacity: 1,
+            transition: {
+                when: "beforeChildren",
+                staggerChildren: 0.1,
+            },
+        },
+        closed: {
+            scaleY: 0,
+            opacity: 0,
+            transition: {
+                when: "afterChildren",
+                staggerChildren: 0.05,
+            },
+        },
+    };
+
+    const itemVariants = {
+        open: {
+            opacity: 1,
+            y: 0,
+        },
+        closed: {
+            opacity: 0,
+            y: -10,
+        },
+    };
+
+    const chevronVariants = {
+        open: { rotate: 180 },
+        closed: { rotate: 0 },
+    };
+
+    const handleMouseEnter = () => {
+        if (hideTimeout) {
+            clearTimeout(hideTimeout);
+            setHideTimeout(null);
+        }
+        setShowDropdown(true);
+    };
+
+    const handleMouseLeave = () => {
+        const timeout = setTimeout(() => {
+            setShowDropdown(false);
+        }, 300);
+        setHideTimeout(timeout);
+    };
 
     const changeNav = () => {
         if (window.scrollY >= 80) {
@@ -139,25 +191,55 @@ const Navbar = ({ toggle, scrollNav: forceScrollNav }) => {
                         </MobileIcon>
                         <NavBtn>
                             {isAuthenticated ? (
-                                <ProfileContainer>
+                                <ProfileContainer
+                                    onMouseEnter={handleMouseEnter}
+                                    onMouseLeave={handleMouseLeave}
+                                >
                                     <ProfileButton 
-                                        onClick={() => setShowDropdown(!showDropdown)}
                                         scrollNav={finalScrollNav}
+                                        onMouseEnter={(e) => {
+                                            const icons = e.currentTarget.querySelectorAll('svg');
+                                            icons.forEach(icon => {
+                                                icon.style.color = finalScrollNav ? '#fff' : '#000';
+                                            });
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            const icons = e.currentTarget.querySelectorAll('svg');
+                                            icons.forEach(icon => {
+                                                icon.style.color = finalScrollNav ? '#000' : '#fff';
+                                            });
+                                        }}
                                     >
-                                        <FaUser />
-                                        <FaChevronDown style={{ marginLeft: '8px', fontSize: '12px' }} />
+                                        <FaUser style={{ color: finalScrollNav ? '#000' : '#fff', transition: 'color 0.3s ease' }} />
+                                        <motion.span
+                                            animate={showDropdown ? "open" : "closed"}
+                                            variants={chevronVariants}
+                                            style={{ marginLeft: '8px', display: 'flex', alignItems: 'center' }}
+                                        >
+                                            <FaChevronDown style={{ fontSize: '12px', color: finalScrollNav ? '#000' : '#fff', transition: 'color 0.3s ease' }} />
+                                        </motion.span>
                                     </ProfileButton>
-                                    {showDropdown && (
-                                        <ProfileDropdown>
-                                            <ProfileEmail>{user.email}</ProfileEmail>
-                                            <AdminLink to="/admin" onClick={() => setShowDropdown(false)}>
-                                                Área do Administrador
-                                            </AdminLink>
-                                            <LogoutButton onClick={() => { logout(); setShowDropdown(false); }}>
-                                                Logout
-                                            </LogoutButton>
-                                        </ProfileDropdown>
-                                    )}
+                                    <AnimatePresence>
+                                        {showDropdown && (
+                                            <ProfileDropdown
+                                                initial="closed"
+                                                animate="open"
+                                                exit="closed"
+                                                variants={dropdownVariants}
+                                                style={{ originY: "top" }}
+                                            >
+                                                <motion.div variants={itemVariants}>
+                                                    <ProfileEmail>{user.email}</ProfileEmail>
+                                                </motion.div>
+                                                <AdminLink to="/admin" variants={itemVariants}>
+                                                    Área do Administrador
+                                                </AdminLink>
+                                                <LogoutButton onClick={logout} variants={itemVariants}>
+                                                    Logout
+                                                </LogoutButton>
+                                            </ProfileDropdown>
+                                        )}
+                                    </AnimatePresence>
                                 </ProfileContainer>
                             ) : (
                                 <NavBtnLink to="/login" scrollNav={finalScrollNav}>Log in</NavBtnLink>

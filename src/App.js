@@ -24,8 +24,8 @@ function App() {
           <Route path={ROUTES.EVENTS} element={<EventsPage />} />
           
           {/* Rotas administrativas */}
-          <Route path={ROUTES.ADMIN} element={<Eventos />} />
-          <Route path={ROUTES.ADMIN_HOME} element={<Dashboard />} />
+          <Route path={ROUTES.ADMIN} element={<Dashboard />} />
+          <Route path={ROUTES.ADMIN_HOME} element={<Eventos />} />
           <Route path={ROUTES.CREATE_ADMIN} element={<CreateAdmin />} />
           <Route path={ROUTES.ADMIN_ARTICLE} element={<Pistas />} />
           <Route path={ROUTES.ADMIN_MANAGEMENT} element={<Usuarios />} />
