@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import { FaChevronLeft, FaChevronRight, FaSearch } from 'react-icons/fa';
+import { FaSearch, FaPlus } from 'react-icons/fa';
 import { getEvents } from '../../services/eventService';
 import EventPopup from '../EventPopupDescriptopn';
 import Navbar from '../Navbar';
@@ -24,8 +24,7 @@ const EventsContainer = styled.div`
   }
 `;
 
-const CarouselWrapper = styled.div`
-  position: relative;
+const GridWrapper = styled.div`
   width: 100%;
   padding: 0 160px;
   
@@ -34,100 +33,41 @@ const CarouselWrapper = styled.div`
   }
 `;
 
-const CarouselContainer = styled.div`
-  display: flex;
-  gap: 24px;
-  overflow-x: auto;
-  padding: 24px 20px 24px ${props => props.shouldCenter ? '20px' : '0px'};
-  -webkit-overflow-scrolling: touch;
-  scroll-behavior: smooth;
-  justify-content: ${props => props.shouldCenter ? 'center' : 'flex-start'};
-  transition: transform 0.3s linear;
+const GridContainer = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 350px);
+  column-gap: 0.5px;
+  row-gap: 24px;
+  padding: 24px 0;
+  justify-content: center;
+  
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(2, 300px);
+  }
   
   @media (max-width: 768px) {
-    display: grid;
     grid-template-columns: 1fr;
-    gap: 20px;
-    overflow-x: visible;
-    padding: 20px;
-    justify-content: center;
-  }
-  
-  &::-webkit-scrollbar {
-    height: 3px;
-  }
-  
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  
-  &::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.3);
-    border-radius: 2px;
-    
-    &:hover {
-      background: rgba(255, 255, 255, 0.5);
-    }
+    column-gap: 0.5px;
+    row-gap: 20px;
+    padding: 20px 0;
+    justify-items: center;
   }
 `;
 
-const NavButton = styled.button`
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  background: #242424ff;
-  color: white;
-  border: none;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  cursor: pointer;
-  z-index: 2;
-  transition: all 0.3s ease;
-  
-  @media (max-width: 768px) {
-    display: none;
-  }
-  
-  &:hover {
-    background: #363636ff;
-    transform: translateY(-50%) scale(1.1);
-  }
-  
-  &:active {
-    transform: translateY(-50%) scale(0.95);
-  }
-`;
-
-const PrevButton = styled(NavButton)`
-  left: 170px;
-`;
-
-const NextButton = styled(NavButton)`
-  right: 170px;
-`;
-
-const CarouselCard = styled.div`
-  min-width: 300px;
-  width: 300px;
+const EventCard = styled.div`
+  width: 100%;
+  max-width: 300px;
   background: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   transition: all 0.3s linear;
   cursor: pointer;
   
-  @media (max-width: 768px) {
-    width: 100%;
-    max-width: 400px;
-    min-width: unset;
-    margin: 0 auto;
-  }
-  
   &:hover {
     transform: translateY(-5px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
   }
 `;
 
@@ -190,11 +130,55 @@ const BadgeOutline = styled.span`
   font-weight: 400;
 `;
 
-const SearchContainer = styled.div`
-  position: relative;
+const SearchAndButtonContainer = styled.div`
+  display: flex;
+  gap: 16px;
+  align-items: center;
   margin-bottom: 30px;
   width: 100%;
+  max-width: 700px;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 12px;
+  }
+`;
+
+const SearchContainer = styled.div`
+  position: relative;
+  width: 100%;
   max-width: 400px;
+`;
+
+const CreateEventButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #253d8f;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 25px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background: #1e3a8a;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(37, 61, 143, 0.3);
+  }
+  
+  &:active {
+    transform: translateY(0);
+  }
+  
+  @media (max-width: 768px) {
+    width: 100%;
+    justify-content: center;
+  }
 `;
 
 const SearchInput = styled.input`
@@ -307,7 +291,7 @@ const CloseButton = styled.button`
 const PopupGrid = styled.div`
   display: grid;
   grid-template-columns: 1fr;
-  gap: 20px;
+  gap: 8px;
 `;
 
 const SectionLabel = styled.h3`
@@ -317,45 +301,10 @@ const SectionLabel = styled.h3`
   margin: 0 0 5px 0;
   text-align: left;
   width: 100%;
-  padding-left: 160px;
+  padding-left: calc(50% - 525px);
   
   @media (max-width: 768px) {
     padding-left: 20px;
-  }
-`;
-
-const ScrollBarContainer = styled.div`
-  width: 100%;
-  height: 6px;
-  background: transparent;
-  border-radius: 3px;
-  margin-top: 10px;
-  padding: 0 160px;
-  
-  @media (max-width: 768px) {
-    display: none;
-  }
-`;
-
-const ScrollBar = styled.div`
-  width: 100%;
-  height: 100%;
-  position: relative;
-  background: #e2e8f0;
-  border-radius: 3px;
-  user-select: none;
-`;
-
-const ScrollThumb = styled.div`
-  height: 100%;
-  background: #4a5568;
-  border-radius: 3px;
-  cursor: pointer;
-  transition: all 0.3s linear;
-  user-select: none;
-  
-  &:hover {
-    background: #2d3748;
   }
 `;
 
@@ -366,10 +315,7 @@ const EventsPage = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [showAllEvents, setShowAllEvents] = useState(false);
-  const [scrollPosition, setScrollPosition] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
-  const carouselRef = useRef(null);
-  const scrollBarRef = useRef(null);
+
   
   const [events, setEvents] = useState([
     {
@@ -460,99 +406,9 @@ const EventsPage = () => {
     setSelectedEvent(null);
   };
 
-  const updateScrollPosition = useCallback(() => {
-    if (carouselRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = carouselRef.current;
-      const maxScroll = scrollWidth - clientWidth;
-      const position = maxScroll > 0 ? (scrollLeft / maxScroll) * 100 : 0;
-      setScrollPosition(position);
-    }
-  }, []);
-
-  const handleMouseDown = (e) => {
-    e.preventDefault();
-    
-    if (!scrollBarRef.current || !carouselRef.current) return;
-    
-    const rect = scrollBarRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
-    
-    const { scrollWidth, clientWidth } = carouselRef.current;
-    const maxScroll = scrollWidth - clientWidth;
-    const targetScrollLeft = (percentage / 100) * maxScroll;
-    
-    // Smooth animation only on initial click
-    carouselRef.current.scrollTo({
-      left: targetScrollLeft,
-      behavior: 'smooth'
-    });
-    
-    setIsDragging(true);
+  const truncateText = (text, maxLength) => {
+    return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
   };
-
-  const handleMouseMove = useCallback((e) => {
-    if (!isDragging) return;
-    if (!scrollBarRef.current || !carouselRef.current) return;
-    
-    const rect = scrollBarRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
-    
-    const { scrollWidth, clientWidth } = carouselRef.current;
-    const maxScroll = scrollWidth - clientWidth;
-    const scrollLeft = (percentage / 100) * maxScroll;
-    
-    // Instant movement when dragging
-    carouselRef.current.scrollLeft = scrollLeft;
-    setScrollPosition(percentage);
-  }, [isDragging]);
-
-  const handleMouseUp = () => {
-    setIsDragging(false);
-  };
-
-  useEffect(() => {
-    if (isDragging) {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
-      document.addEventListener('selectstart', (e) => e.preventDefault());
-      return () => {
-        document.removeEventListener('mousemove', handleMouseMove);
-        document.removeEventListener('mouseup', handleMouseUp);
-        document.removeEventListener('selectstart', (e) => e.preventDefault());
-      };
-    }
-  }, [isDragging, handleMouseMove]);
-
-  useEffect(() => {
-    const carousel = carouselRef.current;
-    if (carousel) {
-      carousel.addEventListener('scroll', updateScrollPosition);
-      updateScrollPosition();
-      return () => carousel.removeEventListener('scroll', updateScrollPosition);
-    }
-  }, [updateScrollPosition]);
-
-
-
-  const scrollLeft = () => {
-    const scrollAmount = 200;
-    carouselRef.current?.scrollBy({ 
-      left: -scrollAmount, 
-      behavior: 'smooth' 
-    });
-  };
-
-  const scrollRight = () => {
-    const scrollAmount = 200;
-    carouselRef.current?.scrollBy({ 
-      left: scrollAmount, 
-      behavior: 'smooth' 
-    });
-  };
-
-
 
   const filteredEvents = events.filter(event =>
     event.nomeEvento.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -560,7 +416,6 @@ const EventsPage = () => {
     event.descricao.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const shouldCenterEvents = filteredEvents.length <= 3;
   const sortedEvents = [...filteredEvents].sort((a, b) => new Date(b.dataEvento) - new Date(a.dataEvento));
   const displayedEvents = window.innerWidth <= 768 ? sortedEvents.slice(0, 3) : filteredEvents;
   
@@ -585,27 +440,28 @@ const EventsPage = () => {
       <Navbar toggle={toggle} scrollNav={true}/>
       <EventsContainer>
         <h1>Eventos</h1>
-        <SearchContainer>
-          <SearchInput
-            type="text"
-            placeholder="Pesquisar eventos..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          <SearchIcon>
-            <FaSearch />
-          </SearchIcon>
-        </SearchContainer>
+        <SearchAndButtonContainer>
+          <SearchContainer>
+            <SearchInput
+              type="text"
+              placeholder="Pesquisar eventos..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <SearchIcon>
+              <FaSearch />
+            </SearchIcon>
+          </SearchContainer>
+          <CreateEventButton>
+            <FaPlus />
+            Cadastrar Evento
+          </CreateEventButton>
+        </SearchAndButtonContainer>
         <SectionLabel>Recentes</SectionLabel>
-        <CarouselWrapper>
-          {!shouldCenterEvents && (
-            <PrevButton onClick={scrollLeft}>
-              <FaChevronLeft />
-            </PrevButton>
-          )}
-          <CarouselContainer ref={carouselRef} shouldCenter={shouldCenterEvents}>
+        <GridWrapper>
+          <GridContainer>
             {displayedEvents.map((event) => (
-              <CarouselCard key={event.id} onClick={() => handleViewDetails(event)}>
+              <EventCard key={event.id} onClick={() => handleViewDetails(event)}>
                 <CardImage 
                   src={event.imagemEvento || placeholderImage} 
                   alt={event.nomeEvento}
@@ -615,34 +471,16 @@ const EventsPage = () => {
                     <CardTitle>{event.nomeEvento}</CardTitle>
                     <Badge>NOVO</Badge>
                   </CardHeader>
-                  <CardDescription>{event.descricao}</CardDescription>
+                  <CardDescription>{truncateText(event.descricao, 50)}</CardDescription>
                   <CardActions>
                     <BadgeOutline>{event.dataEvento}</BadgeOutline>
                     <BadgeOutline>{event.localEvento}</BadgeOutline>
                   </CardActions>
                 </CardContent>
-              </CarouselCard>
+              </EventCard>
             ))}
-          </CarouselContainer>
-          {!shouldCenterEvents && (
-            <NextButton onClick={scrollRight}>
-              <FaChevronRight />
-            </NextButton>
-          )}
-        </CarouselWrapper>
-        
-        {!shouldCenterEvents && (
-          <ScrollBarContainer>
-            <ScrollBar ref={scrollBarRef} onMouseDown={handleMouseDown}>
-              <ScrollThumb 
-                style={{
-                  width: `${Math.max(10, 100 / Math.max(1, displayedEvents.length / 3))}%`,
-                  transform: `translateX(${scrollPosition * (100 / Math.max(10, 100 / Math.max(1, displayedEvents.length / 3)) - 1)}%)`
-                }}
-              />
-            </ScrollBar>
-          </ScrollBarContainer>
-        )}
+          </GridContainer>
+        </GridWrapper>
         
         <ViewMoreButton onClick={handleShowAllEvents}>
           Ver mais eventos
@@ -657,7 +495,7 @@ const EventsPage = () => {
               </PopupHeader>
               <PopupGrid>
                 {filteredEvents.map((event) => (
-                  <CarouselCard key={event.id} onClick={() => handleViewDetails(event)}>
+                  <EventCard key={event.id} onClick={() => handleViewDetails(event)}>
                     <CardImage 
                       src={event.imagemEvento || placeholderImage} 
                       alt={event.nomeEvento}
@@ -673,7 +511,7 @@ const EventsPage = () => {
                         <BadgeOutline>{event.localEvento}</BadgeOutline>
                       </CardActions>
                     </CardContent>
-                  </CarouselCard>
+                  </EventCard>
                 ))}
               </PopupGrid>
             </PopupContent>

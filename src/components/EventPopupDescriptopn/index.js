@@ -38,8 +38,7 @@ const PopupContent = styled.div`
   background: #ffffff;
   border-radius: 16px;
   padding: 0;
-  width: 95vw;
-  max-width: 800px;
+  max-width: 448px;
   position: relative;
   box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
   overflow: hidden;
@@ -79,23 +78,7 @@ const InstructionText = styled.div`
 `;
 
 const PopupBody = styled.div`
-  display: flex;
-`;
-
-const LeftSection = styled.div`
-  width: 50%;
   padding: 24px;
-`;
-
-const RightSection = styled.div`
-  width: 50%;
-  padding: 24px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-`;
-
-const ContentSection = styled.div`
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -104,13 +87,12 @@ const ContentSection = styled.div`
 const CarouselContainer = styled.div`
   position: relative;
   width: 100%;
-  height: 280px;
+  height: 192px;
   overflow: hidden;
   border-radius: 12px;
   background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
   border: 1px solid #e2e8f0;
-  margin: auto 0;
 `;
 
 const CarouselTrack = styled.div`
@@ -166,13 +148,13 @@ const CarouselButton = styled.button`
   align-items: center;
   justify-content: center;
   transition: all 300ms ease;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
   backdrop-filter: blur(4px);
   
   &:hover {
     background: rgba(255, 255, 255, 1);
     transform: translateY(-50%) scale(1.1);
-    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
   }
 `;
 
@@ -202,7 +184,7 @@ const DotsContainer = styled.div`
   background: rgba(0, 0, 0, 0.2);
   backdrop-filter: blur(4px);
   border-radius: 20px;
-  padding: 12px 16px;
+  padding: 8px 12px;
 `;
 
 const Dot = styled.button`
@@ -213,7 +195,7 @@ const Dot = styled.button`
   background: ${props => props.active ? '#ffffff' : 'rgba(255, 255, 255, 0.6)'};
   width: ${props => props.active ? '24px' : '12px'};
   height: 12px;
-  box-shadow: ${props => props.active ? '0 2px 4px rgba(0, 0, 0, 0.2)' : 'none'};
+  box-shadow: ${props => props.active ? '0 4px 8px rgba(0, 0, 0, 0.3)' : 'none'};
   
   &:hover {
     background: ${props => props.active ? '#ffffff' : 'rgba(255, 255, 255, 0.8)'};
@@ -227,17 +209,20 @@ const EventTitle = styled.h2`
   color: #1f2937;
   margin: 0;
   line-height: 1.2;
+  text-align: center;
 `;
 
 const EventDescription = styled.p`
   color: #6b7280;
   margin: 0;
   line-height: 1.5;
+  text-align: center;
 `;
 
 const InfoRow = styled.div`
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   color: #1f2937;
 `;
@@ -256,6 +241,7 @@ const InfoText = styled.span`
 const DateTimeRow = styled.div`
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 16px;
   color: #1f2937;
 `;
@@ -280,7 +266,6 @@ const WebsiteButton = styled.button`
   justify-content: center;
   gap: 8px;
   transition: all 200ms ease;
-  margin-top: 24px;
   
   &:hover {
     background: #2563eb;
@@ -367,38 +352,32 @@ const EventPopup = ({ event, onClose }) => {
         <InstructionText>clique fora para sair</InstructionText>
         
         <PopupBody>
-          <LeftSection>
-            <EventCarousel images={images} />
-          </LeftSection>
+          <EventCarousel images={images} />
           
-          <RightSection>
-            <ContentSection>
-              <EventTitle>{event.nomeEvento}</EventTitle>
-              
-              <EventDescription>{event.descricao}</EventDescription>
-              
-              <InfoRow>
-                <InfoIcon><FaMapMarkerAlt size={16} /></InfoIcon>
-                <InfoText>{event.localEvento}</InfoText>
-              </InfoRow>
-              
-              <DateTimeRow>
-                <DateTimeItem>
-                  <InfoIcon><FaCalendarAlt size={16} /></InfoIcon>
-                  <InfoText>{event.dataEvento}</InfoText>
-                </DateTimeItem>
-                <DateTimeItem>
-                  <InfoIcon><FaClock size={16} /></InfoIcon>
-                  <InfoText>18:00</InfoText>
-                </DateTimeItem>
-              </DateTimeRow>
-            </ContentSection>
-            
-            <WebsiteButton onClick={() => event.website && window.open(event.website, '_blank')}>
-              <span>ir ao site</span>
-              <FaExternalLinkAlt size={16} />
-            </WebsiteButton>
-          </RightSection>
+          <EventTitle>{event.nomeEvento}</EventTitle>
+          
+          <EventDescription>{event.descricao}</EventDescription>
+          
+          <InfoRow>
+            <InfoIcon><FaMapMarkerAlt size={16} /></InfoIcon>
+            <InfoText>{event.localEvento}</InfoText>
+          </InfoRow>
+          
+          <DateTimeRow>
+            <DateTimeItem>
+              <InfoIcon><FaCalendarAlt size={16} /></InfoIcon>
+              <InfoText>{event.dataEvento}</InfoText>
+            </DateTimeItem>
+            <DateTimeItem>
+              <InfoIcon><FaClock size={16} /></InfoIcon>
+              <InfoText>18:00</InfoText>
+            </DateTimeItem>
+          </DateTimeRow>
+          
+          <WebsiteButton onClick={() => event.website && window.open(event.website, '_blank')}>
+            <span>ir ao site</span>
+            <FaExternalLinkAlt size={16} />
+          </WebsiteButton>
         </PopupBody>
       </PopupContent>
     </PopupOverlay>
