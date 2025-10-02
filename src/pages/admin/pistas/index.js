@@ -4,6 +4,7 @@ import { FiEdit, FiTrash, FiEye, FiEyeOff } from 'react-icons/fi';
 import SidebarAdmin from '../../../components/SidebarAdmin';
 import SearchBar from '../../../components/SearchBar';
 import EditPistaModal from '../../../components/EditPistaModal';
+import ConfirmModal from '../../../components/ConfirmModal';
 
 const AdminContainer = styled.div`
   background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
@@ -181,6 +182,8 @@ const Pistas = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [editingPista, setEditingPista] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [pistaToDelete, setPistaToDelete] = useState(null);
 
   const truncateDescription = (text) => {
     if (text.length <= 25) return text;
@@ -235,7 +238,15 @@ const Pistas = () => {
   ]);
 
   const handleDelete = (pistaId) => {
-    setPistas(pistas.filter(pista => pista.id !== pistaId));
+    const pista = pistas.find(p => p.id === pistaId);
+    setPistaToDelete(pista);
+    setShowConfirmModal(true);
+  };
+
+  const confirmDelete = () => {
+    setPistas(pistas.filter(pista => pista.id !== pistaToDelete.id));
+    setShowConfirmModal(false);
+    setPistaToDelete(null);
   };
 
   const handleEdit = (pistaId) => {
@@ -348,6 +359,14 @@ const Pistas = () => {
         }}
         pista={editingPista}
         onSave={handleSavePista}
+      />
+      
+      <ConfirmModal
+        isOpen={showConfirmModal}
+        onClose={() => setShowConfirmModal(false)}
+        onConfirm={confirmDelete}
+        title="Excluir pista?"
+        message={`Tem certeza que deseja excluir a pista "${pistaToDelete?.nome}"? Esta ação não pode ser desfeita.`}
       />
     </AdminContainer>
   );

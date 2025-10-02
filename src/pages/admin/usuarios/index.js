@@ -3,6 +3,8 @@ import styled from 'styled-components';
 import { FiEdit, FiTrash2 } from 'react-icons/fi';
 import SidebarAdmin from '../../../components/SidebarAdmin';
 import SearchBar from '../../../components/SearchBar';
+import EditUserModal from '../../../components/EditUserModal';
+import ConfirmModal from '../../../components/ConfirmModal';
 
 const AdminContainer = styled.div`
   background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
@@ -262,22 +264,26 @@ const EmptySubtext = styled.p`
 
 const Usuarios = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [userToDelete, setUserToDelete] = useState(null);
   const [users, setUsers] = useState([
     {
       id: 1,
       nome: 'João Silva',
       email: 'joao@skateflow.com',
-      administrador: 'Admin',
+      isAdmin: true,
       foto: null,
-      status: 'ativo'
+      isActive: true
     },
     {
       id: 2,
       nome: 'Maria Santos',
       email: 'maria@skateflow.com',
-      administrador: 'Usuário',
+      isAdmin: false,
       foto: null,
-      status: 'ativo'
+      isActive: true
     }
   ]);
 
@@ -299,13 +305,27 @@ const Usuarios = () => {
   };
 
   const handleEdit = (userId) => {
-    console.log('Editar usuário:', userId);
+    const user = users.find(u => u.id === userId);
+    setSelectedUser(user);
+    setShowEditModal(true);
+  };
+
+  const handleSaveUser = (updatedUser) => {
+    setUsers(users.map(user => 
+      user.id === updatedUser.id ? updatedUser : user
+    ));
   };
 
   const handleDelete = (userId) => {
-    if (window.confirm('Tem certeza que deseja excluir este usuário?')) {
-      setUsers(users.filter(user => user.id !== userId));
-    }
+    const user = users.find(u => u.id === userId);
+    setUserToDelete(user);
+    setShowConfirmModal(true);
+  };
+
+  const confirmDelete = () => {
+    setUsers(users.filter(user => user.id !== userToDelete.id));
+    setShowConfirmModal(false);
+    setUserToDelete(null);
   };
 
   const filteredUsers = useMemo(() => {
@@ -360,13 +380,13 @@ const Usuarios = () => {
                     <TableCell>{user.nome}</TableCell>
                     <TableCell>{user.email}</TableCell>
                     <TableCell>
-                      <AdminBadge isAdmin={user.administrador === 'Admin'}>
-                        {user.administrador}
+                      <AdminBadge isAdmin={user.isAdmin}>
+                        {user.isAdmin ? 'Admin' : 'Usuário'}
                       </AdminBadge>
                     </TableCell>
                     <TableCell>
-                      <StatusBadge active={user.status === 'ativo'}>
-                        {user.status === 'ativo' ? 'Ativo' : 'Inativo'}
+                      <StatusBadge active={user.isActive}>
+                        {user.isActive ? 'Ativo' : 'Inativo'}
                       </StatusBadge>
                     </TableCell>
                     <TableCell>
@@ -387,6 +407,21 @@ const Usuarios = () => {
             </Table>
           </TableContainer>
         )}
+        
+        <EditUserModal
+          isOpen={showEditModal}
+          onClose={() => setShowEditModal(false)}
+          user={selectedUser}
+          onSave={handleSaveUser}
+        />
+        
+        <ConfirmModal
+          isOpen={showConfirmModal}
+          onClose={() => setShowConfirmModal(false)}
+          onConfirm={confirmDelete}
+          title="Excluir usuário?"
+          message={`Tem certeza que deseja excluir o usuário "${userToDelete?.nome}"? Esta ação não pode ser desfeita.`}
+        />
       </ContentContainer>
     </AdminContainer>
   );
