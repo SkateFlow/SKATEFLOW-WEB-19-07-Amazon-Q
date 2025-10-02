@@ -130,11 +130,6 @@ const EditPistaModal = ({ isOpen, onClose, pista, onSave }) => {
     return JSON.stringify(formData) !== JSON.stringify(originalData);
   };
 
-  const hasEmptyFields = () => {
-    const requiredFields = ['nome', 'descricao', 'cep', 'rua', 'bairro', 'numero', 'latitude', 'longitude'];
-    return requiredFields.some(field => !formData[field] || formData[field].toString().trim() === '');
-  };
-
   const handleClose = () => {
     if (hasChanges()) {
       setShowConfirmModal(true);
