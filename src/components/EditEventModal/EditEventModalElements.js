@@ -166,15 +166,7 @@ export const TextArea = styled.textarea`
   }
 `;
 
-export const PublishedBy = styled.div`
-  grid-column: span 2;
-  padding: 12px 16px;
-  background: #f8fafc;
-  border-radius: 8px;
-  color: #64748b;
-  font-size: 14px;
-  border: 1px solid #e2e8f0;
-`;
+
 
 export const SwitchGroup = styled.div`
   grid-column: span 2;

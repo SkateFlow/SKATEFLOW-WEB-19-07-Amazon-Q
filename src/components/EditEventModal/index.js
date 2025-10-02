@@ -15,6 +15,7 @@ import {
   Label,
   Input,
   TextArea,
+  PublishedBy,
   SwitchGroup,
   SwitchLabel,
   Switch,

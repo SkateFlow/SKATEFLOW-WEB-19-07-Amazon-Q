@@ -295,7 +295,11 @@ const PaginationButton = styled.button`
   }
 `;
 
-
+const PaginationInfo = styled.span`
+  color: #64748b;
+  font-size: 14px;
+  margin: 0 16px;
+`;
 
 const Usuarios = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -345,7 +349,8 @@ const Usuarios = () => {
       isAdmin: false,
       foto: null,
       isActive: true
-    }
+    },
+
   ]);
 
   const getAvatarColor = (name) => {
