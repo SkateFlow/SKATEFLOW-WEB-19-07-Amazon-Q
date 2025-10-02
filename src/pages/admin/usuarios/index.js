@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import styled from 'styled-components';
-import { FiEdit } from 'react-icons/fi';
+import { FiEdit, FiTrash2 } from 'react-icons/fi';
 import SidebarAdmin from '../../../components/SidebarAdmin';
 import SearchBar from '../../../components/SearchBar';
 
@@ -69,6 +69,34 @@ const TableHeader = styled.th`
   background: #f8fafc;
   border-bottom: 1px solid #e2e8f0;
   font-size: 14px;
+  vertical-align: middle;
+  
+  &:first-child {
+    width: 80px;
+    text-align: center;
+  }
+  
+  &:nth-child(2) {
+    width: 200px;
+  }
+  
+  &:nth-child(3) {
+    width: 250px;
+  }
+  
+  &:nth-child(4) {
+    width: 120px;
+  }
+  
+  &:nth-child(5) {
+    width: 100px;
+    text-align: center;
+  }
+  
+  &:last-child {
+    width: 180px;
+    text-align: center;
+  }
 `;
 
 const TableRow = styled.tr`
@@ -84,17 +112,80 @@ const TableCell = styled.td`
   border-bottom: 1px solid #e2e8f0;
   color: #475569;
   font-size: 14px;
+  vertical-align: middle;
+  
+  &:first-child {
+    text-align: center;
+    width: 80px;
+  }
+  
+  &:nth-child(2) {
+    width: 200px;
+    text-align: left;
+  }
+  
+  &:nth-child(3) {
+    width: 250px;
+    text-align: left;
+  }
+  
+  &:nth-child(4) {
+    width: 120px;
+    text-align: left;
+  }
+  
+  &:nth-child(5) {
+    text-align: center;
+    width: 100px;
+  }
   
   &:last-child {
+    text-align: center;
+    width: 180px;
     border-bottom: none;
   }
 `;
 
-const Checkbox = styled.input`
-  width: 18px;
-  height: 18px;
-  accent-color: #667eea;
-  cursor: pointer;
+const Avatar = styled.div`
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 16px;
+  color: white;
+  background: ${props => props.bgColor};
+  flex-shrink: 0;
+  margin: 0 auto;
+`;
+
+const AvatarImage = styled.img`
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  margin: 0 auto;
+  display: block;
+`;
+
+const StatusBadge = styled.span`
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  background: ${props => props.active ? '#dcfce7' : '#fee2e2'};
+  color: ${props => props.active ? '#166534' : '#dc2626'};
+  display: inline-block;
+`;
+
+const ActionButtons = styled.div`
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
 `;
 
 const EditButton = styled.button`
@@ -113,6 +204,25 @@ const EditButton = styled.button`
   
   &:hover {
     background: #b3e5fc;
+  }
+`;
+
+const DeleteButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: #fee2e2;
+  color: #dc2626;
+  
+  &:hover {
+    background: #fecaca;
   }
 `;
 
@@ -147,27 +257,44 @@ const Usuarios = () => {
       nome: 'João Silva',
       email: 'joao@skateflow.com',
       senha: '••••••••',
-      isAdmin: true
+      foto: null,
+      status: 'ativo'
     },
     {
       id: 2,
       nome: 'Maria Santos',
       email: 'maria@skateflow.com',
       senha: '••••••••',
-      isAdmin: false
+      foto: null,
+      status: 'ativo'
     }
   ]);
+
+  const getAvatarColor = (name) => {
+    const colors = ['#667eea', '#f093fb', '#4facfe', '#43e97b', '#fa709a', '#ffecd2', '#a8edea', '#d299c2'];
+    const index = name.charCodeAt(0) % colors.length;
+    return colors[index];
+  };
+
+  const renderAvatar = (user) => {
+    if (user.foto) {
+      return <AvatarImage src={user.foto} alt={user.nome} />;
+    }
+    return (
+      <Avatar bgColor={getAvatarColor(user.nome)}>
+        {user.nome.charAt(0).toUpperCase()}
+      </Avatar>
+    );
+  };
 
   const handleEdit = (userId) => {
     console.log('Editar usuário:', userId);
   };
 
-  const toggleAdmin = (userId) => {
-    setUsers(users.map(user => 
-      user.id === userId 
-        ? { ...user, isAdmin: !user.isAdmin }
-        : user
-    ));
+  const handleDelete = (userId) => {
+    if (window.confirm('Tem certeza que deseja excluir este usuário?')) {
+      setUsers(users.filter(user => user.id !== userId));
+    }
   };
 
   const filteredUsers = useMemo(() => {
@@ -205,31 +332,39 @@ const Usuarios = () => {
             <Table>
               <thead>
                 <tr>
+                  <TableHeader>Foto</TableHeader>
                   <TableHeader>Nome</TableHeader>
                   <TableHeader>Email</TableHeader>
                   <TableHeader>Senha</TableHeader>
-                  <TableHeader>Admin</TableHeader>
+                  <TableHeader>Status</TableHeader>
                   <TableHeader>Ações</TableHeader>
                 </tr>
               </thead>
               <tbody>
                 {filteredUsers.map((user) => (
                   <TableRow key={user.id}>
+                    <TableCell>
+                      {renderAvatar(user)}
+                    </TableCell>
                     <TableCell>{user.nome}</TableCell>
                     <TableCell>{user.email}</TableCell>
                     <TableCell>{user.senha}</TableCell>
                     <TableCell>
-                      <Checkbox 
-                        type="checkbox" 
-                        checked={user.isAdmin}
-                        onChange={() => toggleAdmin(user.id)}
-                      />
+                      <StatusBadge active={user.status === 'ativo'}>
+                        {user.status === 'ativo' ? 'Ativo' : 'Inativo'}
+                      </StatusBadge>
                     </TableCell>
                     <TableCell>
-                      <EditButton onClick={() => handleEdit(user.id)}>
-                        <FiEdit size={16} />
-                        Editar
-                      </EditButton>
+                      <ActionButtons>
+                        <EditButton onClick={() => handleEdit(user.id)}>
+                          <FiEdit size={16} />
+                          Editar
+                        </EditButton>
+                        <DeleteButton onClick={() => handleDelete(user.id)}>
+                          <FiTrash2 size={16} />
+                          Excluir
+                        </DeleteButton>
+                      </ActionButtons>
                     </TableCell>
                   </TableRow>
                 ))}
