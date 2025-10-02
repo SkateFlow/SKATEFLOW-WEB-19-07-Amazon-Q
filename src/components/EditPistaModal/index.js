@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { FiX, FiUpload } from 'react-icons/fi';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   ModalOverlay,
   ModalContainer,
@@ -37,11 +38,14 @@ const EditPistaModal = ({ isOpen, onClose, pista, onSave }) => {
   });
   
   const [locationInfo, setLocationInfo] = useState('');
+  const [errors, setErrors] = useState({});
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [originalData, setOriginalData] = useState({});
 
   // Update form data when pista changes
   React.useEffect(() => {
     if (pista) {
-      setFormData({
+      const data = {
         nome: pista.nome || '',
         descricao: pista.descricao || '',
         cep: pista.cep || '',
@@ -52,7 +56,9 @@ const EditPistaModal = ({ isOpen, onClose, pista, onSave }) => {
         longitude: pista.longitude || '',
         publica: pista.publica || false,
         fotos: pista.fotos || ['', '', '']
-      });
+      };
+      setFormData(data);
+      setOriginalData(data);
     }
   }, [pista]);
 
@@ -120,19 +126,84 @@ const EditPistaModal = ({ isOpen, onClose, pista, onSave }) => {
     }));
   };
 
-  const handleSave = () => {
-    onSave({ ...pista, ...formData });
+  const hasChanges = () => {
+    return JSON.stringify(formData) !== JSON.stringify(originalData);
+  };
+
+  const hasEmptyFields = () => {
+    const requiredFields = ['nome', 'descricao', 'cep', 'rua', 'bairro', 'numero', 'latitude', 'longitude'];
+    return requiredFields.some(field => !formData[field] || formData[field].toString().trim() === '');
+  };
+
+  const handleClose = () => {
+    if (hasChanges()) {
+      setShowConfirmModal(true);
+    } else {
+      onClose();
+    }
+  };
+
+  const handleConfirmDiscard = () => {
+    setFormData(originalData);
+    setErrors({});
+    setShowConfirmModal(false);
     onClose();
   };
 
-  if (!isOpen) return null;
+  const handleConfirmContinue = () => {
+    setShowConfirmModal(false);
+  };
+
+  const handleSave = () => {
+    const fieldMessages = {
+      nome: 'Por favor, insira o nome da pista',
+      descricao: 'Por favor, insira uma descrição',
+      cep: 'Por favor, insira o CEP',
+      rua: 'Por favor, insira o nome da rua',
+      bairro: 'Por favor, insira o bairro',
+      numero: 'Por favor, insira o número do local',
+      latitude: 'Por favor, insira a latitude',
+      longitude: 'Por favor, insira a longitude'
+    };
+    
+    const newErrors = {};
+    
+    Object.keys(fieldMessages).forEach(field => {
+      if (!formData[field] || formData[field].toString().trim() === '') {
+        newErrors[field] = fieldMessages[field];
+      }
+    });
+    
+    setErrors(newErrors);
+    
+    if (Object.keys(newErrors).length === 0) {
+      onSave({ ...pista, ...formData });
+      onClose();
+    }
+  };
 
   return (
-    <ModalOverlay onClick={onClose}>
-      <ModalContainer onClick={(e) => e.stopPropagation()}>
+    <AnimatePresence mode="wait">
+      {isOpen && (
+        <ModalOverlay 
+          as={motion.div}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          onClick={handleClose}
+        >
+          <ModalContainer 
+            as={motion.div}
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            onClick={(e) => e.stopPropagation()}
+          >
         <ModalHeader>
           <ModalTitle>Editar Pista</ModalTitle>
-          <CloseButton onClick={onClose}>
+          <CloseButton onClick={handleClose}>
             <FiX />
           </CloseButton>
         </ModalHeader>
@@ -161,6 +232,19 @@ const EditPistaModal = ({ isOpen, onClose, pista, onSave }) => {
                 onChange={(e) => handleInputChange('nome', e.target.value)}
                 placeholder="Digite o nome da pista"
               />
+              <AnimatePresence>
+                {errors.nome && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                    style={{ color: '#dc2626', fontSize: '12px', marginTop: '4px' }}
+                  >
+                    {errors.nome}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </FormGroup>
 
 
@@ -176,6 +260,19 @@ const EditPistaModal = ({ isOpen, onClose, pista, onSave }) => {
               <span style={{ fontSize: '12px', color: '#64748b' }}>
                 {formData.descricao.length}/250 caracteres
               </span>
+              <AnimatePresence>
+                {errors.descricao && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                    style={{ color: '#dc2626', fontSize: '12px', marginTop: '4px' }}
+                  >
+                    {errors.descricao}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </FormGroup>
 
             <FormGroup>
@@ -187,6 +284,19 @@ const EditPistaModal = ({ isOpen, onClose, pista, onSave }) => {
                 placeholder="00000-000"
                 maxLength={8}
               />
+              <AnimatePresence>
+                {errors.cep && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                    style={{ color: '#dc2626', fontSize: '12px', marginTop: '4px' }}
+                  >
+                    {errors.cep}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </FormGroup>
 
             <FormGroup>
@@ -206,6 +316,19 @@ const EditPistaModal = ({ isOpen, onClose, pista, onSave }) => {
                   📍 {locationInfo}
                 </div>
               )}
+              <AnimatePresence>
+                {errors.rua && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                    style={{ color: '#dc2626', fontSize: '12px', marginTop: '4px' }}
+                  >
+                    {errors.rua}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </FormGroup>
 
             <FormGroup>
@@ -217,6 +340,19 @@ const EditPistaModal = ({ isOpen, onClose, pista, onSave }) => {
                 readOnly
                 style={{ backgroundColor: '#f8fafc' }}
               />
+              <AnimatePresence>
+                {errors.bairro && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                    style={{ color: '#dc2626', fontSize: '12px', marginTop: '4px' }}
+                  >
+                    {errors.bairro}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </FormGroup>
 
             <FormGroup>
@@ -227,6 +363,19 @@ const EditPistaModal = ({ isOpen, onClose, pista, onSave }) => {
                 onChange={(e) => handleInputChange('numero', e.target.value)}
                 placeholder="Número"
               />
+              <AnimatePresence>
+                {errors.numero && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                    style={{ color: '#dc2626', fontSize: '12px', marginTop: '4px' }}
+                  >
+                    {errors.numero}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </FormGroup>
 
             <CheckboxGroup>
@@ -246,6 +395,19 @@ const EditPistaModal = ({ isOpen, onClose, pista, onSave }) => {
                 onChange={(e) => handleInputChange('latitude', e.target.value)}
                 placeholder="-23.550520"
               />
+              <AnimatePresence>
+                {errors.latitude && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                    style={{ color: '#dc2626', fontSize: '12px', marginTop: '4px' }}
+                  >
+                    {errors.latitude}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </FormGroup>
 
             <FormGroup>
@@ -256,16 +418,86 @@ const EditPistaModal = ({ isOpen, onClose, pista, onSave }) => {
                 onChange={(e) => handleInputChange('longitude', e.target.value)}
                 placeholder="-46.633308"
               />
+              <AnimatePresence>
+                {errors.longitude && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                    style={{ color: '#dc2626', fontSize: '12px', marginTop: '4px' }}
+                  >
+                    {errors.longitude}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </FormGroup>
           </FormGrid>
 
           <ButtonGroup>
-            <CancelButton onClick={onClose}>Cancelar</CancelButton>
+            <CancelButton onClick={handleClose}>Cancelar</CancelButton>
             <SaveButton onClick={handleSave}>Salvar Alterações</SaveButton>
           </ButtonGroup>
         </ModalContent>
-      </ModalContainer>
-    </ModalOverlay>
+          </ModalContainer>
+          
+          <AnimatePresence mode="wait">
+            {showConfirmModal && (
+              <ModalOverlay 
+                style={{ zIndex: 1001 }}
+                as={motion.div}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <ModalContainer 
+                  as={motion.div}
+                  initial={{ scale: 0.9, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.9, opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  style={{ 
+                    maxWidth: '400px',
+                    padding: '24px',
+                    textAlign: 'center'
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <ModalHeader style={{ borderBottom: 'none', paddingBottom: '0' }}>
+                    <ModalTitle style={{ fontSize: '18px' }}>Descartar alterações?</ModalTitle>
+                  </ModalHeader>
+                  
+                  <div style={{ 
+                    padding: '20px 0',
+                    color: '#64748b',
+                    fontSize: '14px',
+                    lineHeight: '1.5'
+                  }}>
+                    Você possui alterações não salvas. Deseja continuar editando ou descartar as alterações?
+                  </div>
+                  
+                  <ButtonGroup>
+                    <CancelButton 
+                      onClick={handleConfirmDiscard}
+                      style={{ flex: 1 }}
+                    >
+                      Descartar
+                    </CancelButton>
+                    <SaveButton 
+                      onClick={handleConfirmContinue}
+                      style={{ flex: 1 }}
+                    >
+                      Continuar
+                    </SaveButton>
+                  </ButtonGroup>
+                </ModalContainer>
+              </ModalOverlay>
+            )}
+          </AnimatePresence>
+        </ModalOverlay>
+      )}
+    </AnimatePresence>
   );
 };
 

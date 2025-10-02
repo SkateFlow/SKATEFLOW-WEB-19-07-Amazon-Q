@@ -181,6 +181,11 @@ const Pistas = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [editingPista, setEditingPista] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const truncateDescription = (text) => {
+    if (text.length <= 25) return text;
+    return text.substring(0, 25) + '...';
+  };
   const [pistas, setPistas] = useState([
     {
       id: 1,
@@ -305,7 +310,7 @@ const Pistas = () => {
                   </InfoRow>
                   <InfoRow>
                     <InfoLabel>Descrição:</InfoLabel>
-                    <span>{pista.descricao}</span>
+                    <span>{truncateDescription(pista.descricao)}</span>
                   </InfoRow>
                 </PistaInfo>
 
