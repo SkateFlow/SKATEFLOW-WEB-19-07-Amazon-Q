@@ -86,6 +86,7 @@ const TableHeader = styled.th`
   
   &:nth-child(4) {
     width: 120px;
+    text-align: center;
   }
   
   &:nth-child(5) {
@@ -131,7 +132,7 @@ const TableCell = styled.td`
   
   &:nth-child(4) {
     width: 120px;
-    text-align: left;
+    text-align: center;
   }
   
   &:nth-child(5) {
@@ -178,6 +179,16 @@ const StatusBadge = styled.span`
   font-weight: 500;
   background: ${props => props.active ? '#dcfce7' : '#fee2e2'};
   color: ${props => props.active ? '#166534' : '#dc2626'};
+  display: inline-block;
+`;
+
+const AdminBadge = styled.span`
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  background: ${props => props.isAdmin ? '#e0f2fe' : '#f1f5f9'};
+  color: ${props => props.isAdmin ? '#0277bd' : '#64748b'};
   display: inline-block;
 `;
 
@@ -256,7 +267,7 @@ const Usuarios = () => {
       id: 1,
       nome: 'João Silva',
       email: 'joao@skateflow.com',
-      senha: '••••••••',
+      administrador: 'Admin',
       foto: null,
       status: 'ativo'
     },
@@ -264,7 +275,7 @@ const Usuarios = () => {
       id: 2,
       nome: 'Maria Santos',
       email: 'maria@skateflow.com',
-      senha: '••••••••',
+      administrador: 'Usuário',
       foto: null,
       status: 'ativo'
     }
@@ -335,7 +346,7 @@ const Usuarios = () => {
                   <TableHeader>Foto</TableHeader>
                   <TableHeader>Nome</TableHeader>
                   <TableHeader>Email</TableHeader>
-                  <TableHeader>Senha</TableHeader>
+                  <TableHeader>Administrador</TableHeader>
                   <TableHeader>Status</TableHeader>
                   <TableHeader>Ações</TableHeader>
                 </tr>
@@ -348,7 +359,11 @@ const Usuarios = () => {
                     </TableCell>
                     <TableCell>{user.nome}</TableCell>
                     <TableCell>{user.email}</TableCell>
-                    <TableCell>{user.senha}</TableCell>
+                    <TableCell>
+                      <AdminBadge isAdmin={user.administrador === 'Admin'}>
+                        {user.administrador}
+                      </AdminBadge>
+                    </TableCell>
                     <TableCell>
                       <StatusBadge active={user.status === 'ativo'}>
                         {user.status === 'ativo' ? 'Ativo' : 'Inativo'}

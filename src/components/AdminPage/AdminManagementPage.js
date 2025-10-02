@@ -96,7 +96,7 @@ const AdminManagementPage = () => {
             <thead>
               <tr>
                 <StyledTh>Email</StyledTh>
-                <StyledTh>Senha</StyledTh>
+                <StyledTh>Administrador</StyledTh>
                 <StyledTh>Ações</StyledTh>
               </tr>
             </thead>
