@@ -262,12 +262,53 @@ const EmptySubtext = styled.p`
   margin: 0;
 `;
 
+const PaginationContainer = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  margin-bottom: 16px;
+  padding: 0;
+`;
+
+const PaginationButton = styled.button`
+  padding: 8px 12px;
+  border: 2px solid #e2e8f0;
+  background: ${props => props.active ? '#1a237e' : 'white'};
+  color: ${props => props.active ? 'white' : '#64748b'};
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 40px;
+
+  &:hover {
+    background: ${props => props.active ? '#1a237e' : '#f1f5f9'};
+    border-color: ${props => props.active ? '#1a237e' : '#cbd5e0'};
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
+const PaginationInfo = styled.span`
+  color: #64748b;
+  font-size: 14px;
+  margin: 0 16px;
+`;
+
 const Usuarios = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const usersPerPage = 7;
   const [users, setUsers] = useState([
     {
       id: 1,
@@ -281,6 +322,30 @@ const Usuarios = () => {
       id: 2,
       nome: 'Maria Santos',
       email: 'maria@skateflow.com',
+      isAdmin: false,
+      foto: null,
+      isActive: true
+    },
+    {
+      id: 3,
+      nome: 'Pedro Oliveira',
+      email: 'pedro@skateflow.com',
+      isAdmin: false,
+      foto: null,
+      isActive: true
+    },
+    {
+      id: 4,
+      nome: 'Ana Costa',
+      email: 'ana@skateflow.com',
+      isAdmin: true,
+      foto: null,
+      isActive: false
+    },
+    {
+      id: 5,
+      nome: 'Carlos Lima',
+      email: 'carlos@skateflow.com',
       isAdmin: false,
       foto: null,
       isActive: true
@@ -328,12 +393,26 @@ const Usuarios = () => {
     setUserToDelete(null);
   };
 
+
+
   const filteredUsers = useMemo(() => {
     return users.filter(user =>
       user.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [users, searchTerm]);
+
+  const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
+  const startIndex = (currentPage - 1) * usersPerPage;
+  const currentUsers = filteredUsers.slice(startIndex, startIndex + usersPerPage);
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
 
   return (
     <AdminContainer>
@@ -352,7 +431,27 @@ const Usuarios = () => {
           />
         </SearchContainer>
 
-        {filteredUsers.length === 0 ? (
+        <PaginationContainer>
+          {filteredUsers.length > 7 && (
+            <>
+              <PaginationButton 
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+              >
+                ‹ Anterior
+              </PaginationButton>
+              
+              <PaginationButton 
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+              >
+                Próximo ›
+              </PaginationButton>
+            </>
+          )}
+        </PaginationContainer>
+
+        {currentUsers.length === 0 ? (
           <EmptyState>
             <EmptyIcon>👥</EmptyIcon>
             <EmptyText>{searchTerm ? 'Nenhum usuário encontrado' : 'Nenhum usuário cadastrado'}</EmptyText>
@@ -372,7 +471,7 @@ const Usuarios = () => {
                 </tr>
               </thead>
               <tbody>
-                {filteredUsers.map((user) => (
+                {currentUsers.map((user) => (
                   <TableRow key={user.id}>
                     <TableCell>
                       {renderAvatar(user)}
