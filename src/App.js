@@ -1,6 +1,7 @@
 import './App.css';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import UserValidator from './components/UserValidator';
 import * as ROUTES from './utils/routes';
 
 // Páginas públicas
@@ -16,20 +17,22 @@ function App() {
   return (
     <AuthProvider>
       <Router>
-        <Routes>
-          {/* Rotas públicas */}
-          <Route path={ROUTES.HOME} element={<Home />} />
-          <Route path={ROUTES.LOGIN} element={<Login />} />
-          <Route path={ROUTES.MAP} element={<Map />} />
-          <Route path={ROUTES.EVENTS} element={<EventsPage />} />
-          
-          {/* Rotas administrativas */}
-          <Route path={ROUTES.ADMIN} element={<Dashboard />} />
-          <Route path={ROUTES.ADMIN_HOME} element={<Eventos />} />
-          <Route path={ROUTES.CREATE_ADMIN} element={<CreateAdmin />} />
-          <Route path={ROUTES.ADMIN_ARTICLE} element={<Pistas />} />
-          <Route path={ROUTES.ADMIN_MANAGEMENT} element={<Usuarios />} />
-        </Routes>
+        <UserValidator>
+          <Routes>
+            {/* Rotas públicas */}
+            <Route path={ROUTES.HOME} element={<Home />} />
+            <Route path={ROUTES.LOGIN} element={<Login />} />
+            <Route path={ROUTES.MAP} element={<Map />} />
+            <Route path={ROUTES.EVENTS} element={<EventsPage />} />
+            
+            {/* Rotas administrativas */}
+            <Route path={ROUTES.ADMIN} element={<Dashboard />} />
+            <Route path={ROUTES.ADMIN_HOME} element={<Eventos />} />
+            <Route path={ROUTES.CREATE_ADMIN} element={<CreateAdmin />} />
+            <Route path={ROUTES.ADMIN_ARTICLE} element={<Pistas />} />
+            <Route path={ROUTES.ADMIN_MANAGEMENT} element={<Usuarios />} />
+          </Routes>
+        </UserValidator>
       </Router>
     </AuthProvider>
   );

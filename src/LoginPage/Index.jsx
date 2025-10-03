@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Container, FormWrap, Icon, FormContent, Form, FormH1, FormInput, FormButton, BackButton } from './LoginElements';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { usuarioService } from '../services/usuarioService';
 import { FiEye, FiEyeOff } from 'react-icons/fi';
@@ -14,17 +14,27 @@ const Login = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const [accountDeletedMessage, setAccountDeletedMessage] = useState('');
   const [isRegister, setIsRegister] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
 
+  useEffect(() => {
+    const logoutReason = localStorage.getItem('logout_reason');
+    if (logoutReason) {
+      setAccountDeletedMessage(logoutReason);
+      localStorage.removeItem('logout_reason');
+    }
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setErrorMessage('');
     setSuccessMessage('');
+    setAccountDeletedMessage('');
 
     try {
       if (isRegister) {
@@ -116,18 +126,6 @@ const Login = () => {
           <Form onSubmit={handleSubmit} autoComplete="off" className="login-form">
             <FormH1>{isRegister ? 'CADASTRO' : 'LOGIN'}</FormH1>
 
-            <div className="input-group">
-              <FormInput
-                type="email"
-                placeholder="Email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                autoComplete="off"
-                className="form-input"
-              />
-            </div>
-
             {isRegister && (
               <div className="input-group">
                 <FormInput
@@ -141,6 +139,18 @@ const Login = () => {
                 />
               </div>
             )}
+
+            <div className="input-group">
+              <FormInput
+                type="email"
+                placeholder="Email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                autoComplete="off"
+                className="form-input"
+              />
+            </div>
 
             <div className="input-group password-group">
               <FormInput
@@ -194,6 +204,12 @@ const Login = () => {
               </div>
             )}
 
+            {accountDeletedMessage && (
+              <div className="account-deleted-message">
+                <p>{accountDeletedMessage}</p>
+              </div>
+            )}
+
             <FormButton type="submit" disabled={loading} className="submit-button">
               {loading ? 'Carregando...' : (isRegister ? 'Cadastrar' : 'Entrar')}
             </FormButton>
@@ -205,7 +221,7 @@ const Login = () => {
               >
                 {isRegister ? 'Já tem conta? Entrar' : 'Não tem conta? Cadastrar'}
               </BackButton>
-              <BackButton to="/" className="back-button">Voltar ao início</BackButton>
+              <Link to="/" className="back-button" style={{ color: '#666', textDecoration: 'none', fontSize: '14px' }}>Voltar ao início</Link>
             </div>
           </Form>
         </FormContent>

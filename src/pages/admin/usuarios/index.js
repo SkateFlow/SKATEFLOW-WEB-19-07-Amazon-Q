@@ -297,6 +297,49 @@ const EmptySubtext = styled.p`
   margin: 0;
 `;
 
+const ErrorNotification = styled.div`
+  background: #fee2e2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #dc2626;
+  
+  .error-icon {
+    font-size: 20px;
+  }
+  
+  .error-content {
+    flex: 1;
+  }
+  
+  .error-title {
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  
+  .error-message {
+    font-size: 14px;
+    margin: 0;
+  }
+  
+  .close-button {
+    background: none;
+    border: none;
+    color: #dc2626;
+    cursor: pointer;
+    font-size: 18px;
+    padding: 4px;
+    
+    &:hover {
+      opacity: 0.7;
+    }
+  }
+`;
+
 const PaginationContainer = styled.div`
   display: flex;
   justify-content: flex-end;
@@ -418,12 +461,38 @@ const Usuarios = () => {
   };
 
   const confirmDelete = async () => {
+    if (!userToDelete?.id) {
+      setError('Usuário não selecionado');
+      setShowConfirmModal(false);
+      return;
+    }
+
     try {
+      console.log('Tentando excluir usuário:', userToDelete.id);
       await usuarioService.deletar(userToDelete.id);
-      setUsers(users.filter(user => user.id !== userToDelete.id));
+      console.log('Usuário excluído com sucesso');
+      
+      // Remove o usuário da lista
+      setUsers(prevUsers => prevUsers.filter(user => user.id !== userToDelete.id));
+      setError(null);
+      
+      // Dispara evento para validar usuários logados
+      window.dispatchEvent(new CustomEvent('userDeleted', { 
+        detail: { deletedUserId: userToDelete.id } 
+      }));
+      
+      // Recarrega a lista para garantir sincronização
+      setTimeout(() => {
+        carregarUsuarios();
+      }, 500);
+      
     } catch (err) {
-      setError('Erro ao deletar usuário');
-      console.error('Erro:', err);
+      console.error('Erro completo:', err);
+      const errorMessage = typeof err === 'string' ? err : 
+                          err.response?.data?.message || 
+                          err.message || 
+                          'Erro ao excluir usuário';
+      setError(errorMessage);
     } finally {
       setShowConfirmModal(false);
       setUserToDelete(null);
@@ -474,6 +543,17 @@ const Usuarios = () => {
             Atualizar
           </RefreshButton>
         </RefreshContainer>
+
+        {error && (
+          <ErrorNotification>
+            <div className="error-icon">⚠️</div>
+            <div className="error-content">
+              <div className="error-title">Erro na operação</div>
+              <div className="error-message">{error}</div>
+            </div>
+            <button className="close-button" onClick={() => setError(null)}>×</button>
+          </ErrorNotification>
+        )}
 
         <PaginationContainer>
           {filteredUsers.length > 7 && (

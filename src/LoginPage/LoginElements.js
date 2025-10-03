@@ -162,6 +162,22 @@ export const Form = styled.form`
         }
     }
 
+    .account-deleted-message {
+        background: rgba(255, 152, 0, 0.1);
+        border: 1px solid rgba(255, 152, 0, 0.3);
+        border-radius: 8px;
+        padding: 12px 16px;
+        margin-bottom: 20px;
+        text-align: center;
+
+        p {
+            color: #f57c00;
+            font-size: 14px;
+            margin: 0;
+            font-weight: 500;
+        }
+    }
+
     .submit-button {
         background: linear-gradient(135deg, #043C70 0%, #0056a3 100%);
         border: none;
@@ -294,10 +310,15 @@ export const LoginButton = styled(Link)`
 `
 
 export const BackButton = styled.button`
-    /* Estilos movidos para dentro do Form component */
     background: none;
     border: none;
     font-family: inherit;
+    text-decoration: none;
+    display: inline-block;
+    
+    &[href] {
+        cursor: pointer;
+    }
 `
 
 export const ForgetButton = styled(Link)`

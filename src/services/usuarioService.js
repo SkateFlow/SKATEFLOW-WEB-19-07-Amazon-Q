@@ -57,18 +57,49 @@ export const usuarioService = {
       const response = await api.get(`/usuario/findById/${id}`);
       return response.data;
     } catch (error) {
-      throw error.response?.data || 'Usuário não encontrado';
+      if (error.response?.status === 404) {
+        throw 'Usuário não encontrado';
+      }
+      if (error.code === 'ECONNREFUSED' || error.code === 'ERR_NETWORK') {
+        throw 'Servidor não disponível';
+      }
+      throw error.response?.data?.message || error.response?.data || 'Usuário não encontrado';
     }
   },
 
   // Deletar usuário
   deletar: async (id) => {
     try {
+      console.log('Chamando API para deletar usuário:', id);
       const response = await api.delete(`/usuario/delete/${id}`);
+      console.log('Resposta da API:', response);
       return response.data;
     } catch (error) {
-      console.error('Erro ao deletar usuário:', error);
-      throw error.response?.data || 'Erro ao deletar usuário';
+      console.error('Erro completo na API:', error);
+      console.error('Status:', error.response?.status);
+      console.error('Data:', error.response?.data);
+      
+      if (error.response?.status === 404) {
+        throw 'Usuário não encontrado';
+      }
+      
+      // Verifica se é erro de constraint de referência
+      const errorData = error.response?.data;
+      const errorMessage = typeof errorData === 'string' ? errorData : errorData?.message || '';
+      
+      if (error.response?.status === 500 || 
+          errorMessage.includes('REFERENCE constraint') ||
+          errorMessage.includes('FK__Evento__usuario') ||
+          errorMessage.includes('DELETE statement conflicted') ||
+          errorMessage.includes('constraint')) {
+        throw 'Não é possível excluir este usuário pois ele possui eventos cadastrados no sistema';
+      }
+      
+      if (error.code === 'ECONNREFUSED' || error.code === 'ERR_NETWORK') {
+        throw 'Servidor não disponível. Verifique se o backend está rodando.';
+      }
+      
+      throw errorMessage || 'Erro ao excluir usuário';
     }
   }
 };
