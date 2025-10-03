@@ -12,6 +12,7 @@ const Login = () => {
   const [username, setUsername] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [isRegister, setIsRegister] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -23,6 +24,7 @@ const Login = () => {
     e.preventDefault();
     setLoading(true);
     setErrorMessage('');
+    setSuccessMessage('');
 
     try {
       if (isRegister) {
@@ -63,8 +65,11 @@ const Login = () => {
           senha: password
         });
         
-        setErrorMessage('Cadastro realizado com sucesso!');
-        setIsRegister(false);
+        setSuccessMessage('Cadastro realizado com sucesso!');
+        setTimeout(() => {
+          setIsRegister(false);
+          setSuccessMessage('');
+        }, 2000);
         
       } else {
         // Login
@@ -89,167 +94,123 @@ const Login = () => {
       {/* Logo branca centralizada */}
       <div style={{ 
         position: 'absolute',
-        top: '2%',
+        top: '3%',
         left: '50%',
         transform: 'translateX(-50%)',
-        textAlign: 'center'
+        textAlign: 'center',
+        zIndex: 10
       }}>
         <Icon to="/">
-          <img src={logoWhite} alt="SkateFlow" style={{ height: '180px', width: 'auto' }} />
+          <img 
+            src={logoWhite} 
+            alt="SkateFlow" 
+            className="login-logo"
+            style={{ height: '120px', width: 'auto' }} 
+          />
         </Icon>
       </div>
 
       {/* Formulário centralizado */}
       <FormWrap>
-    <FormContent>
-      <Form
-        onSubmit={handleSubmit}
-        autoComplete="off"
-        style={{
-          borderRadius: '15px',
-          padding: '30px',
-          backgroundColor: '#ffffff',
-          boxShadow: '0 8px 25px rgba(0, 0, 0, 0.15)'
-        }}
-      >
-        <FormH1 style={{ color: '#222' }}>{isRegister ? 'CADASTRO' : 'LOGIN'}</FormH1>
+        <FormContent>
+          <Form onSubmit={handleSubmit} autoComplete="off" className="login-form">
+            <FormH1>{isRegister ? 'CADASTRO' : 'LOGIN'}</FormH1>
 
-        <FormInput
-          type="email"
-          placeholder="Email"
-          required
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          autoComplete="off"
-          style={{ 
-            color: '#333',
-            background: 'transparent',
-            border: 'none',
-            borderBottom: '2px solid #ccc',
-            borderRadius: '0',
-            padding: '10px 0',
-            outline: 'none',
-            marginBottom: '20px'
-          }}
-        />
+            <div className="input-group">
+              <FormInput
+                type="email"
+                placeholder="Email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                autoComplete="off"
+                className="form-input"
+              />
+            </div>
 
-        {isRegister && (
-          <FormInput
-            type="text"
-            placeholder="Nome de usuário"
-            required
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            autoComplete="off"
-            style={{ 
-              color: '#333',
-              background: 'transparent',
-              border: 'none',
-              borderBottom: '2px solid #ccc',
-              borderRadius: '0',
-              padding: '10px 0',
-              outline: 'none',
-              marginBottom: '20px'
-            }}
-          />
-        )}
+            {isRegister && (
+              <div className="input-group">
+                <FormInput
+                  type="text"
+                  placeholder="Nome de usuário"
+                  required
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  autoComplete="off"
+                  className="form-input"
+                />
+              </div>
+            )}
 
-        <div style={{ position: 'relative', marginBottom: isRegister ? '20px' : '40px' }}>
-          <FormInput
-            type={showPassword ? "text" : "password"}
-            placeholder="Senha"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            autoComplete="new-password"
-            style={{ 
-              color: '#333',
-              background: 'transparent',
-              border: 'none',
-              borderBottom: '2px solid #ccc',
-              borderRadius: '0',
-              padding: '10px 25px 10px 0',
-              outline: 'none',
-              width: '100%'
-            }}
-          />
-          <button
-            type="button"
-            onClick={() => setShowPassword(!showPassword)}
-            style={{
-              position: 'absolute',
-              right: '0px',
-              top: '12px',
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              color: '#999',
-              fontSize: '16px',
-              padding: '0'
-            }}
-          >
-            {showPassword ? <FiEyeOff /> : <FiEye />}
-          </button>
-        </div>
+            <div className="input-group password-group">
+              <FormInput
+                type={showPassword ? "text" : "password"}
+                placeholder="Senha"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete="new-password"
+                className="form-input password-input"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="password-toggle"
+              >
+                {showPassword ? <FiEyeOff /> : <FiEye />}
+              </button>
+            </div>
 
-        {isRegister && (
-          <div style={{ position: 'relative', marginBottom: '40px' }}>
-            <FormInput
-              type={showConfirmPassword ? "text" : "password"}
-              placeholder="Confirmar senha"
-              required
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              autoComplete="new-password"
-              style={{ 
-                color: '#333',
-                background: 'transparent',
-                border: 'none',
-                borderBottom: '2px solid #ccc',
-                borderRadius: '0',
-                padding: '10px 25px 10px 0',
-                outline: 'none',
-                width: '100%'
-              }}
-            />
-            <button
-              type="button"
-              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              style={{
-                position: 'absolute',
-                right: '0px',
-                top: '12px',
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                color: '#999',
-                fontSize: '16px',
-                padding: '0'
-              }}
-            >
-              {showConfirmPassword ? <FiEyeOff /> : <FiEye />}
-            </button>
-          </div>
-        )}
+            {isRegister && (
+              <div className="input-group password-group">
+                <FormInput
+                  type={showConfirmPassword ? "text" : "password"}
+                  placeholder="Confirmar senha"
+                  required
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  autoComplete="new-password"
+                  className="form-input password-input"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="password-toggle"
+                >
+                  {showConfirmPassword ? <FiEyeOff /> : <FiEye />}
+                </button>
+              </div>
+            )}
 
-        {errorMessage && <p className="error-text">{errorMessage}</p>}
+            {errorMessage && (
+              <div className="error-message">
+                <p>{errorMessage}</p>
+              </div>
+            )}
 
-        <FormButton type="submit" disabled={loading}
-          style={{
-            borderRadius: '17px'
-          }}
-        >
-          {loading ? 'Carregando...' : (isRegister ? 'Cadastrar' : 'Entrar')}
-        </FormButton>
+            {successMessage && (
+              <div className="success-message">
+                <p>{successMessage}</p>
+              </div>
+            )}
 
-        <BackButton onClick={() => setIsRegister(!isRegister)} style={{ color: '#222', cursor: 'pointer' }}>
-          {isRegister ? 'Já tem conta? Entrar' : 'Cadastrar'}
-        </BackButton>
-        <BackButton to="/" style={{ color: '#222' }}>Voltar</BackButton>
-      </Form>
-    </FormContent>
-  </FormWrap>
-</Container>
+            <FormButton type="submit" disabled={loading} className="submit-button">
+              {loading ? 'Carregando...' : (isRegister ? 'Cadastrar' : 'Entrar')}
+            </FormButton>
+
+            <div className="form-links">
+              <BackButton 
+                onClick={() => setIsRegister(!isRegister)} 
+                className="toggle-button"
+              >
+                {isRegister ? 'Já tem conta? Entrar' : 'Não tem conta? Cadastrar'}
+              </BackButton>
+              <BackButton to="/" className="back-button">Voltar ao início</BackButton>
+            </div>
+          </Form>
+        </FormContent>
+      </FormWrap>
+    </Container>
 
   );
 };
