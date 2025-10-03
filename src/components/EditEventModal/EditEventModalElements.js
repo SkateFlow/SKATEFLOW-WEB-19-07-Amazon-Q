@@ -74,6 +74,12 @@ export const PhotoUpload = styled.div`
   cursor: pointer;
   transition: all 0.3s ease;
   color: #64748b;
+  height: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
 
   &:hover {
     border-color: #667eea;
@@ -99,6 +105,16 @@ export const PhotoUpload = styled.div`
     display: block;
     font-size: 14px;
     font-weight: 500;
+  }
+
+  img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 8px;
   }
 `;
 

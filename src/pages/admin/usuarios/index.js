@@ -1,10 +1,11 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import styled from 'styled-components';
-import { FiEdit, FiTrash2 } from 'react-icons/fi';
+import { FiEdit, FiTrash2, FiRefreshCw } from 'react-icons/fi';
 import SidebarAdmin from '../../../components/SidebarAdmin';
 import SearchBar from '../../../components/SearchBar';
 import EditUserModal from '../../../components/EditUserModal';
 import ConfirmModal from '../../../components/ConfirmModal';
+import { usuarioService } from '../../../services/usuarioService';
 
 const AdminContainer = styled.div`
   background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
@@ -24,6 +25,30 @@ const SearchContainer = styled.div`
   display: flex;
   justify-content: flex-start;
   margin-bottom: 30px;
+`;
+
+const RefreshButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: #1a237e;
+  color: white;
+  
+  &:hover {
+    background: #303f9f;
+  }
+  
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
 `;
 
 const Title = styled.h1`
@@ -83,7 +108,7 @@ const TableHeader = styled.th`
   }
   
   &:nth-child(3) {
-    width: 250px;
+    width: 220px;
   }
   
   &:nth-child(4) {
@@ -92,6 +117,11 @@ const TableHeader = styled.th`
   }
   
   &:nth-child(5) {
+    width: 120px;
+    text-align: center;
+  }
+  
+  &:nth-child(6) {
     width: 100px;
     text-align: center;
   }
@@ -128,7 +158,7 @@ const TableCell = styled.td`
   }
   
   &:nth-child(3) {
-    width: 250px;
+    width: 220px;
     text-align: left;
   }
   
@@ -138,6 +168,11 @@ const TableCell = styled.td`
   }
   
   &:nth-child(5) {
+    width: 120px;
+    text-align: center;
+  }
+  
+  &:nth-child(6) {
     text-align: center;
     width: 100px;
   }
@@ -268,8 +303,14 @@ const PaginationContainer = styled.div`
   align-items: center;
   gap: 8px;
   margin-top: 16px;
-  margin-bottom: 16px;
+  margin-bottom: 8px;
   padding: 0;
+`;
+
+const RefreshContainer = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 8px;
 `;
 
 const PaginationButton = styled.button`
@@ -309,49 +350,37 @@ const Usuarios = () => {
   const [userToDelete, setUserToDelete] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const usersPerPage = 7;
-  const [users, setUsers] = useState([
-    {
-      id: 1,
-      nome: 'João Silva',
-      email: 'joao@skateflow.com',
-      isAdmin: true,
-      foto: null,
-      isActive: true
-    },
-    {
-      id: 2,
-      nome: 'Maria Santos',
-      email: 'maria@skateflow.com',
-      isAdmin: false,
-      foto: null,
-      isActive: true
-    },
-    {
-      id: 3,
-      nome: 'Pedro Oliveira',
-      email: 'pedro@skateflow.com',
-      isAdmin: false,
-      foto: null,
-      isActive: true
-    },
-    {
-      id: 4,
-      nome: 'Ana Costa',
-      email: 'ana@skateflow.com',
-      isAdmin: true,
-      foto: null,
-      isActive: false
-    },
-    {
-      id: 5,
-      nome: 'Carlos Lima',
-      email: 'carlos@skateflow.com',
-      isAdmin: false,
-      foto: null,
-      isActive: true
-    },
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  ]);
+  const carregarUsuarios = async () => {
+    try {
+      setLoading(true);
+      const usuariosData = await usuarioService.listar();
+      const usuariosFormatados = usuariosData.map(usuario => ({
+        id: usuario.id,
+        nome: usuario.nome,
+        email: usuario.email,
+        isAdmin: usuario.nivelAcesso === 'ADMIN',
+        foto: usuario.foto,
+        isActive: usuario.statusUsuario === 'ATIVO',
+        dataCadastro: usuario.dataCadastro
+      }));
+      // Ordenar por data de cadastro (mais recente primeiro)
+      usuariosFormatados.sort((a, b) => new Date(b.dataCadastro) - new Date(a.dataCadastro));
+      setUsers(usuariosFormatados);
+    } catch (err) {
+      setError('Erro ao carregar usuários');
+      console.error('Erro:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    carregarUsuarios();
+  }, []);
 
   const getAvatarColor = (name) => {
     const colors = ['#667eea', '#f093fb', '#4facfe', '#43e97b', '#fa709a', '#ffecd2', '#a8edea', '#d299c2'];
@@ -388,10 +417,17 @@ const Usuarios = () => {
     setShowConfirmModal(true);
   };
 
-  const confirmDelete = () => {
-    setUsers(users.filter(user => user.id !== userToDelete.id));
-    setShowConfirmModal(false);
-    setUserToDelete(null);
+  const confirmDelete = async () => {
+    try {
+      await usuarioService.deletar(userToDelete.id);
+      setUsers(users.filter(user => user.id !== userToDelete.id));
+    } catch (err) {
+      setError('Erro ao deletar usuário');
+      console.error('Erro:', err);
+    } finally {
+      setShowConfirmModal(false);
+      setUserToDelete(null);
+    }
   };
 
 
@@ -432,6 +468,13 @@ const Usuarios = () => {
           />
         </SearchContainer>
 
+        <RefreshContainer>
+          <RefreshButton onClick={carregarUsuarios} disabled={loading}>
+            <FiRefreshCw size={16} />
+            Atualizar
+          </RefreshButton>
+        </RefreshContainer>
+
         <PaginationContainer>
           {filteredUsers.length > 7 && (
             <>
@@ -452,7 +495,18 @@ const Usuarios = () => {
           )}
         </PaginationContainer>
 
-        {currentUsers.length === 0 ? (
+        {loading ? (
+          <EmptyState>
+            <EmptyIcon>⏳</EmptyIcon>
+            <EmptyText>Carregando usuários...</EmptyText>
+          </EmptyState>
+        ) : error ? (
+          <EmptyState>
+            <EmptyIcon>⚠️</EmptyIcon>
+            <EmptyText>Erro ao carregar usuários</EmptyText>
+            <EmptySubtext>{error}</EmptySubtext>
+          </EmptyState>
+        ) : currentUsers.length === 0 ? (
           <EmptyState>
             <EmptyIcon>👥</EmptyIcon>
             <EmptyText>{searchTerm ? 'Nenhum usuário encontrado' : 'Nenhum usuário cadastrado'}</EmptyText>
@@ -466,6 +520,7 @@ const Usuarios = () => {
                   <TableHeader>Foto</TableHeader>
                   <TableHeader>Nome</TableHeader>
                   <TableHeader>Email</TableHeader>
+                  <TableHeader>Data Cadastro</TableHeader>
                   <TableHeader>Administrador</TableHeader>
                   <TableHeader>Status</TableHeader>
                   <TableHeader>Ações</TableHeader>
@@ -479,6 +534,9 @@ const Usuarios = () => {
                     </TableCell>
                     <TableCell>{user.nome}</TableCell>
                     <TableCell>{user.email}</TableCell>
+                    <TableCell>
+                      {user.dataCadastro ? new Date(user.dataCadastro).toLocaleDateString('pt-BR') : '-'}
+                    </TableCell>
                     <TableCell>
                       <AdminBadge isAdmin={user.isAdmin}>
                         {user.isAdmin ? 'Admin' : 'Usuário'}

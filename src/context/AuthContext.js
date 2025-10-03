@@ -23,8 +23,7 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  const login = (email) => {
-    const userData = { email };
+  const login = (userData) => {
     setUser(userData);
     setIsAuthenticated(true);
     localStorage.setItem('skateflow_user', JSON.stringify(userData));

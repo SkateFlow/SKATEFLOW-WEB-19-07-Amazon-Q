@@ -15,16 +15,12 @@ import {
   Label,
   Input,
   TextArea,
-  PublishedBy,
-  SwitchGroup,
-  SwitchLabel,
-  Switch,
   ButtonGroup,
   SaveButton,
   CancelButton
-} from './EditEventModalElements';
+} from '../EditEventModal/EditEventModalElements';
 
-const EditEventModal = ({ isOpen, onClose, event, onSave }) => {
+const CreateEventModal = ({ isOpen, onClose, onSave }) => {
   const [formData, setFormData] = useState({
     nomeEvento: '',
     descricao: '',
@@ -34,9 +30,7 @@ const EditEventModal = ({ isOpen, onClose, event, onSave }) => {
     rua: '',
     bairro: '',
     numero: '',
-    ativo: true,
-    fotos: ['', '', ''],
-
+    fotos: ['', '', '']
   });
   
   const [locationInfo, setLocationInfo] = useState('');
@@ -45,24 +39,24 @@ const EditEventModal = ({ isOpen, onClose, event, onSave }) => {
   const [originalData, setOriginalData] = useState({});
 
   React.useEffect(() => {
-    if (event) {
-      const data = {
-        nomeEvento: event.nomeEvento || '',
-        descricao: event.descricao || '',
-        dataInicio: event.dataInicio || '',
-        dataFim: event.dataFim || '',
-        cep: event.cep || '',
-        rua: event.rua || '',
-        bairro: event.bairro || '',
-        numero: event.numero || '',
-        ativo: event.ativo !== undefined ? event.ativo : true,
-        fotos: event.fotos || ['', '', ''],
-
+    if (isOpen) {
+      const emptyData = {
+        nomeEvento: '',
+        descricao: '',
+        dataInicio: '',
+        dataFim: '',
+        cep: '',
+        rua: '',
+        bairro: '',
+        numero: '',
+        fotos: ['', '', '']
       };
-      setFormData(data);
-      setOriginalData(data);
+      setFormData(emptyData);
+      setOriginalData(emptyData);
+      setErrors({});
+      setLocationInfo('');
     }
-  }, [event]);
+  }, [isOpen]);
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
@@ -92,7 +86,7 @@ const EditEventModal = ({ isOpen, onClose, event, onSave }) => {
           bairro
         }));
         
-        updateLocationInfo(rua, cidade, estado);
+        setLocationInfo(`${rua}, ${cidade} - ${estado}`);
       } else {
         setLocationInfo('CEP não encontrado');
       }
@@ -100,22 +94,12 @@ const EditEventModal = ({ isOpen, onClose, event, onSave }) => {
       setLocationInfo('Erro ao buscar CEP');
     }
   };
-  
-  const updateLocationInfo = (rua, cidade, estado) => {
-    if (rua && cidade && estado) {
-      setLocationInfo(`${rua}, ${cidade} - ${estado}`);
-    } else if (cidade && estado) {
-      setLocationInfo(`${cidade} - ${estado}`);
-    } else {
-      setLocationInfo('');
-    }
-  };
 
   const handlePhotoChange = (index, file) => {
     if (file && file instanceof File) {
       const reader = new FileReader();
       reader.onload = (e) => {
-        const newFotos = formData.fotos ? [...formData.fotos] : ['', '', ''];
+        const newFotos = [...formData.fotos];
         newFotos[index] = e.target.result;
         setFormData(prev => ({
           ...prev,
@@ -173,7 +157,7 @@ const EditEventModal = ({ isOpen, onClose, event, onSave }) => {
     setErrors(newErrors);
     
     if (Object.keys(newErrors).length === 0) {
-      onSave({ ...event, ...formData });
+      onSave(formData);
       onClose();
     }
   };
@@ -198,9 +182,7 @@ const EditEventModal = ({ isOpen, onClose, event, onSave }) => {
             onClick={(e) => e.stopPropagation()}
           >
             <ModalHeader>
-              <ModalTitle>
-                {event ? 'Editar Evento' : (window.location.pathname.includes('/admin') ? 'Cadastrar Evento' : 'Solicitar Evento')}
-              </ModalTitle>
+              <ModalTitle>Solicitar Evento</ModalTitle>
               <CloseButton onClick={handleClose}>
                 <FiX />
               </CloseButton>
@@ -210,7 +192,7 @@ const EditEventModal = ({ isOpen, onClose, event, onSave }) => {
               <PhotoSection>
                 {[0, 1, 2].map((index) => (
                   <PhotoUpload key={index}>
-                    {formData.fotos && formData.fotos[index] ? (
+                    {formData.fotos[index] ? (
                       <img 
                         src={formData.fotos[index]} 
                         alt={`Preview ${index + 1}`}
@@ -244,19 +226,11 @@ const EditEventModal = ({ isOpen, onClose, event, onSave }) => {
                     onChange={(e) => handleInputChange('nomeEvento', e.target.value)}
                     placeholder="Digite o nome do evento"
                   />
-                  <AnimatePresence>
-                    {errors.nomeEvento && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        transition={{ duration: 0.2 }}
-                        style={{ color: '#dc2626', fontSize: '12px', marginTop: '4px' }}
-                      >
-                        {errors.nomeEvento}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                  {errors.nomeEvento && (
+                    <span style={{ color: '#dc2626', fontSize: '12px' }}>
+                      {errors.nomeEvento}
+                    </span>
+                  )}
                 </FormGroup>
 
                 <FormGroup span={2}>
@@ -270,41 +244,12 @@ const EditEventModal = ({ isOpen, onClose, event, onSave }) => {
                   <span style={{ fontSize: '12px', color: '#64748b' }}>
                     {(formData.descricao || '').length}/250 caracteres
                   </span>
-                  <AnimatePresence>
-                    {errors.descricao && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        transition={{ duration: 0.2 }}
-                        style={{ color: '#dc2626', fontSize: '12px', marginTop: '4px' }}
-                      >
-                        {errors.descricao}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                  {errors.descricao && (
+                    <span style={{ color: '#dc2626', fontSize: '12px' }}>
+                      {errors.descricao}
+                    </span>
+                  )}
                 </FormGroup>
-
-                {event && window.location.pathname.includes('/admin') && (
-                  <div style={{ 
-                    gridColumn: 'span 2',
-                    marginBottom: '16px', 
-                    padding: '16px', 
-                    background: '#f8fafc', 
-                    borderRadius: '8px',
-                    fontSize: '14px',
-                    color: '#64748b'
-                  }}>
-                    <div style={{ marginBottom: '8px' }}>
-                      <strong>Data de cadastro:</strong> {event?.dataCadastro || new Date().toLocaleDateString()}
-                    </div>
-                    <div>
-                      <strong>Evento publicado por:</strong> {event?.publicadoPor || 'Admin'}
-                    </div>
-                  </div>
-                )}
-
-
 
                 <FormGroup>
                   <Label>Data de Início</Label>
@@ -313,19 +258,11 @@ const EditEventModal = ({ isOpen, onClose, event, onSave }) => {
                     value={formData.dataInicio}
                     onChange={(e) => handleInputChange('dataInicio', e.target.value)}
                   />
-                  <AnimatePresence>
-                    {errors.dataInicio && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        transition={{ duration: 0.2 }}
-                        style={{ color: '#dc2626', fontSize: '12px', marginTop: '4px' }}
-                      >
-                        {errors.dataInicio}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                  {errors.dataInicio && (
+                    <span style={{ color: '#dc2626', fontSize: '12px' }}>
+                      {errors.dataInicio}
+                    </span>
+                  )}
                 </FormGroup>
 
                 <FormGroup>
@@ -335,19 +272,11 @@ const EditEventModal = ({ isOpen, onClose, event, onSave }) => {
                     value={formData.dataFim}
                     onChange={(e) => handleInputChange('dataFim', e.target.value)}
                   />
-                  <AnimatePresence>
-                    {errors.dataFim && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        transition={{ duration: 0.2 }}
-                        style={{ color: '#dc2626', fontSize: '12px', marginTop: '4px' }}
-                      >
-                        {errors.dataFim}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                  {errors.dataFim && (
+                    <span style={{ color: '#dc2626', fontSize: '12px' }}>
+                      {errors.dataFim}
+                    </span>
+                  )}
                 </FormGroup>
 
                 <FormGroup>
@@ -359,19 +288,11 @@ const EditEventModal = ({ isOpen, onClose, event, onSave }) => {
                     placeholder="00000-000"
                     maxLength={8}
                   />
-                  <AnimatePresence>
-                    {errors.cep && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        transition={{ duration: 0.2 }}
-                        style={{ color: '#dc2626', fontSize: '12px', marginTop: '4px' }}
-                      >
-                        {errors.cep}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                  {errors.cep && (
+                    <span style={{ color: '#dc2626', fontSize: '12px' }}>
+                      {errors.cep}
+                    </span>
+                  )}
                 </FormGroup>
 
                 <FormGroup>
@@ -412,37 +333,17 @@ const EditEventModal = ({ isOpen, onClose, event, onSave }) => {
                     onChange={(e) => handleInputChange('numero', e.target.value)}
                     placeholder="Número"
                   />
-                  <AnimatePresence>
-                    {errors.numero && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        transition={{ duration: 0.2 }}
-                        style={{ color: '#dc2626', fontSize: '12px', marginTop: '4px' }}
-                      >
-                        {errors.numero}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                  {errors.numero && (
+                    <span style={{ color: '#dc2626', fontSize: '12px' }}>
+                      {errors.numero}
+                    </span>
+                  )}
                 </FormGroup>
-
-                {window.location.pathname.includes('/admin') && (
-                  <SwitchGroup>
-                    <SwitchLabel>Evento Ativo</SwitchLabel>
-                    <Switch 
-                      checked={formData.ativo}
-                      onClick={() => handleInputChange('ativo', !formData.ativo)}
-                    />
-                  </SwitchGroup>
-                )}
               </FormGrid>
 
               <ButtonGroup>
                 <CancelButton onClick={handleClose}>Cancelar</CancelButton>
-                <SaveButton onClick={handleSave}>
-                  {event ? 'Salvar Alterações' : (window.location.pathname.includes('/admin') ? 'Cadastrar Evento' : 'Solicitar Evento')}
-                </SaveButton>
+                <SaveButton onClick={handleSave}>Solicitar Evento</SaveButton>
               </ButtonGroup>
             </ModalContent>
           </ModalContainer>
@@ -507,4 +408,4 @@ const EditEventModal = ({ isOpen, onClose, event, onSave }) => {
   );
 };
 
-export default EditEventModal;
+export default CreateEventModal;

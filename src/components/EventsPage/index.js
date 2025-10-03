@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { FaSearch, FaPlus } from 'react-icons/fa';
 import { getEvents } from '../../services/eventService';
 import EventPopup from '../EventPopupDescriptopn';
+import CreateEventModal from '../CreateEventModal';
 import Navbar from '../Navbar';
 import Sidebar from '../Sidebar';
 import placeholderImage from '../../assets/images/ph.svg';
@@ -315,66 +316,10 @@ const EventsPage = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [showAllEvents, setShowAllEvents] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   
-  const [events, setEvents] = useState([
-    {
-      id: 1,
-      nomeEvento: 'Campeonato de Skate',
-      dataEvento: '2025-08-20',
-      localEvento: 'Praça Central',
-      descricao: 'Competição para amadores e profissionais.',
-      imagemEvento: placeholderImage,
-    },
-    {
-      id: 2,
-      nomeEvento: 'Best Trick Session',
-      dataEvento: '2025-08-25',
-      localEvento: 'Skate Park Leste',
-      descricao: 'Sessão aberta com prêmios para melhores manobras.',
-      imagemEvento: placeholderImage,
-    },
-    {
-      id: 3,
-      nomeEvento: 'Encontro de Skatistas',
-      dataEvento: '2025-08-30',
-      localEvento: 'Pista do Centro',
-      descricao: 'Confraternização com DJs e food trucks.',
-      imagemEvento: placeholderImage,
-    },
-    {
-      id: 4,
-      nomeEvento: 'Noite do Ollie Alto',
-      dataEvento: '2025-09-05',
-      localEvento: 'Skate Park Norte',
-      descricao: 'Quem consegue o ollie mais alto leva o troféu!',
-      imagemEvento: placeholderImage,
-    },
-    {
-      id: 5,
-      nomeEvento: 'Workshop de Manobras',
-      dataEvento: '2025-09-10',
-      localEvento: 'Skate Park Sul',
-      descricao: 'Aprenda novas manobras com profissionais.',
-      imagemEvento: placeholderImage,
-    },
-    {
-      id: 6,
-      nomeEvento: 'Competição Street',
-      dataEvento: '2025-09-15',
-      localEvento: 'Centro da Cidade',
-      descricao: 'Competição de street skating urbano.',
-      imagemEvento: placeholderImage,
-    },
-    {
-      id: 7,
-      nomeEvento: 'Festival de Skate',
-      dataEvento: '2025-09-20',
-      localEvento: 'Parque Municipal',
-      descricao: 'Festival com música, comida e muito skate!',
-      imagemEvento: placeholderImage,
-    },
-  ]);
+  const [events, setEvents] = useState([]);
 
   const toggle = () => {
     setIsOpen(!isOpen);
@@ -411,9 +356,9 @@ const EventsPage = () => {
   };
 
   const filteredEvents = events.filter(event =>
-    event.nomeEvento.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    event.localEvento.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    event.descricao.toLowerCase().includes(searchTerm.toLowerCase())
+    event.nomeEvento?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    event.localEvento?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    event.descricao?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const sortedEvents = [...filteredEvents].sort((a, b) => new Date(b.dataEvento) - new Date(a.dataEvento));
@@ -425,6 +370,16 @@ const EventsPage = () => {
   
   const handleClosePopup = () => {
     setShowAllEvents(false);
+  };
+
+  const handleCreateEvent = () => {
+    setShowCreateModal(true);
+  };
+
+  const handleSaveEvent = (eventData) => {
+    console.log('Solicitando evento:', eventData);
+    // Aqui você pode integrar com a API para solicitar o evento
+    setShowCreateModal(false);
   };
 
   return (
@@ -452,7 +407,7 @@ const EventsPage = () => {
               <FaSearch />
             </SearchIcon>
           </SearchContainer>
-          <CreateEventButton>
+          <CreateEventButton onClick={handleCreateEvent}>
             <FaPlus />
             Cadastrar Evento
           </CreateEventButton>
@@ -521,6 +476,12 @@ const EventsPage = () => {
         {selectedEvent && (
           <EventPopup event={selectedEvent} onClose={closeDetails} />
         )}
+
+        <CreateEventModal
+          isOpen={showCreateModal}
+          onClose={() => setShowCreateModal(false)}
+          onSave={handleSaveEvent}
+        />
       </EventsContainer>
     </>
   );

@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Container, FormWrap, Icon, FormContent, Form, FormH1, FormInput, FormButton, BackButton } from './LoginElements';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { usuarioService } from '../services/usuarioService';
+import { FiEye, FiEyeOff } from 'react-icons/fi';
 import logoWhite from '../assets/images/logoof1.svg';
 
 const Login = () => {
@@ -12,6 +14,8 @@ const Login = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [isRegister, setIsRegister] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
 
@@ -20,38 +24,64 @@ const Login = () => {
     setLoading(true);
     setErrorMessage('');
 
-    if (isRegister) {
-      // Cadastro
-      if (email && password && username && confirmPassword) {
+    try {
+      if (isRegister) {
+        // Cadastro
+        if (!email || !password || !username || !confirmPassword) {
+          setErrorMessage('Preencha todos os campos');
+          return;
+        }
+        
         if (username.length < 3) {
           setErrorMessage('Nome de usuário deve ter pelo menos 3 caracteres');
-        } else if (password.length < 8) {
-          setErrorMessage('Senha deve ter pelo menos 8 caracteres');
-        } else if (!/[A-Z]/.test(password)) {
-          setErrorMessage('Senha deve ter pelo menos 1 letra maiúscula');
-        } else if (!/[0-9]/.test(password)) {
-          setErrorMessage('Senha deve ter pelo menos 1 número');
-        } else if (password === confirmPassword) {
-          // Lógica de cadastro aqui
-          setErrorMessage('Cadastro realizado com sucesso!');
-          setIsRegister(false);
-        } else {
-          setErrorMessage('Senhas não coincidem');
+          return;
         }
+        
+        if (password.length < 8) {
+          setErrorMessage('Senha deve ter pelo menos 8 caracteres');
+          return;
+        }
+        
+        if (!/[A-Z]/.test(password)) {
+          setErrorMessage('Senha deve ter pelo menos 1 letra maiúscula');
+          return;
+        }
+        
+        if (!/[0-9]/.test(password)) {
+          setErrorMessage('Senha deve ter pelo menos 1 número');
+          return;
+        }
+        
+        if (password !== confirmPassword) {
+          setErrorMessage('Senhas não coincidem');
+          return;
+        }
+
+        await usuarioService.cadastrar({
+          nome: username,
+          email: email,
+          senha: password
+        });
+        
+        setErrorMessage('Cadastro realizado com sucesso!');
+        setIsRegister(false);
+        
       } else {
-        setErrorMessage('Preencha todos os campos');
-      }
-    } else {
-      // Login
-      if (email && password) {
-        login(email);
+        // Login
+        if (!email || !password) {
+          setErrorMessage('Preencha email e senha');
+          return;
+        }
+
+        const usuario = await usuarioService.login(email, password);
+        login(usuario);
         navigate('/');
-      } else {
-        setErrorMessage('Preencha email e senha');
       }
+    } catch (error) {
+      setErrorMessage(typeof error === 'string' ? error : 'Erro na operação');
+    } finally {
+      setLoading(false);
     }
-    
-    setLoading(false);
   };
 
   return (
@@ -124,32 +154,13 @@ const Login = () => {
           />
         )}
 
-        <FormInput
-          type="password"
-          placeholder="Senha"
-          required
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          autoComplete="new-password"
-          style={{ 
-            color: '#333',
-            background: 'transparent',
-            border: 'none',
-            borderBottom: '2px solid #ccc',
-            borderRadius: '0',
-            padding: '10px 0',
-            outline: 'none',
-            marginBottom: isRegister ? '20px' : '40px'
-          }}
-        />
-
-        {isRegister && (
+        <div style={{ position: 'relative', marginBottom: isRegister ? '20px' : '40px' }}>
           <FormInput
-            type="password"
-            placeholder="Confirmar senha"
+            type={showPassword ? "text" : "password"}
+            placeholder="Senha"
             required
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
             autoComplete="new-password"
             style={{ 
               color: '#333',
@@ -157,11 +168,68 @@ const Login = () => {
               border: 'none',
               borderBottom: '2px solid #ccc',
               borderRadius: '0',
-              padding: '10px 0',
+              padding: '10px 25px 10px 0',
               outline: 'none',
-              marginBottom: '40px'
+              width: '100%'
             }}
           />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            style={{
+              position: 'absolute',
+              right: '0px',
+              top: '12px',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              color: '#999',
+              fontSize: '16px',
+              padding: '0'
+            }}
+          >
+            {showPassword ? <FiEyeOff /> : <FiEye />}
+          </button>
+        </div>
+
+        {isRegister && (
+          <div style={{ position: 'relative', marginBottom: '40px' }}>
+            <FormInput
+              type={showConfirmPassword ? "text" : "password"}
+              placeholder="Confirmar senha"
+              required
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              autoComplete="new-password"
+              style={{ 
+                color: '#333',
+                background: 'transparent',
+                border: 'none',
+                borderBottom: '2px solid #ccc',
+                borderRadius: '0',
+                padding: '10px 25px 10px 0',
+                outline: 'none',
+                width: '100%'
+              }}
+            />
+            <button
+              type="button"
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              style={{
+                position: 'absolute',
+                right: '0px',
+                top: '12px',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                color: '#999',
+                fontSize: '16px',
+                padding: '0'
+              }}
+            >
+              {showConfirmPassword ? <FiEyeOff /> : <FiEye />}
+            </button>
+          </div>
         )}
 
         {errorMessage && <p className="error-text">{errorMessage}</p>}
