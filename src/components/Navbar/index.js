@@ -210,7 +210,22 @@ const Navbar = ({ toggle, scrollNav: forceScrollNav }) => {
                                             });
                                         }}
                                     >
-                                        <FaUser style={{ color: finalScrollNav ? '#000' : '#fff', transition: 'color 0.3s ease' }} />
+                                        {user?.foto ? (
+                                            <img 
+                                                src={user.foto} 
+                                                alt={user.nome || 'Perfil'} 
+                                                style={{ 
+                                                    width: '32px', 
+                                                    height: '32px', 
+                                                    borderRadius: '50%', 
+                                                    objectFit: 'cover',
+                                                    border: `2px solid ${finalScrollNav ? '#000' : '#fff'}`,
+                                                    transition: 'border-color 0.3s ease'
+                                                }} 
+                                            />
+                                        ) : (
+                                            <FaUser style={{ color: finalScrollNav ? '#000' : '#fff', transition: 'color 0.3s ease' }} />
+                                        )}
                                         <motion.span
                                             animate={showDropdown ? "open" : "closed"}
                                             variants={chevronVariants}
@@ -229,8 +244,11 @@ const Navbar = ({ toggle, scrollNav: forceScrollNav }) => {
                                                 style={{ originY: "top" }}
                                             >
                                                 <motion.div variants={itemVariants}>
-                                                    <ProfileEmail>{user.email}</ProfileEmail>
+                                                    <ProfileEmail>{user.nome}</ProfileEmail>
                                                 </motion.div>
+                                                <AdminLink to="/perfil" variants={itemVariants}>
+                                                    Meu Perfil
+                                                </AdminLink>
                                                 <AdminLink to="/admin" variants={itemVariants}>
                                                     Área do Administrador
                                                 </AdminLink>
