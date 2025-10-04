@@ -249,9 +249,11 @@ const Navbar = ({ toggle, scrollNav: forceScrollNav }) => {
                                                 <AdminLink to="/perfil" variants={itemVariants}>
                                                     Meu Perfil
                                                 </AdminLink>
-                                                <AdminLink to="/admin" variants={itemVariants}>
-                                                    Área do Administrador
-                                                </AdminLink>
+                                                {user?.nivelAcesso === 'ADMIN' && (
+                                                    <AdminLink to="/admin" variants={itemVariants}>
+                                                        Área do Administrador
+                                                    </AdminLink>
+                                                )}
                                                 <LogoutButton onClick={logout} variants={itemVariants}>
                                                     Logout
                                                 </LogoutButton>

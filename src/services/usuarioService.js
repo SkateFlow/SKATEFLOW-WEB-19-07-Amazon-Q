@@ -101,5 +101,54 @@ export const usuarioService = {
       
       throw errorMessage || 'Erro ao excluir usuário';
     }
+  },
+
+  // Contar usuários ativos
+  contarAtivos: async () => {
+    try {
+      const response = await api.get('/usuario/contar-ativos');
+      return response.data;
+    } catch (error) {
+      console.error('Erro ao contar usuários ativos:', error);
+      if (error.code === 'ECONNREFUSED' || error.code === 'ERR_NETWORK') {
+        throw 'Servidor não disponível. Verifique se o backend está rodando.';
+      }
+      throw error.response?.data || 'Erro ao contar usuários ativos';
+    }
+  },
+
+  // Listar usuários ativos
+  listarAtivos: async () => {
+    try {
+      const response = await api.get('/usuario/listar-ativos');
+      return response.data;
+    } catch (error) {
+      console.error('Erro ao listar usuários ativos:', error);
+      if (error.code === 'ECONNREFUSED' || error.code === 'ERR_NETWORK') {
+        throw 'Servidor não disponível. Verifique se o backend está rodando.';
+      }
+      throw error.response?.data || 'Erro ao listar usuários ativos';
+    }
+  },
+
+  // Atualizar usuário
+  atualizar: async (id, userData) => {
+    try {
+      const response = await api.put(`/usuario/atualizar/${id}`, {
+        nome: userData.nome,
+        nivelAcesso: userData.isAdmin ? 'ADMIN' : 'USER',
+        statusUsuario: userData.isActive ? 'ATIVO' : 'INATIVO'
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Erro ao atualizar usuário:', error);
+      if (error.response?.status === 404) {
+        throw 'Usuário não encontrado';
+      }
+      if (error.code === 'ECONNREFUSED' || error.code === 'ERR_NETWORK') {
+        throw 'Servidor não disponível. Verifique se o backend está rodando.';
+      }
+      throw error.response?.data || 'Erro ao atualizar usuário';
+    }
   }
 };

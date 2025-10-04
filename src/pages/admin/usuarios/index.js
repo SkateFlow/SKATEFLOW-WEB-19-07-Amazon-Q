@@ -452,6 +452,10 @@ const Usuarios = () => {
     setUsers(users.map(user => 
       user.id === updatedUser.id ? updatedUser : user
     ));
+    // Recarrega a lista para garantir sincronização com o backend
+    setTimeout(() => {
+      carregarUsuarios();
+    }, 500);
   };
 
   const handleDelete = (userId) => {

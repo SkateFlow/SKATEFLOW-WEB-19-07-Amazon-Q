@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { FiX, FiUser } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
+import { usuarioService } from '../../services/usuarioService';
 import {
   ModalOverlay,
   ModalContainer,
@@ -33,6 +34,8 @@ const EditUserModal = ({ isOpen, onClose, user, onSave }) => {
   
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [originalData, setOriginalData] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   React.useEffect(() => {
     if (user) {
@@ -77,9 +80,27 @@ const EditUserModal = ({ isOpen, onClose, user, onSave }) => {
     setShowConfirmModal(false);
   };
 
-  const handleSave = () => {
-    onSave({ ...user, ...formData });
-    onClose();
+  const handleSave = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      await usuarioService.atualizar(user.id, formData);
+      
+      const updatedUser = {
+        ...user,
+        nome: formData.nome,
+        isAdmin: formData.isAdmin,
+        isActive: formData.isActive
+      };
+      
+      onSave(updatedUser);
+      onClose();
+    } catch (err) {
+      setError(typeof err === 'string' ? err : 'Erro ao atualizar usuário');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -157,9 +178,25 @@ const EditUserModal = ({ isOpen, onClose, user, onSave }) => {
                 </SwitchGroup>
               </FormGrid>
 
+              {error && (
+                <div style={{
+                  background: '#fee2e2',
+                  border: '1px solid #fecaca',
+                  borderRadius: '8px',
+                  padding: '12px',
+                  marginBottom: '16px',
+                  color: '#dc2626',
+                  fontSize: '14px'
+                }}>
+                  {error}
+                </div>
+              )}
+
               <ButtonGroup>
-                <CancelButton onClick={handleClose}>Cancelar</CancelButton>
-                <SaveButton onClick={handleSave}>Salvar Alterações</SaveButton>
+                <CancelButton onClick={handleClose} disabled={loading}>Cancelar</CancelButton>
+                <SaveButton onClick={handleSave} disabled={loading}>
+                  {loading ? 'Salvando...' : 'Salvar Alterações'}
+                </SaveButton>
               </ButtonGroup>
             </ModalContent>
           </ModalContainer>

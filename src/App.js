@@ -2,6 +2,7 @@ import './App.css';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import UserValidator from './components/UserValidator';
+import AdminRoute from './components/AdminRoute';
 import * as ROUTES from './utils/routes';
 
 // Páginas públicas
@@ -26,11 +27,11 @@ function App() {
             <Route path={ROUTES.EVENTS} element={<EventsPage />} />
             
             {/* Rotas administrativas */}
-            <Route path={ROUTES.ADMIN} element={<Dashboard />} />
-            <Route path={ROUTES.ADMIN_HOME} element={<Eventos />} />
-            <Route path={ROUTES.CREATE_ADMIN} element={<CreateAdmin />} />
-            <Route path={ROUTES.ADMIN_ARTICLE} element={<Pistas />} />
-            <Route path={ROUTES.ADMIN_MANAGEMENT} element={<Usuarios />} />
+            <Route path={ROUTES.ADMIN} element={<AdminRoute><Dashboard /></AdminRoute>} />
+            <Route path={ROUTES.ADMIN_HOME} element={<AdminRoute><Eventos /></AdminRoute>} />
+            <Route path={ROUTES.CREATE_ADMIN} element={<AdminRoute><CreateAdmin /></AdminRoute>} />
+            <Route path={ROUTES.ADMIN_ARTICLE} element={<AdminRoute><Pistas /></AdminRoute>} />
+            <Route path={ROUTES.ADMIN_MANAGEMENT} element={<AdminRoute><Usuarios /></AdminRoute>} />
           </Routes>
         </UserValidator>
       </Router>
