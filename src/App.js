@@ -9,7 +9,8 @@ import * as ROUTES from './utils/routes';
 import Home from './pages';
 import Login from './pages/login';
 import Map from './pages/map';
-import EventsPage from './components/EventsPage'; 
+import EventsPage from './components/EventsPage';
+import Perfil from './pages/perfil'; 
 // Páginas administrativas
 import { Dashboard, Eventos, Pistas, Usuarios } from './pages/admin';
 import CreateAdmin from './components/CreateAdmin';
@@ -25,6 +26,7 @@ function App() {
             <Route path={ROUTES.LOGIN} element={<Login />} />
             <Route path={ROUTES.MAP} element={<Map />} />
             <Route path={ROUTES.EVENTS} element={<EventsPage />} />
+            <Route path="/perfil" element={<Perfil />} />
             
             {/* Rotas administrativas */}
             <Route path={ROUTES.ADMIN} element={<AdminRoute><Dashboard /></AdminRoute>} />

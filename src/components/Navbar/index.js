@@ -254,7 +254,7 @@ const Navbar = ({ toggle, scrollNav: forceScrollNav }) => {
                                                         Área do Administrador
                                                     </AdminLink>
                                                 )}
-                                                <LogoutButton onClick={logout} variants={itemVariants}>
+                                                <LogoutButton onClick={() => logout()} variants={itemVariants}>
                                                     Logout
                                                 </LogoutButton>
                                             </ProfileDropdown>

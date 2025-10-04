@@ -20,6 +20,9 @@ export const useUserValidation = () => {
 
     const validateUser = async () => {
       try {
+        if (!isAuthenticated || !user) {
+          return;
+        }
         const exists = await checkUserExists();
         if (!exists) {
           navigate('/login');

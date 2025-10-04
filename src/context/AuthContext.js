@@ -34,12 +34,12 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
     setIsAuthenticated(false);
     localStorage.removeItem('skateflow_user');
-    if (reason) {
+    if (reason && typeof reason === 'string') {
       localStorage.setItem('logout_reason', reason);
     }
   };
 
-  const checkUserExists = async () => {
+  const checkUserExists = async (showMessage = true) => {
     if (!user?.id) return true;
     
     try {
@@ -50,8 +50,11 @@ export const AuthProvider = ({ children }) => {
       if (error === 'Usuário não encontrado' || 
           (typeof error === 'string' && error.includes('404')) ||
           error === 'Servidor não disponível') {
-        if (error !== 'Servidor não disponível') {
+        if (error !== 'Servidor não disponível' && showMessage) {
           logout('Sua conta foi removida do sistema. Você precisará criar uma nova conta.');
+          return false;
+        } else {
+          logout();
           return false;
         }
       }

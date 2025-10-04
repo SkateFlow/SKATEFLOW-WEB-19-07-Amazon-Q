@@ -134,11 +134,18 @@ export const usuarioService = {
   // Atualizar usuário
   atualizar: async (id, userData) => {
     try {
-      const response = await api.put(`/usuario/atualizar/${id}`, {
+      const payload = {
         nome: userData.nome,
         nivelAcesso: userData.isAdmin ? 'ADMIN' : 'USER',
         statusUsuario: userData.isActive ? 'ATIVO' : 'INATIVO'
-      });
+      };
+      
+      if (userData.foto !== undefined && userData.foto !== null) {
+        payload.foto = userData.foto;
+        console.log('Enviando foto para o backend:', userData.foto ? 'Foto presente' : 'Sem foto');
+      }
+      
+      const response = await api.put(`/usuario/atualizar/${id}`, payload);
       return response.data;
     } catch (error) {
       console.error('Erro ao atualizar usuário:', error);
@@ -149,6 +156,26 @@ export const usuarioService = {
         throw 'Servidor não disponível. Verifique se o backend está rodando.';
       }
       throw error.response?.data || 'Erro ao atualizar usuário';
+    }
+  },
+
+  // Atualizar perfil do usuário
+  atualizarPerfil: async (id, userData) => {
+    try {
+      const response = await api.put(`/usuario/perfil/${id}`, {
+        nome: userData.nome,
+        foto: userData.foto
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Erro ao atualizar perfil:', error);
+      if (error.response?.status === 404) {
+        throw 'Usuário não encontrado';
+      }
+      if (error.code === 'ECONNREFUSED' || error.code === 'ERR_NETWORK') {
+        throw 'Servidor não disponível. Verifique se o backend está rodando.';
+      }
+      throw error.response?.data || 'Erro ao atualizar perfil';
     }
   }
 };
