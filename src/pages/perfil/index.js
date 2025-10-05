@@ -352,13 +352,11 @@ const Perfil = () => {
   const [formData, setFormData] = useState({
     nome: '',
     email: '',
-    senhaAtual: '',
     novaSenha: '',
     confirmarSenha: '',
     foto: null
   });
   const [showPasswords, setShowPasswords] = useState({
-    atual: false,
     nova: false,
     confirmar: false
   });
@@ -413,11 +411,11 @@ const Perfil = () => {
       }
 
       if (formData.novaSenha) {
-        if (!formData.senhaAtual) {
-          throw 'Senha atual é obrigatória para alterar a senha';
-        }
         if (formData.novaSenha.length < 8) {
           throw 'Nova senha deve ter pelo menos 8 caracteres';
+        }
+        if (!/[A-Z]/.test(formData.novaSenha)) {
+          throw 'Nova senha deve conter pelo menos uma letra maiúscula';
         }
         if (formData.novaSenha !== formData.confirmarSenha) {
           throw 'Confirmação de senha não confere';
@@ -447,7 +445,6 @@ const Perfil = () => {
       setShowNotification(true);
       setFormData(prev => ({
         ...prev,
-        senhaAtual: '',
         novaSenha: '',
         confirmarSenha: ''
       }));
@@ -543,23 +540,7 @@ const Perfil = () => {
                   />
                 </FormGroup>
 
-                <FormGroup style={{ gridColumn: '1 / -1' }}>
-                  <Label>Senha Atual</Label>
-                  <PasswordGroup>
-                    <Input
-                      type={showPasswords.atual ? "text" : "password"}
-                      value={formData.senhaAtual}
-                      onChange={(e) => handleInputChange('senhaAtual', e.target.value)}
-                      placeholder="Digite sua senha atual"
-                    />
-                    <PasswordToggle
-                      type="button"
-                      onClick={() => setShowPasswords(prev => ({ ...prev, atual: !prev.atual }))}
-                    >
-                      {showPasswords.atual ? <FiEyeOff /> : <FiEye />}
-                    </PasswordToggle>
-                  </PasswordGroup>
-                </FormGroup>
+
 
                 <FormGroup style={{ gridColumn: '1 / -1' }}>
                   <Label>Nova Senha</Label>

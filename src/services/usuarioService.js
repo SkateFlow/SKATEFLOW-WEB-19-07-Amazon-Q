@@ -177,5 +177,24 @@ export const usuarioService = {
       }
       throw error.response?.data || 'Erro ao atualizar perfil';
     }
+  },
+
+  // Alterar senha do usuário
+  alterarSenha: async (id, senhaData) => {
+    try {
+      const response = await api.put(`/usuario/alterarSenha/${id}`, {
+        senha: senhaData.senha
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Erro ao alterar senha:', error);
+      if (error.response?.status === 404) {
+        throw 'Usuário não encontrado';
+      }
+      if (error.code === 'ECONNREFUSED' || error.code === 'ERR_NETWORK') {
+        throw 'Servidor não disponível. Verifique se o backend está rodando.';
+      }
+      throw error.response?.data || 'Erro ao alterar senha';
+    }
   }
 };
