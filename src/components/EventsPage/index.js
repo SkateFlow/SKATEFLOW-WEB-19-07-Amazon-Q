@@ -14,14 +14,17 @@ const EventsContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  background-color: #f7fafc;
+  background: linear-gradient(135deg, #ffffff 0%, #bbdefb 100%);
   padding: 100px 0 20px;
-  color: #1a202c;
+  color: #1a237e;
   overflow-y: auto;
 
   h1 {
     margin-top: 20px;
     margin-bottom: 30px;
+    color: #1a237e;
+    font-weight: 700;
+    font-size: 2.5rem;
   }
 `;
 
@@ -58,17 +61,28 @@ const GridContainer = styled.div`
 const EventCard = styled.div`
   width: 100%;
   max-width: 300px;
-  background: #ffffff;
+  background: white;
   border: 1px solid #e2e8f0;
-  border-radius: 12px;
+  border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  transition: all 0.3s linear;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
   cursor: pointer;
+  position: relative;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #667eea 0%, #1a237e 100%);
+  }
   
   &:hover {
     transform: translateY(-5px);
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 12px 30px rgba(26, 35, 126, 0.15);
   }
 `;
 
@@ -94,12 +108,12 @@ const CardTitle = styled.h2`
   margin: 0;
   font-size: 1.2rem;
   font-weight: 600;
-  color: #1a202c;
+  color: #1a237e;
   flex: 1;
 `;
 
 const Badge = styled.span`
-  background: #2f53d8ff;
+  background: #1a237e;
   color: white;
   padding: 4px 8px;
   border-radius: 12px;
@@ -155,21 +169,21 @@ const CreateEventButton = styled.button`
   display: flex;
   align-items: center;
   gap: 8px;
-  background: #253d8f;
+  background: #1a237e;
   color: white;
   border: none;
   padding: 12px 20px;
-  border-radius: 25px;
+  border-radius: 8px;
   font-size: 16px;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   
   &:hover {
-    background: #1e3a8a;
+    background: #303f9f;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(37, 61, 143, 0.3);
+    box-shadow: 0 4px 12px rgba(26, 35, 126, 0.3);
   }
   
   &:active {
@@ -185,20 +199,20 @@ const CreateEventButton = styled.button`
 const SearchInput = styled.input`
   width: 100%;
   padding: 12px 45px 12px 16px;
-  border: 2px solid #cbd5e0;
+  border: 2px solid #e2e8f0;
   border-radius: 25px;
   background: #ffffff;
-  color: #2d3748;
+  color: #374151;
   font-size: 16px;
   outline: none;
-  transition: border-color 0.3s ease;
+  transition: border-color 0.2s ease;
 
   &:focus {
-    border-color: #3182ce;
+    border-color: #667eea;
   }
 
   &::placeholder {
-    color: #4a5568;
+    color: #64748b;
   }
 `;
 
@@ -212,18 +226,19 @@ const SearchIcon = styled.div`
 `;
 
 const ViewMoreButton = styled.button`
-  background: #253d8f;
+  background: #1a237e;
   color: white;
   border: none;
   padding: 12px 24px;
-  border-radius: 25px;
+  border-radius: 8px;
   font-size: 16px;
+  font-weight: 600;
   cursor: pointer;
   margin-top: 30px;
-  transition: background 0.3s ease;
+  transition: all 0.2s ease;
   
   &:hover {
-    background: #1e3a8a;
+    background: #303f9f;
   }
   
   @media (min-width: 769px) {
@@ -296,10 +311,10 @@ const PopupGrid = styled.div`
 `;
 
 const SectionLabel = styled.h3`
-  color: #1a202c;
-  font-size: 14px;
-  font-weight: 400;
-  margin: 0 0 5px 0;
+  color: #64748b;
+  font-size: 18px;
+  font-weight: 500;
+  margin: 0 0 20px 0;
   text-align: left;
   width: 100%;
   padding-left: calc(50% - 525px);
@@ -384,13 +399,7 @@ const EventsPage = () => {
 
   return (
     <>
-      <style>
-        {`
-          nav {
-            background: #f7fafc !important;
-          }
-        `}
-      </style>
+
       <Sidebar isOpen={isOpen} toggle={toggle}/>
       <Navbar toggle={toggle} scrollNav={true}/>
       <EventsContainer>
