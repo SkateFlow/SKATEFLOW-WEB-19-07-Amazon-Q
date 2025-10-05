@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { FiUser, FiCalendar, FiMapPin, FiEye, FiEyeOff, FiCamera } from 'react-icons/fi';
+import { FiUser, FiCalendar, FiMapPin, FiEye, FiEyeOff, FiCamera, FiArrowLeft } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
 import { usuarioService } from '../../services/usuarioService';
 
@@ -14,7 +14,27 @@ const Sidebar = styled.div`
   width: 280px;
   background: white;
   box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-  padding: 40px 0;
+  padding: 5px 0 40px 0;
+`;
+
+const BackButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 30px;
+  background: none;
+  border: none;
+  color: #64748b;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  margin-bottom: 25px;
+  margin-top: 5px;
+  
+  &:hover {
+    color: #1a237e;
+  }
 `;
 
 const SidebarHeader = styled.div`
@@ -229,6 +249,48 @@ const ButtonGroup = styled.div`
   display: flex;
   gap: 16px;
   justify-content: flex-end;
+  align-items: center;
+`;
+
+const InlineNotification = styled.div`
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  margin-right: auto;
+  animation: ${props => props.isExiting ? 'slideOut' : 'slideIn'} 0.3s ease-out;
+  
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateX(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+  
+  @keyframes slideOut {
+    from {
+      opacity: 1;
+      transform: translateX(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateX(-20px);
+    }
+  }
+  
+  ${props => props.success ? `
+    background: #dcfce7;
+    border: 1px solid #bbf7d0;
+    color: #166534;
+  ` : `
+    background: #fee2e2;
+    border: 1px solid #fecaca;
+    color: #dc2626;
+  `}
 `;
 
 const Button = styled.button`
@@ -303,6 +365,8 @@ const Perfil = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [showNotification, setShowNotification] = useState(false);
+  const [isExiting, setIsExiting] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -380,15 +444,35 @@ const Perfil = () => {
       login(updatedUser);
 
       setSuccess('Perfil atualizado com sucesso!');
+      setShowNotification(true);
       setFormData(prev => ({
         ...prev,
         senhaAtual: '',
         novaSenha: '',
         confirmarSenha: ''
       }));
+      
+      setTimeout(() => {
+        setIsExiting(true);
+        setTimeout(() => {
+          setShowNotification(false);
+          setIsExiting(false);
+          setSuccess('');
+        }, 300);
+      }, 3000);
 
     } catch (err) {
       setError(typeof err === 'string' ? err : 'Erro ao atualizar perfil');
+      setShowNotification(true);
+      
+      setTimeout(() => {
+        setIsExiting(true);
+        setTimeout(() => {
+          setShowNotification(false);
+          setIsExiting(false);
+          setError('');
+        }, 300);
+      }, 3000);
     } finally {
       setLoading(false);
     }
@@ -400,8 +484,6 @@ const Perfil = () => {
         return (
           <Card>
             <form onSubmit={handleSubmit}>
-              {error && <ErrorMessage>{error}</ErrorMessage>}
-              {success && <SuccessMessage>{success}</SuccessMessage>}
 
               <PhotoSection>
                 <PhotoPreview bgColor={getAvatarColor(formData.nome)}>
@@ -517,6 +599,11 @@ const Perfil = () => {
               </FormGrid>
 
               <ButtonGroup>
+                {(success || error) && showNotification && (
+                  <InlineNotification success={!!success} isExiting={isExiting}>
+                    {success || error}
+                  </InlineNotification>
+                )}
                 <Button type="button" onClick={() => window.history.back()}>
                   Cancelar
                 </Button>
@@ -556,6 +643,10 @@ const Perfil = () => {
   return (
     <Container>
       <Sidebar>
+        <BackButton onClick={() => window.history.back()}>
+          <FiArrowLeft />
+          Voltar
+        </BackButton>
         <SidebarHeader>
           <ProfileAvatar bgColor={getAvatarColor(user?.nome)}>
             {user?.foto ? (
