@@ -7,6 +7,7 @@ import Sidebar from '../components/Sidebar';
 import ScrollToTop from '../components/ScrollToTop';
 import CreatePistaModal from '../components/CreatePistaModal';
 import PistaPopup from '../components/PistaPopup';
+import AllPistasModal from '../components/AllPistasModal';
 import { fetchSkateParks } from '../services/skateParksService';
 
 // Carregar Leaflet
@@ -292,6 +293,7 @@ const Map = () => {
   const [showNotification, setShowNotification] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedPista, setSelectedPista] = useState(null);
+  const [showAllPistasModal, setShowAllPistasModal] = useState(false);
 
   const toggle = () => setIsOpen(!isOpen);
   
@@ -475,7 +477,23 @@ const Map = () => {
           </SpotsList>
           
           <FooterStats>
-            {filteredSpots.length} de {spots.length} pistas encontradas
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span>{filteredSpots.length} de {spots.length} pistas encontradas</span>
+              <button 
+                onClick={() => setShowAllPistasModal(true)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#667eea',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  textDecoration: 'underline'
+                }}
+              >
+                Ver mais
+              </button>
+            </div>
           </FooterStats>
         </SidePanel>
         
@@ -503,6 +521,13 @@ const Map = () => {
           onClose={() => setSelectedPista(null)}
         />
       )}
+      
+      <AllPistasModal
+        isOpen={showAllPistasModal}
+        onClose={() => setShowAllPistasModal(false)}
+        pistas={spots}
+        onPistaClick={handlePistaClick}
+      />
       
       <div style={{ 
         position: 'fixed', 
