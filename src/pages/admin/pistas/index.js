@@ -1,9 +1,10 @@
 import React, { useState, useMemo } from 'react';
 import styled from 'styled-components';
-import { FiEdit, FiTrash, FiEye, FiEyeOff } from 'react-icons/fi';
+import { FiEdit, FiTrash, FiEye, FiEyeOff, FiPlus } from 'react-icons/fi';
 import SidebarAdmin from '../../../components/SidebarAdmin';
 import SearchBar from '../../../components/SearchBar';
 import EditPistaModal from '../../../components/EditPistaModal';
+import CreatePistaModal from '../../../components/CreatePistaModal';
 import ConfirmModal from '../../../components/ConfirmModal';
 
 const AdminContainer = styled.div`
@@ -17,7 +18,39 @@ const ContentContainer = styled.div`
 `;
 
 const Header = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
   margin-bottom: 30px;
+`;
+
+const HeaderContent = styled.div`
+  flex: 1;
+`;
+
+const CreateButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #667eea 0%, #1a237e 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
 `;
 
 const SearchContainer = styled.div`
@@ -182,6 +215,7 @@ const Pistas = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [editingPista, setEditingPista] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [pistaToDelete, setPistaToDelete] = useState(null);
 
@@ -263,6 +297,10 @@ const Pistas = () => {
     setEditingPista(null);
   };
 
+  const handleCreatePista = (newPista) => {
+    setPistas([...pistas, newPista]);
+  };
+
   const toggleStatus = (pistaId) => {
     setPistas(pistas.map(pista => 
       pista.id === pistaId 
@@ -286,8 +324,10 @@ const Pistas = () => {
       <SidebarAdmin />
       <ContentContainer>
         <Header>
-          <Title>Gerenciar Pistas</Title>
-          <Subtitle>Gerencie todas as pistas de skate da plataforma</Subtitle>
+          <HeaderContent>
+            <Title>Gerenciar Pistas</Title>
+            <Subtitle>Gerencie todas as pistas de skate da plataforma</Subtitle>
+          </HeaderContent>
         </Header>
 
         <SearchContainer>
@@ -360,6 +400,8 @@ const Pistas = () => {
         pista={editingPista}
         onSave={handleSavePista}
       />
+      
+
       
       <ConfirmModal
         isOpen={showConfirmModal}

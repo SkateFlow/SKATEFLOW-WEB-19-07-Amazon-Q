@@ -1,11 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { FaSearch, FaFilter, FaHeart, FaStar, FaMapMarkerAlt } from 'react-icons/fa';
+import { FaSearch, FaFilter, FaHeart, FaStar, FaMapMarkerAlt, FaPlus } from 'react-icons/fa';
 
 import Navbar from '../components/Navbar';
 import Sidebar from '../components/Sidebar';
 import ScrollToTop from '../components/ScrollToTop';
+import CreatePistaModal from '../components/CreatePistaModal';
+import PistaPopup from '../components/PistaPopup';
 import { fetchSkateParks } from '../services/skateParksService';
+
+// Carregar Leaflet
+if (typeof window !== 'undefined' && !window.L) {
+  const script = document.createElement('script');
+  script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+  script.integrity = 'sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=';
+  script.crossOrigin = '';
+  document.head.appendChild(script);
+  
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+  link.integrity = 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=';
+  link.crossOrigin = '';
+  document.head.appendChild(link);
+}
 
 const PageContainer = styled.div`
   min-height: 100vh;
@@ -45,6 +63,38 @@ const MapPanel = styled.div`
 const Header = styled.div`
   padding: 24px;
   border-bottom: 1px solid #cbd5e0;
+`;
+
+const HeaderTop = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+`;
+
+const HeaderContent = styled.div`
+  flex: 1;
+`;
+
+const AddButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #667eea 0%, #1a237e 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  }
 `;
 
 const Title = styled.h1`
@@ -240,6 +290,8 @@ const Map = () => {
   const [spots, setSpots] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showNotification, setShowNotification] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [selectedPista, setSelectedPista] = useState(null);
 
   const toggle = () => setIsOpen(!isOpen);
   
@@ -260,12 +312,25 @@ const Map = () => {
 
   useEffect(() => {
     loadSkateParks();
+    
+    // Verificar se o mapa já foi inicializado
+    const mapContainer = document.getElementById('map');
+    if (mapContainer && !mapContainer._leaflet_id && window.L) {
+      const map = window.L.map('map').setView([-23.5505, -46.6333], 13);
+      
+      window.L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      }).addTo(map);
+      
+      window.L.marker([-23.5505, -46.6333]).addTo(map)
+        .bindPopup('São Paulo - Pistas de Skate<br> Explore as melhores pistas da cidade.')
+        .openPopup();
+    }
   }, []);
 
   const loadSkateParks = async () => {
     setLoading(true);
     try {
-      // Usando dados fictícios para demonstração
       const data = await fetchSkateParks();
       setSpots(data);
     } catch (error) {
@@ -273,6 +338,30 @@ const Map = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleCreatePista = (newPista) => {
+    const updatedSpots = [...spots, newPista];
+    setSpots(updatedSpots);
+    
+    // Adicionar marcador no mapa se tiver coordenadas
+    if (newPista.latitude && newPista.longitude && window.L) {
+      const mapContainer = document.getElementById('map');
+      if (mapContainer && mapContainer._leaflet_id) {
+        const map = window.L.map('map');
+        const marker = window.L.marker([parseFloat(newPista.latitude), parseFloat(newPista.longitude)])
+          .addTo(map)
+          .bindPopup(`<b>${newPista.nome}</b><br>${newPista.descricao}`);
+        
+        marker.on('click', () => {
+          handlePistaClick(newPista);
+        });
+      }
+    }
+  };
+
+  const handlePistaClick = (pista) => {
+    setSelectedPista(pista);
   };
 
   const spotTypes = ['todos', 'bowl', 'street', 'park'];
@@ -361,7 +450,7 @@ const Map = () => {
                 <SpotCard
                   key={spot.id}
                   isSelected={selectedSpot?.id === spot.id}
-                  onClick={() => setSelectedSpot(spot)}
+                  onClick={() => handlePistaClick(spot)}
                 >
                   <SpotImage src={spot.images[0]} alt={spot.name} />
                   <SpotName>{spot.name}</SpotName>
@@ -391,17 +480,49 @@ const Map = () => {
         </SidePanel>
         
         <MapPanel>
-          <iframe
-            title="Mapa de Pistas de Skate em São Paulo"
-            src="https://www.google.com/maps/embed?pb=!1m16!1m12!1m3!1d82751.09276178555!2d-46.68219822122801!3d-23.564270587934733!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!2m1!1spista%20de%20skate%20s%C3%A3o%20paulo!5e0!3m2!1spt-BR!2sbr!4v1726882531768!5m2!1spt-BR!2sbr"
-            width="100%"
-            height="100%"
-            style={{ border: 0, borderRadius: '8px' }}
-            allowFullScreen=""
-            loading="fast"
+          <div 
+            id="map" 
+            style={{ 
+              width: '100%', 
+              height: '100%', 
+              borderRadius: '8px' 
+            }}
           />
         </MapPanel>
       </MainContent>
+      
+      <CreatePistaModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSave={handleCreatePista}
+      />
+      
+      {selectedPista && (
+        <PistaPopup
+          pista={selectedPista}
+          onClose={() => setSelectedPista(null)}
+        />
+      )}
+      
+      <div style={{ 
+        position: 'fixed', 
+        bottom: '20px', 
+        left: '50%', 
+        transform: 'translateX(-50%)', 
+        zIndex: 1000 
+      }}>
+        <AddButton 
+          onClick={() => setIsCreateModalOpen(true)}
+          style={{
+            padding: '12px 20px',
+            fontSize: '14px',
+            fontWeight: '600'
+          }}
+        >
+          <FaPlus size={14} />
+          Solicitar Pista
+        </AddButton>
+      </div>
     </PageContainer>
   );
 };
