@@ -27,6 +27,7 @@ const CreatePistaModal = ({ isOpen, onClose, onSave }) => {
   const [formData, setFormData] = useState({
     nome: '',
     descricao: '',
+    categoria: '',
     cep: '',
     rua: '',
     bairro: '',
@@ -36,6 +37,8 @@ const CreatePistaModal = ({ isOpen, onClose, onSave }) => {
     publica: true,
     fotos: ['', '', '']
   });
+  
+  const categorias = ['bowl', 'street', 'park'];
   
   const [locationInfo, setLocationInfo] = useState('');
   const [errors, setErrors] = useState({});
@@ -153,6 +156,7 @@ const CreatePistaModal = ({ isOpen, onClose, onSave }) => {
     setFormData({
       nome: '',
       descricao: '',
+      categoria: '',
       cep: '',
       rua: '',
       bairro: '',
@@ -337,6 +341,38 @@ const CreatePistaModal = ({ isOpen, onClose, onSave }) => {
                       </motion.div>
                     )}
                   </AnimatePresence>
+                </FormGroup>
+
+                <FormGroup span={2}>
+                  <Label>Categoria da Pista</Label>
+                  <div style={{ display: 'flex', gap: '16px', marginTop: '8px' }}>
+                    {categorias.map(categoria => (
+                      <label key={categoria} style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '8px',
+                        cursor: 'pointer',
+                        padding: '8px 12px',
+                        borderRadius: '20px',
+                        border: '2px solid #e2e8f0',
+                        backgroundColor: formData.categoria === categoria ? '#667eea' : 'white',
+                        color: formData.categoria === categoria ? 'white' : '#64748b',
+                        transition: 'all 0.3s ease',
+                        fontWeight: '500',
+                        fontSize: '14px'
+                      }}>
+                        <input
+                          type="radio"
+                          name="categoria"
+                          value={categoria}
+                          checked={formData.categoria === categoria}
+                          onChange={(e) => handleInputChange('categoria', e.target.value)}
+                          style={{ display: 'none' }}
+                        />
+                        {categoria.charAt(0).toUpperCase() + categoria.slice(1)}
+                      </label>
+                    ))}
+                  </div>
                 </FormGroup>
 
                 <FormGroup>
