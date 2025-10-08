@@ -1,29 +1,17 @@
 {
-  "name": "react-responsive-site",
+  "name": "skateflow-web",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@emotion/react": "^11.14.0",
-    "@emotion/styled": "^11.14.1",
-    "@mui/material": "^7.3.1",
-    "@testing-library/jest-dom": "^5.16.2",
-    "@testing-library/react": "^12.1.4",
-    "@testing-library/user-event": "^13.5.0",
     "axios": "^1.7.7",
-    "flatlist-react": "^1.5.14",
     "framer-motion": "^12.23.12",
-    "gsap": "^3.13.0",
-    "nth-check": "^2.1.1",
-    "postcss": "^8.5.6",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-icons": "^4.12.0",
     "react-router-dom": "^6.26.2",
     "react-scripts": "^5.0.1",
     "react-scroll": "^1.9.3",
-    "styled-components": "^5.3.11",
-    "web-vitals": "^2.1.4",
-    "webpack-dev-server": "^5.2.2"
+    "styled-components": "^5.3.11"
   },
   "scripts": {
     "start": "react-scripts start",

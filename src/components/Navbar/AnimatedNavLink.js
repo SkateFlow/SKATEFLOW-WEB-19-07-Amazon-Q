@@ -12,10 +12,10 @@ const LinkContainer = styled.div`
 `;
 
 const StyledScrollLink = styled(LinkS)`
-  color: ${({scrollNav, $isHovered, $isActive}) => 
+  color: ${({$scrollNav, $isHovered, $isActive}) => 
     $isActive || $isHovered 
-      ? (scrollNav ? '#1a66cc' : '#888') 
-      : (scrollNav ? '#000' : '#fff')
+      ? ($scrollNav ? '#1a66cc' : '#888') 
+      : ($scrollNav ? '#000' : '#fff')
   };
   display: flex;
   align-items: center;
@@ -29,10 +29,10 @@ const StyledScrollLink = styled(LinkS)`
 `;
 
 const StyledRouterLink = styled(LinkR)`
-  color: ${({scrollNav, $isHovered, $isActive}) => 
+  color: ${({$scrollNav, $isHovered, $isActive}) => 
     $isActive || $isHovered 
-      ? (scrollNav ? '#1a66cc' : '#888') 
-      : (scrollNav ? '#000' : '#fff')
+      ? ($scrollNav ? '#1a66cc' : '#888') 
+      : ($scrollNav ? '#000' : '#fff')
   };
   display: flex;
   align-items: center;
@@ -51,7 +51,7 @@ const UnderlineMotion = styled(motion.span)`
   left: 1.5rem;
   right: 1.5rem;
   height: 3px;
-  background: ${({scrollNav}) => (scrollNav ? '#1a66cc' : '#888')};
+  background: ${({$scrollNav}) => ($scrollNav ? '#1a66cc' : '#888')};
   border-radius: 1.5px;
 `;
 
@@ -65,14 +65,14 @@ export const AnimatedScrollLink = ({ children, scrollNav, isActive, ...props }) 
       onMouseLeave={() => setIsHovered(false)}
     >
       <StyledScrollLink 
-        scrollNav={scrollNav} 
+        $scrollNav={scrollNav} 
         $isHovered={isHovered}
         $isActive={isActive}
         {...props}
       >
         {children}
         <UnderlineMotion
-          scrollNav={scrollNav}
+          $scrollNav={scrollNav}
           initial={{ scaleX: isActive ? 1 : 0 }}
           animate={{ scaleX: showUnderline ? 1 : 0 }}
           transition={{ duration: isActive ? 0 : 0.3, ease: "easeOut" }}
@@ -93,14 +93,14 @@ export const AnimatedRouterLink = ({ children, scrollNav, isActive, ...props }) 
       onMouseLeave={() => setIsHovered(false)}
     >
       <StyledRouterLink 
-        scrollNav={scrollNav} 
+        $scrollNav={scrollNav} 
         $isHovered={isHovered}
         $isActive={isActive}
         {...props}
       >
         {children}
         <UnderlineMotion
-          scrollNav={scrollNav}
+          $scrollNav={scrollNav}
           initial={{ scaleX: isActive ? 1 : 0 }}
           animate={{ scaleX: showUnderline ? 1 : 0 }}
           transition={{ duration: isActive ? 0 : 0.3, ease: "easeOut" }}

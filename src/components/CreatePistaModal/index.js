@@ -41,14 +41,52 @@ const CreatePistaModal = ({ isOpen, onClose, onSave }) => {
   const [errors, setErrors] = useState({});
   const [showConfirmModal, setShowConfirmModal] = useState(false);
 
+  const formatCep = (value) => {
+    const numbers = value.replace(/\D/g, '');
+    if (numbers.length <= 5) {
+      return numbers;
+    }
+    return numbers.replace(/(\d{5})(\d{1,3})/, '$1-$2');
+  };
+
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-    
-    if (field === 'cep' && value.length === 8) {
-      fetchAddressByCep(value);
+    if (field === 'cep') {
+      const formattedCep = formatCep(value);
+      const numbersOnly = formattedCep.replace(/\D/g, '');
+      
+      setFormData(prev => ({
+        ...prev,
+        [field]: formattedCep
+      }));
+      
+      if (numbersOnly.length === 8) {
+        fetchAddressByCep(numbersOnly);
+      }
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [field]: value
+      }));
+    }
+  };
+
+  const fetchCoordinates = async (address) => {
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`
+      );
+      const data = await response.json();
+      
+      if (data && data.length > 0) {
+        const { lat, lon } = data[0];
+        setFormData(prev => ({
+          ...prev,
+          latitude: lat,
+          longitude: lon
+        }));
+      }
+    } catch (error) {
+      console.error('Erro ao buscar coordenadas:', error);
     }
   };
 
@@ -70,6 +108,10 @@ const CreatePistaModal = ({ isOpen, onClose, onSave }) => {
         }));
         
         updateLocationInfo(rua, cidade, estado);
+        
+        if (rua && cidade && estado) {
+          fetchCoordinates(`${rua}, ${cidade}, ${estado}`);
+        }
       } else {
         setLocationInfo('CEP não encontrado');
       }
@@ -158,7 +200,12 @@ const CreatePistaModal = ({ isOpen, onClose, onSave }) => {
     const newErrors = {};
     
     Object.keys(fieldMessages).forEach(field => {
-      if (!formData[field] || formData[field].toString().trim() === '') {
+      if (field === 'cep') {
+        const numbersOnly = formData[field].replace(/\D/g, '');
+        if (!numbersOnly || numbersOnly.length !== 8) {
+          newErrors[field] = 'Por favor, insira um CEP válido com 8 dígitos';
+        }
+      } else if (!formData[field] || formData[field].toString().trim() === '') {
         newErrors[field] = fieldMessages[field];
       }
     });
@@ -299,7 +346,7 @@ const CreatePistaModal = ({ isOpen, onClose, onSave }) => {
                     value={formData.cep}
                     onChange={(e) => handleInputChange('cep', e.target.value)}
                     placeholder="00000-000"
-                    maxLength={8}
+                    maxLength={9}
                   />
                   <AnimatePresence>
                     {errors.cep && (
@@ -370,22 +417,22 @@ const CreatePistaModal = ({ isOpen, onClose, onSave }) => {
                 </FormGroup>
 
                 <FormGroup>
-                  <Label>Latitude (opcional)</Label>
+                  <Label>Latitude</Label>
                   <Input
                     type="text"
                     value={formData.latitude}
-                    onChange={(e) => handleInputChange('latitude', e.target.value)}
-                    placeholder="-23.5505"
+                    readOnly
+                    style={{ backgroundColor: '#f8fafc' }}
                   />
                 </FormGroup>
 
                 <FormGroup>
-                  <Label>Longitude (opcional)</Label>
+                  <Label>Longitude</Label>
                   <Input
                     type="text"
                     value={formData.longitude}
-                    onChange={(e) => handleInputChange('longitude', e.target.value)}
-                    placeholder="-46.6333"
+                    readOnly
+                    style={{ backgroundColor: '#f8fafc' }}
                   />
                 </FormGroup>
               </FormGrid>

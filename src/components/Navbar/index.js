@@ -119,10 +119,10 @@ const Navbar = ({ toggle, scrollNav: forceScrollNav }) => {
         
         <>
             <IconContext.Provider value={{ color: '#fff' }}>
-                <Nav scrollNav={finalScrollNav}>
+                <Nav $scrollNav={finalScrollNav}>
                     <NavbarContainer>
                         <NavLeftSection>
-                            <NavLogo to="/" onClick={toggleHome} scrollNav={finalScrollNav}>
+                            <NavLogo to="/" onClick={toggleHome} $scrollNav={finalScrollNav}>
                                 <img src={finalScrollNav ? logoInvertSvg : logoSvg} alt="SkateFlow" style={{ height: '70px', transition: 'all 1.2s ease' }} />
                             </NavLogo>
                             <NavMenu>
@@ -186,7 +186,7 @@ const Navbar = ({ toggle, scrollNav: forceScrollNav }) => {
                                 </NavItem>
                             </NavMenu>
                         </NavLeftSection>
-                        <MobileIcon onClick={toggle} scrollNav={finalScrollNav}>
+                        <MobileIcon onClick={toggle} $scrollNav={finalScrollNav}>
                             <FaBars style={{ color: finalScrollNav ? '#000' : '#fff', transition: 'all 1.2s ease' }} />
                         </MobileIcon>
                         <NavBtn>
@@ -196,7 +196,7 @@ const Navbar = ({ toggle, scrollNav: forceScrollNav }) => {
                                     onMouseLeave={handleMouseLeave}
                                 >
                                     <ProfileButton 
-                                        scrollNav={finalScrollNav}
+                                        $scrollNav={finalScrollNav}
                                         onMouseEnter={(e) => {
                                             const icons = e.currentTarget.querySelectorAll('svg');
                                             icons.forEach(icon => {
@@ -262,7 +262,7 @@ const Navbar = ({ toggle, scrollNav: forceScrollNav }) => {
                                     </AnimatePresence>
                                 </ProfileContainer>
                             ) : (
-                                <NavBtnLink to="/login" scrollNav={finalScrollNav}>Log in</NavBtnLink>
+                                <NavBtnLink to="/login" $scrollNav={finalScrollNav}>Log in</NavBtnLink>
                             )}
                         </NavBtn>
                     </NavbarContainer>

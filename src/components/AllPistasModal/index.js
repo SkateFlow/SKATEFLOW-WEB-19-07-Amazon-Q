@@ -261,10 +261,10 @@ const EmptyText = styled.p`
 const AllPistasModal = ({ isOpen, onClose, pistas, onPistaClick }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState('todos');
-  const [difficultyFilter, setDifficultyFilter] = useState('todos');
+
 
   const spotTypes = ['todos', 'bowl', 'street', 'park'];
-  const difficulties = ['todos', 'iniciante', 'intermediário', 'avançado'];
+
 
   const filteredPistas = useMemo(() => {
     return pistas.filter(pista => {
@@ -274,11 +274,9 @@ const AllPistasModal = ({ isOpen, onClose, pistas, onPistaClick }) => {
         (pista.localizacao || pista.location || '').toLowerCase().includes(searchTerm.toLowerCase());
       
       const matchesType = typeFilter === 'todos' || (pista.type === typeFilter);
-      const matchesDifficulty = difficultyFilter === 'todos' || (pista.difficulty === difficultyFilter);
-
-      return matchesSearch && matchesType && matchesDifficulty;
+      return matchesSearch && matchesType;
     });
-  }, [pistas, searchTerm, typeFilter, difficultyFilter]);
+  }, [pistas, searchTerm, typeFilter]);
 
   const handlePistaCardClick = (pista) => {
     onPistaClick(pista);
@@ -338,20 +336,7 @@ const AllPistasModal = ({ isOpen, onClose, pistas, onPistaClick }) => {
                   </FilterBadges>
                 </FilterGroup>
 
-                <FilterGroup>
-                  <FilterLabel>Dificuldade:</FilterLabel>
-                  <FilterBadges>
-                    {difficulties.map(difficulty => (
-                      <FilterBadge
-                        key={difficulty}
-                        active={difficultyFilter === difficulty}
-                        onClick={() => setDifficultyFilter(difficulty)}
-                      >
-                        {difficulty === 'todos' ? 'Todas' : difficulty}
-                      </FilterBadge>
-                    ))}
-                  </FilterBadges>
-                </FilterGroup>
+
               </FiltersSection>
 
               {filteredPistas.length === 0 ? (

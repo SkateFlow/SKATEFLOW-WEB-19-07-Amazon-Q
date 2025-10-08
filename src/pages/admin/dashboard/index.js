@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import styled from 'styled-components';
-import { FiCalendar, FiMapPin, FiUsers, FiTrendingUp } from 'react-icons/fi';
+import { FiCalendar, FiMapPin, FiTrendingUp } from 'react-icons/fi';
 import SidebarAdmin from '../../../components/SidebarAdmin';
-import { usuarioService } from '../../../services/usuarioService';
+
 
 const AdminContainer = styled.div`
   background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
@@ -134,24 +134,7 @@ const WelcomeText = styled.p`
 `;
 
 const Dashboard = () => {
-  const [usuariosAtivos, setUsuariosAtivos] = useState(0);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const carregarDados = async () => {
-      try {
-        const count = await usuarioService.contarAtivos();
-        setUsuariosAtivos(count);
-      } catch (error) {
-        console.error('Erro ao carregar usuários ativos:', error);
-        setUsuariosAtivos(0);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    carregarDados();
-  }, []);
 
   return (
     <AdminContainer>
@@ -187,17 +170,7 @@ const Dashboard = () => {
             </StatHeader>
           </StatCard>
 
-          <StatCard color="linear-gradient(90deg, #f59e0b 0%, #d97706 100%)">
-            <StatHeader>
-              <div>
-                <StatValue>{loading ? '...' : usuariosAtivos}</StatValue>
-                <StatLabel>Usuários Ativos</StatLabel>
-              </div>
-              <StatIcon bgColor="rgba(245, 158, 11, 0.1)" color="#f59e0b">
-                <FiUsers />
-              </StatIcon>
-            </StatHeader>
-          </StatCard>
+
 
           <StatCard color="linear-gradient(90deg, #8b5cf6 0%, #7c3aed 100%)">
             <StatHeader>

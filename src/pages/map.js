@@ -287,7 +287,7 @@ const Map = () => {
   const [selectedSpot, setSelectedSpot] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState('todos');
-  const [difficultyFilter, setDifficultyFilter] = useState('todos');
+
   const [spots, setSpots] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showNotification, setShowNotification] = useState(false);
@@ -367,7 +367,7 @@ const Map = () => {
   };
 
   const spotTypes = ['todos', 'bowl', 'street', 'park'];
-  const difficulties = ['todos', 'iniciante', 'intermediário', 'avançado'];
+
 
   const filteredSpots = spots.filter(spot => {
     const matchesSearch = spot.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -375,9 +375,7 @@ const Map = () => {
                          spot.location.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesType = typeFilter === 'todos' || spot.type === typeFilter;
-    const matchesDifficulty = difficultyFilter === 'todos' || spot.difficulty === difficultyFilter;
-
-    return matchesSearch && matchesType && matchesDifficulty;
+    return matchesSearch && matchesType;
   });
 
   return (
@@ -421,20 +419,7 @@ const Map = () => {
                 ))}
               </FilterBadges>
               
-              <FilterGroup>
-                <FilterLabel>Dificuldade:</FilterLabel>
-              </FilterGroup>
-              <FilterBadges>
-                {difficulties.map(difficulty => (
-                  <FilterBadge
-                    key={difficulty}
-                    active={difficultyFilter === difficulty}
-                    onClick={() => setDifficultyFilter(difficulty)}
-                  >
-                    {difficulty === 'todos' ? 'Todas' : difficulty}
-                  </FilterBadge>
-                ))}
-              </FilterBadges>
+
             </FiltersContainer>
           </Header>
           

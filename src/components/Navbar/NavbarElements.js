@@ -7,7 +7,7 @@ import { motion } from 'framer-motion'
 
 
 export const Nav = styled.nav`
-    background: ${({scrollNav}) => (scrollNav ? '#fff' : 'transparent')};
+    background: ${({$scrollNav}) => ($scrollNav ? '#fff' : 'transparent')};
     height: 72px;
     margin-top: 0;
     display: flex;
@@ -55,7 +55,7 @@ export const NavLeftSection = styled.div`
 `;
 
 export const NavLogo = styled(LinkR)`
-    color: ${({scrollNav}) => (scrollNav ? '#000' : '#fff')};
+    color: ${({$scrollNav}) => ($scrollNav ? '#000' : '#fff')};
     justify-self: flex-start;
     cursor: pointer;
     font-size: 1.5rem;
@@ -80,7 +80,7 @@ export const MobileIcon = styled.div`
         transform: translate(-100%, 60%);
         font-size: 1.8rem;
         cursor: pointer;
-        color: ${({scrollNav}) => (scrollNav ? '#000' : '#fff')};
+        color: ${({$scrollNav}) => ($scrollNav ? '#000' : '#fff')};
         transition: color 0.3s ease;
     }
 `;
@@ -103,7 +103,7 @@ export const NavItem = styled.li`
 `;
 
 export const NavLinks = styled(LinkS)`
-    color: ${({scrollNav}) => (scrollNav ? '#000' : '#fff')};
+    color: ${({$scrollNav}) => ($scrollNav ? '#000' : '#fff')};
     display: flex;
     align-items: center;
     text-decoration: none;
@@ -114,16 +114,16 @@ export const NavLinks = styled(LinkS)`
     font-weight: bold;
 
     &:hover {
-        color: ${({scrollNav}) => (scrollNav ? '#1a66cc' : '#888')};
+        color: ${({$scrollNav}) => ($scrollNav ? '#1a66cc' : '#888')};
     }
 
     &.active {
-        color: ${({scrollNav}) => (scrollNav ? '#1a66cc' : '#888')};
+        color: ${({$scrollNav}) => ($scrollNav ? '#1a66cc' : '#888')};
     }
 `;
 
 export const NavLinksRouter = styled(LinkR)`
-    color: ${({scrollNav}) => (scrollNav ? '#000' : '#fff')};
+    color: ${({$scrollNav}) => ($scrollNav ? '#000' : '#fff')};
     display: flex;
     align-items: center;
     text-decoration: none;
@@ -134,11 +134,11 @@ export const NavLinksRouter = styled(LinkR)`
     font-weight: bold;
 
     &:hover {
-        color: ${({scrollNav}) => (scrollNav ? '#1a66cc' : '#888')};
+        color: ${({$scrollNav}) => ($scrollNav ? '#1a66cc' : '#888')};
     }
 
     &.active {
-        color: ${({scrollNav}) => (scrollNav ? '#1a66cc' : '#888')};
+        color: ${({$scrollNav}) => ($scrollNav ? '#1a66cc' : '#888')};
     }
 `;
 
@@ -156,18 +156,18 @@ export const NavBtnLink = styled(LinkR)`
     background: transparent;
     white-space: nowrap;
     padding: 10px 22px;
-    color: ${({scrollNav}) => (scrollNav ? '#000' : '#fff')};
+    color: ${({$scrollNav}) => ($scrollNav ? '#000' : '#fff')};
     font-size: 16px;
     outline: none;
-    border: ${({scrollNav}) => (scrollNav ? '1px solid #000' : '1px solid #fff')};
+    border: ${({$scrollNav}) => ($scrollNav ? '1px solid #000' : '1px solid #fff')};
     cursor: pointer;
     transition: all 0.3s ease;
     text-decoration: none;
     font-weight: bold;
 
     &:hover {
-        background: ${({scrollNav}) => (scrollNav ? '#000' : '#fff')};
-        color: ${({scrollNav}) => (scrollNav ? '#fff' : '#000')};
+        background: ${({$scrollNav}) => ($scrollNav ? '#000' : '#fff')};
+        color: ${({$scrollNav}) => ($scrollNav ? '#fff' : '#000')};
     }
 `;
 
@@ -180,10 +180,10 @@ export const ProfileButton = styled.button`
     background: transparent;
     white-space: nowrap;
     padding: 10px 22px;
-    color: ${({scrollNav}) => (scrollNav ? '#000' : '#fff')};
+    color: ${({$scrollNav}) => ($scrollNav ? '#000' : '#fff')};
     font-size: 16px;
     outline: none;
-    border: ${({scrollNav}) => (scrollNav ? '1px solid #000' : '1px solid #fff')};
+    border: ${({$scrollNav}) => ($scrollNav ? '1px solid #000' : '1px solid #fff')};
     cursor: pointer;
     transition: all 0.3s ease;
     font-weight: bold;
@@ -191,8 +191,8 @@ export const ProfileButton = styled.button`
     align-items: center;
 
     &:hover {
-        background: ${({scrollNav}) => (scrollNav ? '#000' : '#fff')};
-        color: ${({scrollNav}) => (scrollNav ? '#fff' : '#000')};
+        background: ${({$scrollNav}) => ($scrollNav ? '#000' : '#fff')};
+        color: ${({$scrollNav}) => ($scrollNav ? '#fff' : '#000')};
     }
 `;
 
