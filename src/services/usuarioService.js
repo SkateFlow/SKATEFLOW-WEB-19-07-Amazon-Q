@@ -134,18 +134,18 @@ export const usuarioService = {
   // Atualizar usuário
   atualizar: async (id, userData) => {
     try {
-      const payload = {
-        nome: userData.nome,
-        nivelAcesso: userData.isAdmin ? 'ADMIN' : 'USER',
-        statusUsuario: userData.isActive ? 'ATIVO' : 'INATIVO'
-      };
+      const formData = new FormData();
+      formData.append('nome', userData.nome);
+      formData.append('nivelAcesso', userData.isAdmin ? 'ADMIN' : 'USER');
+      formData.append('statusUsuario', userData.isActive ? 'ATIVO' : 'INATIVO');
       
-      if (userData.foto !== undefined && userData.foto !== null) {
-        payload.foto = userData.foto;
-        console.log('Enviando foto para o backend:', userData.foto ? 'Foto presente' : 'Sem foto');
+      if (userData.foto && userData.foto instanceof File) {
+        formData.append('foto', userData.foto);
       }
       
-      const response = await api.put(`/usuario/atualizar/${id}`, payload);
+      const response = await api.put(`/usuario/atualizar/${id}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
       return response.data;
     } catch (error) {
       console.error('Erro ao atualizar usuário:', error);
