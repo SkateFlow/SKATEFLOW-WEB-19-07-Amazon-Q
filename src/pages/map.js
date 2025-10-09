@@ -479,11 +479,6 @@ const Map = () => {
                 {/* Lugares registrados */}
                 {filteredLugares.length > 0 && (
                   <>
-                    <div style={{ padding: '0 16px', marginBottom: '16px' }}>
-                      <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#2d3748', margin: '0 0 8px 0' }}>
-                        Pistas Registradas ({filteredLugares.length})
-                      </h3>
-                    </div>
                     {filteredLugares.map(lugar => (
                       <SpotCard
                         key={`lugar-${lugar.id}`}
@@ -500,7 +495,7 @@ const Map = () => {
                         <SpotDescription>{lugar.descricao}</SpotDescription>
                         <SpotLocation>
                           <FaMapMarkerAlt />
-                          <span>{lugar.endereco || lugar.cep}</span>
+                          <span>{lugar.endereco || lugar.localizacao || `${lugar.rua || ''}, ${lugar.bairro || ''}`.replace(/^,\s*|,\s*$/g, '') || lugar.cep || 'Localização não informada'}</span>
                         </SpotLocation>
                         <SpotStats>
                           <StatItem>

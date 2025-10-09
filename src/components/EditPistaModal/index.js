@@ -172,7 +172,15 @@ const EditPistaModal = ({ isOpen, onClose, pista, onSave }) => {
     setErrors(newErrors);
     
     if (Object.keys(newErrors).length === 0) {
-      onSave({ ...pista, ...formData });
+      const localizacao = [formData.rua, formData.bairro, formData.numero]
+        .filter(item => item && item.trim())
+        .join(', ');
+      
+      onSave({ 
+        ...pista, 
+        ...formData, 
+        localizacao: localizacao || 'Endereço não informado'
+      });
       onClose();
     }
   };

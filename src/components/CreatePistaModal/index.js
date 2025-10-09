@@ -223,10 +223,14 @@ const CreatePistaModal = ({ isOpen, onClose, onSave }) => {
       };
       
       processImagesForSave().then(processedImages => {
+        const localizacao = [formData.rua, formData.bairro, formData.numero]
+          .filter(item => item && item.trim())
+          .join(', ');
+        
         const newPista = {
           ...formData,
           id: Date.now(),
-          localizacao: `${formData.rua}, ${formData.bairro}`,
+          localizacao: localizacao || 'Endereço não informado',
           active: false,
           status: 'pendente',
           dataSolicitacao: new Date().toISOString(),

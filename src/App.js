@@ -13,6 +13,7 @@ import EventsPage from './components/EventsPage';
 import Perfil from './pages/perfil'; 
 // Páginas administrativas
 import { Dashboard, Eventos, Pistas, Usuarios } from './pages/admin';
+import Solicitacoes from './pages/admin/solicitacoes';
 import CreateAdmin from './components/CreateAdmin';
 
 function App() {
@@ -30,6 +31,7 @@ function App() {
             
             {/* Rotas administrativas */}
             <Route path={ROUTES.ADMIN} element={<AdminRoute><Dashboard /></AdminRoute>} />
+            <Route path="/admin/solicitacoes" element={<AdminRoute><Solicitacoes /></AdminRoute>} />
             <Route path={ROUTES.ADMIN_HOME} element={<AdminRoute><Eventos /></AdminRoute>} />
             <Route path={ROUTES.CREATE_ADMIN} element={<AdminRoute><CreateAdmin /></AdminRoute>} />
             <Route path={ROUTES.ADMIN_ARTICLE} element={<AdminRoute><Pistas /></AdminRoute>} />

@@ -229,19 +229,50 @@ const Pistas = () => {
   const [pistasBase, setPistasBase] = useState([]);
 
   const [pistas, setPistas] = useState([]);
+  const [pistasBackend, setPistasBackend] = useState([]);
 
   useEffect(() => {
     const pistasAprovadas = JSON.parse(localStorage.getItem('pistasAprovadas') || '[]');
     const pistasRejeitadas = JSON.parse(localStorage.getItem('pistasRejeitadas') || '[]');
     
     const todasPistas = [
-      ...pistasPendentes,
+      ...pistasBackend,
       ...pistasAprovadas,
       ...pistasRejeitadas
     ];
     
     setPistas(todasPistas);
-  }, [pistasPendentes]);
+  }, [pistasPendentes, pistasBackend]);
+
+  useEffect(() => {
+    const loadPistasBackend = async () => {
+      try {
+        const { lugarService } = await import('../../../services/lugarService');
+        const lugares = await lugarService.listar();
+        const pistasFormatadas = lugares.map(lugar => ({
+          id: lugar.id,
+          nome: lugar.nome,
+          descricao: lugar.descricao,
+          localizacao: lugar.endereco || `${lugar.rua || ''}, ${lugar.bairro || ''}`.replace(/^,\s*|,\s*$/g, '') || 'Não informado',
+          rua: lugar.rua,
+          bairro: lugar.bairro,
+          cep: lugar.cep,
+          latitude: lugar.latitude,
+          longitude: lugar.longitude,
+          active: lugar.statusPista === 'ativada',
+          status: 'backend',
+          tipo: lugar.tipo,
+          valor: lugar.valor,
+          fotos: lugar.foto ? [`data:image/jpeg;base64,${lugar.foto}`] : []
+        }));
+        setPistasBackend(pistasFormatadas);
+      } catch (error) {
+        console.error('Erro ao carregar pistas do backend:', error);
+      }
+    };
+    
+    loadPistasBackend();
+  }, []);
 
   const handleDelete = (pistaId) => {
     const pista = pistas.find(p => p.id === pistaId);
@@ -322,34 +353,13 @@ const Pistas = () => {
           />
         </SearchContainer>
         
-        <div style={{ display: 'flex', gap: '8px', marginBottom: '30px' }}>
-          {['todas', 'pendente', 'aprovada', 'rejeitada'].map(status => (
-            <button
-              key={status}
-              onClick={() => setFilterStatus(status)}
-              style={{
-                padding: '6px 12px',
-                borderRadius: '20px',
-                border: '1px solid #e2e8f0',
-                background: filterStatus === status ? '#667eea' : 'white',
-                color: filterStatus === status ? 'white' : '#64748b',
-                fontSize: '12px',
-                fontWeight: '500',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                whiteSpace: 'nowrap'
-              }}
-            >
-              {status === 'todas' ? 'Todas' : status.charAt(0).toUpperCase() + status.slice(1)}
-            </button>
-          ))}
-        </div>
+
 
         {filteredPistas.length === 0 ? (
           <EmptyState>
             <EmptyIcon>🛹</EmptyIcon>
-            <EmptyText>{searchTerm ? 'Nenhuma pista encontrada' : 'Nenhuma solicitação de pista'}</EmptyText>
-            <EmptySubtext>{searchTerm ? 'Tente pesquisar com outros termos' : 'As solicitações de pistas aparecerão aqui'}</EmptySubtext>
+            <EmptyText>{searchTerm ? 'Nenhuma pista encontrada' : 'Nenhuma pista cadastrada'}</EmptyText>
+            <EmptySubtext>{searchTerm ? 'Tente pesquisar com outros termos' : 'As pistas aprovadas aparecerão aqui'}</EmptySubtext>
           </EmptyState>
         ) : (
           <PistaGrid>
@@ -361,13 +371,13 @@ const Pistas = () => {
                   </StatusBadge>
                   <StatusBadge 
                     style={{
-                      background: pista.status === 'pendente' ? '#fef3c7' : 
+                      background: pista.status === 'backend' ? '#e0f2fe' :
                                  pista.status === 'aprovada' ? '#dcfce7' : '#fee2e2',
-                      color: pista.status === 'pendente' ? '#92400e' : 
+                      color: pista.status === 'backend' ? '#0277bd' :
                              pista.status === 'aprovada' ? '#166534' : '#dc2626'
                     }}
                   >
-                    {pista.status === 'pendente' ? 'Pendente' : 
+                    {pista.status === 'backend' ? 'Registrada' :
                      pista.status === 'aprovada' ? 'Aprovada' : 'Rejeitada'}
                   </StatusBadge>
                 </div>
@@ -383,53 +393,40 @@ const Pistas = () => {
                   )}
                   <InfoRow>
                     <InfoLabel>Localização:</InfoLabel>
-                    <span>{pista.rua || pista.localizacao}</span>
+                    <span>{pista.localizacao || `${pista.rua || ''}, ${pista.bairro || ''}`.replace(/^,\s*|,\s*$/g, '') || 'Não informado'}</span>
                   </InfoRow>
                   <InfoRow>
                     <InfoLabel>Descrição:</InfoLabel>
                     <span>{truncateDescription(pista.descricao)}</span>
                   </InfoRow>
+                  {pista.tipo && (
+                    <InfoRow>
+                      <InfoLabel>Tipo:</InfoLabel>
+                      <span>{pista.tipo}</span>
+                    </InfoRow>
+                  )}
+                  {pista.valor && (
+                    <InfoRow>
+                      <InfoLabel>Valor:</InfoLabel>
+                      <span>R$ {pista.valor}</span>
+                    </InfoRow>
+                  )}
                 </PistaInfo>
 
                 <ActionButtons>
-                  {pista.status === 'pendente' ? (
-                    <>
-                      <ActionButton 
-                        style={{
-                          background: '#dcfce7',
-                          color: '#166534'
-                        }}
-                        onClick={() => handleApprove(pista.id)}
-                      >
-                        ✓ Aprovar
-                      </ActionButton>
-                      <ActionButton 
-                        style={{
-                          background: '#fee2e2',
-                          color: '#dc2626'
-                        }}
-                        onClick={() => handleReject(pista.id)}
-                      >
-                        ✗ Rejeitar
-                      </ActionButton>
-                    </>
-                  ) : (
-                    <>
-                      <ActionButton className="edit" onClick={() => handleEdit(pista.id)}>
-                        <FiEdit size={16} />
-                        Editar
-                      </ActionButton>
-                      
-                      <ActionButton 
-                        className="status" 
-                        active={pista.active}
-                        onClick={() => toggleStatus(pista.id)}
-                      >
-                        {pista.active ? <FiEyeOff size={16} /> : <FiEye size={16} />}
-                        {pista.active ? 'Ocultar' : 'Publicar'}
-                      </ActionButton>
-                    </>
-                  )}
+                  <ActionButton className="edit" onClick={() => handleEdit(pista.id)}>
+                    <FiEdit size={16} />
+                    Editar
+                  </ActionButton>
+                  
+                  <ActionButton 
+                    className="status" 
+                    active={pista.active}
+                    onClick={() => toggleStatus(pista.id)}
+                  >
+                    {pista.active ? <FiEyeOff size={16} /> : <FiEye size={16} />}
+                    {pista.active ? 'Ocultar' : 'Publicar'}
+                  </ActionButton>
                   
                   <ActionButton className="delete" onClick={() => handleDelete(pista.id)}>
                     <FiTrash size={16} />

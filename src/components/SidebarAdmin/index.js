@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { FiHome, FiMapPin, FiCalendar, FiUsers, FiLogOut } from 'react-icons/fi';
+import { FiHome, FiMapPin, FiCalendar, FiUsers, FiLogOut, FiClipboard } from 'react-icons/fi';
 import styled from 'styled-components';
 import logoSvg from '../../assets/images/logoof1.svg';
 
@@ -135,6 +135,7 @@ const Sidebar = () => {
 
   const menuItems = [
     { icon: FiHome, title: "Dashboard", path: "/admin" },
+    { icon: FiClipboard, title: "Solicitações", path: "/admin/solicitacoes" },
     { icon: FiMapPin, title: "Pistas", path: "/adminarticle" },
     { icon: FiCalendar, title: "Eventos", path: "/adminhome" },
     { icon: FiUsers, title: "Usuários", path: "/admins" }

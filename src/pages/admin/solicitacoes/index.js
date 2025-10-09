@@ -1,0 +1,381 @@
+import React, { useState, useMemo } from 'react';
+import styled from 'styled-components';
+import { FiTrash } from 'react-icons/fi';
+import SidebarAdmin from '../../../components/SidebarAdmin';
+import SearchBar from '../../../components/SearchBar';
+import ConfirmModal from '../../../components/ConfirmModal';
+import { usePistasPendentes } from '../../../hooks/usePistasPendentes';
+
+const AdminContainer = styled.div`
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  min-height: 100vh;
+`;
+
+const ContentContainer = styled.div`
+  margin-left: 250px;
+  padding: 40px;
+`;
+
+const Header = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 30px;
+`;
+
+const HeaderContent = styled.div`
+  flex: 1;
+`;
+
+const SearchContainer = styled.div`
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 30px;
+`;
+
+const Title = styled.h1`
+  color: #1a237e;
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 8px;
+`;
+
+const Subtitle = styled.p`
+  color: #64748b;
+  font-size: 16px;
+  margin: 0;
+`;
+
+const SolicitacaoGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-top: 24px;
+`;
+
+const SolicitacaoCard = styled.div`
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #667eea 0%, #1a237e 100%);
+  }
+`;
+
+const CardContent = styled.div`
+  flex: 1;
+`;
+
+const CardActions = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+const SolicitacaoTitle = styled.h3`
+  color: #1a237e;
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 12px;
+`;
+
+const SolicitacaoInfo = styled.div`
+  margin-bottom: 16px;
+`;
+
+const InfoRow = styled.div`
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  color: #64748b;
+  font-size: 14px;
+`;
+
+const InfoLabel = styled.span`
+  font-weight: 500;
+  min-width: 60px;
+  color: #475569;
+`;
+
+const StatusBadge = styled.span`
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  background: #fef3c7;
+  color: #92400e;
+  margin-bottom: 16px;
+`;
+
+const ActionButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &.approve {
+    background: #dcfce7;
+    color: #166534;
+    
+    &:hover {
+      background: #bbf7d0;
+    }
+  }
+
+  &.reject {
+    background: #fee2e2;
+    color: #dc2626;
+    
+    &:hover {
+      background: #fecaca;
+    }
+  }
+`;
+
+const EmptyState = styled.div`
+  text-align: center;
+  padding: 60px 20px;
+  color: #64748b;
+`;
+
+const EmptyIcon = styled.div`
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+`;
+
+const EmptyText = styled.p`
+  font-size: 18px;
+  margin-bottom: 8px;
+  color: #475569;
+`;
+
+const EmptySubtext = styled.p`
+  font-size: 14px;
+  margin: 0;
+`;
+
+const Solicitacoes = () => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterStatus, setFilterStatus] = useState('todas');
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [solicitacaoToDelete, setSolicitacaoToDelete] = useState(null);
+  const { pistasPendentes, removerPistaPendente } = usePistasPendentes();
+  const [todasSolicitacoes, setTodasSolicitacoes] = useState([]);
+  const [eventosPendentes, setEventosPendentes] = useState([]);
+
+  React.useEffect(() => {
+    const eventosStorage = JSON.parse(localStorage.getItem('eventosPendentes') || '[]');
+    setEventosPendentes(eventosStorage);
+    
+    const todas = [
+      ...pistasPendentes.map(p => ({ ...p, tipo: 'pista' })),
+      ...eventosStorage.map(e => ({ ...e, tipo: 'evento' }))
+    ];
+    
+    setTodasSolicitacoes(todas);
+  }, [pistasPendentes]);
+
+  const truncateDescription = (text) => {
+    if (!text) return 'Sem descrição';
+    if (text.length <= 25) return text;
+    return text.substring(0, 25) + '...';
+  };
+
+  const handleApprove = async (solicitacao) => {
+    try {
+      if (solicitacao.tipo === 'pista') {
+        const { lugarService } = await import('../../../services/lugarService');
+        await lugarService.criar({
+          nome: solicitacao.nome,
+          descricao: solicitacao.descricao,
+          cep: solicitacao.cep,
+          rua: solicitacao.rua,
+          bairro: solicitacao.bairro,
+          numero: solicitacao.numero,
+          latitude: solicitacao.latitude,
+          longitude: solicitacao.longitude,
+          tipo: solicitacao.categoria || 'street',
+          valor: '0',
+          statusPista: 'ativada',
+          foto: solicitacao.fotos?.[0]?.replace('data:image/png;base64,', '') || ''
+        });
+        removerPistaPendente(solicitacao.id);
+      } else {
+        const eventosAtualizados = eventosPendentes.filter(e => e.id !== solicitacao.id);
+        localStorage.setItem('eventosPendentes', JSON.stringify(eventosAtualizados));
+        setEventosPendentes(eventosAtualizados);
+      }
+      alert('Solicitação aprovada com sucesso!');
+    } catch (error) {
+      console.error('Erro ao aprovar solicitação:', error);
+      alert('Erro ao aprovar solicitação');
+    }
+  };
+
+  const handleReject = (solicitacao) => {
+    if (solicitacao.tipo === 'pista') {
+      removerPistaPendente(solicitacao.id);
+    } else {
+      const eventosAtualizados = eventosPendentes.filter(e => e.id !== solicitacao.id);
+      localStorage.setItem('eventosPendentes', JSON.stringify(eventosAtualizados));
+      setEventosPendentes(eventosAtualizados);
+    }
+  };
+
+  const filteredSolicitacoes = useMemo(() => {
+    return todasSolicitacoes.filter(solicitacao => {
+      const matchesSearch = !searchTerm || 
+        (solicitacao.nome && solicitacao.nome.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (solicitacao.localizacao && solicitacao.localizacao.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (solicitacao.rua && solicitacao.rua.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (solicitacao.bairro && solicitacao.bairro.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (solicitacao.descricao && solicitacao.descricao.toLowerCase().includes(searchTerm.toLowerCase()));
+      
+      const matchesType = filterStatus === 'todas' || solicitacao.tipo === filterStatus;
+      
+      return matchesSearch && matchesType;
+    });
+  }, [todasSolicitacoes, searchTerm, filterStatus]);
+
+  return (
+    <AdminContainer>
+      <SidebarAdmin />
+      <ContentContainer>
+        <Header>
+          <HeaderContent>
+            <Title>Solicitações</Title>
+            <Subtitle>Gerencie as solicitações de pistas e eventos enviadas pelos usuários</Subtitle>
+          </HeaderContent>
+        </Header>
+
+        <SearchContainer>
+          <SearchBar
+            placeholder="Pesquisar solicitações de pistas e eventos..."
+            value={searchTerm}
+            onChange={setSearchTerm}
+          />
+        </SearchContainer>
+        
+        <div style={{ display: 'flex', gap: '8px', marginBottom: '30px' }}>
+          {['todas', 'pistas', 'eventos'].map(tipo => (
+            <button
+              key={tipo}
+              onClick={() => setFilterStatus(tipo)}
+              style={{
+                padding: '6px 12px',
+                borderRadius: '20px',
+                border: '1px solid #e2e8f0',
+                background: filterStatus === tipo ? '#667eea' : 'white',
+                color: filterStatus === tipo ? 'white' : '#64748b',
+                fontSize: '12px',
+                fontWeight: '500',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                whiteSpace: 'nowrap'
+              }}
+            >
+              {tipo === 'todas' ? 'Todas' : tipo.charAt(0).toUpperCase() + tipo.slice(1)}
+            </button>
+          ))}
+        </div>
+
+        {filteredSolicitacoes.length === 0 ? (
+          <EmptyState>
+            <EmptyIcon>📋</EmptyIcon>
+            <EmptyText>{searchTerm ? 'Nenhuma solicitação encontrada' : 'Nenhuma solicitação pendente'}</EmptyText>
+            <EmptySubtext>{searchTerm ? 'Tente pesquisar com outros termos' : 'As solicitações de pistas e eventos aparecerão aqui'}</EmptySubtext>
+          </EmptyState>
+        ) : (
+          <SolicitacaoGrid>
+            {filteredSolicitacoes.map((solicitacao) => (
+              <SolicitacaoCard key={`${solicitacao.tipo}-${solicitacao.id}`}>
+                <CardContent>
+                  <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+                    <StatusBadge 
+                      style={{
+                        background: solicitacao.tipo === 'pista' ? '#e0f2fe' : '#f3e8ff',
+                        color: solicitacao.tipo === 'pista' ? '#0277bd' : '#7c3aed'
+                      }}
+                    >
+                      {solicitacao.tipo === 'pista' ? '🛹 Pista' : '🎆 Evento'}
+                    </StatusBadge>
+                  </div>
+                  
+                  <SolicitacaoTitle>{solicitacao.nome}</SolicitacaoTitle>
+                  
+                  <SolicitacaoInfo>
+                    <InfoRow>
+                      <InfoLabel>Solicitada:</InfoLabel>
+                      <span>{new Date(solicitacao.dataSolicitacao || solicitacao.dataEvento).toLocaleDateString('pt-BR')}</span>
+                    </InfoRow>
+                    {solicitacao.tipo === 'pista' ? (
+                      <InfoRow>
+                        <InfoLabel>Localização:</InfoLabel>
+                        <span>{solicitacao.localizacao || `${solicitacao.rua || ''}, ${solicitacao.bairro || ''}`.replace(/^,\s*|,\s*$/g, '') || 'Não informado'}</span>
+                      </InfoRow>
+                    ) : (
+                      <InfoRow>
+                        <InfoLabel>Data:</InfoLabel>
+                        <span>{solicitacao.dataEvento ? new Date(solicitacao.dataEvento).toLocaleDateString('pt-BR') : 'Não informado'}</span>
+                      </InfoRow>
+                    )}
+                    <InfoRow>
+                      <InfoLabel>Descrição:</InfoLabel>
+                      <span>{truncateDescription(solicitacao.descricao)}</span>
+                    </InfoRow>
+                  </SolicitacaoInfo>
+                </CardContent>
+                
+                <CardActions>
+                  <ActionButton 
+                    className="approve"
+                    onClick={() => handleApprove(solicitacao)}
+                  >
+                    ✓ Aprovar
+                  </ActionButton>
+                  <ActionButton 
+                    className="reject"
+                    onClick={() => handleReject(solicitacao)}
+                  >
+                    ✗ Reprovar
+                  </ActionButton>
+                </CardActions>
+              </SolicitacaoCard>
+            ))}
+          </SolicitacaoGrid>
+        )}
+      </ContentContainer>
+    </AdminContainer>
+  );
+};
+
+export default Solicitacoes;
