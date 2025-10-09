@@ -11,6 +11,7 @@ import AllPistasModal from '../components/AllPistasModal';
 import { fetchSkateParks } from '../services/skateParksService';
 import { lugarService } from '../services/lugarService';
 import { cepService } from '../services/cepService';
+import { usePistasPendentes } from '../hooks/usePistasPendentes';
 
 // Carregar Leaflet
 if (typeof window !== 'undefined' && !window.L) {
@@ -289,6 +290,7 @@ const Map = () => {
   const [selectedSpot, setSelectedSpot] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState('todos');
+  const { adicionarPistaPendente } = usePistasPendentes();
 
   const [spots, setSpots] = useState([]);
   const [lugares, setLugares] = useState([]);
@@ -377,23 +379,8 @@ const Map = () => {
   };
 
   const handleCreatePista = (newPista) => {
-    const updatedSpots = [...spots, newPista];
-    setSpots(updatedSpots);
-    
-    // Adicionar marcador no mapa se tiver coordenadas
-    if (newPista.latitude && newPista.longitude && window.L) {
-      const mapContainer = document.getElementById('map');
-      if (mapContainer && mapContainer._leaflet_id) {
-        const map = window.L.map('map');
-        const marker = window.L.marker([parseFloat(newPista.latitude), parseFloat(newPista.longitude)])
-          .addTo(map)
-          .bindPopup(`<b>${newPista.nome}</b><br>${newPista.descricao}`);
-        
-        marker.on('click', () => {
-          handlePistaClick(newPista);
-        });
-      }
-    }
+    adicionarPistaPendente(newPista);
+    alert('Pista solicitada com sucesso! Aguarde a aprovação do administrador.');
   };
 
   const handlePistaClick = (pista) => {

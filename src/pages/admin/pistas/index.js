@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import styled from 'styled-components';
 import { FiEdit, FiTrash, FiEye, FiEyeOff, FiPlus } from 'react-icons/fi';
 import SidebarAdmin from '../../../components/SidebarAdmin';
@@ -6,6 +6,7 @@ import SearchBar from '../../../components/SearchBar';
 import EditPistaModal from '../../../components/EditPistaModal';
 import CreatePistaModal from '../../../components/CreatePistaModal';
 import ConfirmModal from '../../../components/ConfirmModal';
+import { usePistasPendentes } from '../../../hooks/usePistasPendentes';
 
 const AdminContainer = styled.div`
   background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
@@ -126,7 +127,7 @@ const InfoRow = styled.div`
 
 const InfoLabel = styled.span`
   font-weight: 500;
-  min-width: 80px;
+  min-width: 60px;
   color: #475569;
 `;
 
@@ -218,58 +219,29 @@ const Pistas = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [pistaToDelete, setPistaToDelete] = useState(null);
+  const [filterStatus, setFilterStatus] = useState('todas');
+  const { pistasPendentes, aprovarPista, rejeitarPista } = usePistasPendentes();
 
   const truncateDescription = (text) => {
     if (text.length <= 25) return text;
     return text.substring(0, 25) + '...';
   };
-  const [pistas, setPistas] = useState([
-    {
-      id: 1,
-      nome: 'Skate Park Central',
-      localizacao: 'Centro da Cidade',
-      rua: 'Rua Augusta, 1000',
-      bairro: 'Centro',
-      cep: '01305-100',
-      numero: '1000',
-      descricao: 'Pista completa com bowls e street',
-      latitude: '-23.5505',
-      longitude: '-46.6333',
-      publica: true,
-      fotos: ['', '', ''],
-      active: true
-    },
-    {
-      id: 2,
-      nome: 'Pista da Praça',
-      localizacao: 'Praça da Sé',
-      rua: 'Praça da Sé, s/n',
-      bairro: 'Sé',
-      cep: '01001-000',
-      numero: 's/n',
-      descricao: 'Pista de street skating',
-      latitude: '-23.5489',
-      longitude: '-46.6388',
-      publica: false,
-      fotos: ['', '', ''],
-      active: false
-    },
-    {
-      id: 3,
-      nome: 'Bowl do Ibirapuera',
-      localizacao: 'Parque Ibirapuera',
-      rua: 'Av. Paulista, 1578',
-      bairro: 'Bela Vista',
-      cep: '01310-200',
-      numero: '1578',
-      descricao: 'Bowl profissional para skatistas experientes',
-      latitude: '-23.5618',
-      longitude: '-46.6565',
-      publica: true,
-      fotos: ['', '', ''],
-      active: true
-    }
-  ]);
+  const [pistasBase, setPistasBase] = useState([]);
+
+  const [pistas, setPistas] = useState([]);
+
+  useEffect(() => {
+    const pistasAprovadas = JSON.parse(localStorage.getItem('pistasAprovadas') || '[]');
+    const pistasRejeitadas = JSON.parse(localStorage.getItem('pistasRejeitadas') || '[]');
+    
+    const todasPistas = [
+      ...pistasPendentes,
+      ...pistasAprovadas,
+      ...pistasRejeitadas
+    ];
+    
+    setPistas(todasPistas);
+  }, [pistasPendentes]);
 
   const handleDelete = (pistaId) => {
     const pista = pistas.find(p => p.id === pistaId);
@@ -309,15 +281,27 @@ const Pistas = () => {
     ));
   };
 
+  const handleApprove = (pistaId) => {
+    aprovarPista(pistaId);
+  };
+
+  const handleReject = (pistaId) => {
+    rejeitarPista(pistaId);
+  };
+
   const filteredPistas = useMemo(() => {
-    return pistas.filter(pista =>
-      pista.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      pista.localizacao.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      pista.rua.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      pista.bairro.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      pista.descricao.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [pistas, searchTerm]);
+    return pistas.filter(pista => {
+      const matchesSearch = pista.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        pista.localizacao.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        pista.rua.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        pista.bairro.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        pista.descricao.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      const matchesStatus = filterStatus === 'todas' || pista.status === filterStatus;
+      
+      return matchesSearch && matchesStatus;
+    });
+  }, [pistas, searchTerm, filterStatus]);
 
   return (
     <AdminContainer>
@@ -337,24 +321,66 @@ const Pistas = () => {
             onChange={setSearchTerm}
           />
         </SearchContainer>
+        
+        <div style={{ display: 'flex', gap: '8px', marginBottom: '30px' }}>
+          {['todas', 'pendente', 'aprovada', 'rejeitada'].map(status => (
+            <button
+              key={status}
+              onClick={() => setFilterStatus(status)}
+              style={{
+                padding: '6px 12px',
+                borderRadius: '20px',
+                border: '1px solid #e2e8f0',
+                background: filterStatus === status ? '#667eea' : 'white',
+                color: filterStatus === status ? 'white' : '#64748b',
+                fontSize: '12px',
+                fontWeight: '500',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                whiteSpace: 'nowrap'
+              }}
+            >
+              {status === 'todas' ? 'Todas' : status.charAt(0).toUpperCase() + status.slice(1)}
+            </button>
+          ))}
+        </div>
 
         {filteredPistas.length === 0 ? (
           <EmptyState>
             <EmptyIcon>🛹</EmptyIcon>
-            <EmptyText>{searchTerm ? 'Nenhuma pista encontrada' : 'Nenhuma pista cadastrada'}</EmptyText>
-            <EmptySubtext>{searchTerm ? 'Tente pesquisar com outros termos' : 'As pistas adicionadas aparecerão aqui'}</EmptySubtext>
+            <EmptyText>{searchTerm ? 'Nenhuma pista encontrada' : 'Nenhuma solicitação de pista'}</EmptyText>
+            <EmptySubtext>{searchTerm ? 'Tente pesquisar com outros termos' : 'As solicitações de pistas aparecerão aqui'}</EmptySubtext>
           </EmptyState>
         ) : (
           <PistaGrid>
             {filteredPistas.map((pista) => (
               <PistaCard key={pista.id}>
-                <StatusBadge active={pista.active}>
-                  {pista.active ? 'Ativa' : 'Inativa'}
-                </StatusBadge>
+                <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+                  <StatusBadge active={pista.active}>
+                    {pista.active ? 'Ativa' : 'Inativa'}
+                  </StatusBadge>
+                  <StatusBadge 
+                    style={{
+                      background: pista.status === 'pendente' ? '#fef3c7' : 
+                                 pista.status === 'aprovada' ? '#dcfce7' : '#fee2e2',
+                      color: pista.status === 'pendente' ? '#92400e' : 
+                             pista.status === 'aprovada' ? '#166534' : '#dc2626'
+                    }}
+                  >
+                    {pista.status === 'pendente' ? 'Pendente' : 
+                     pista.status === 'aprovada' ? 'Aprovada' : 'Rejeitada'}
+                  </StatusBadge>
+                </div>
                 
                 <PistaTitle>{pista.nome}</PistaTitle>
                 
                 <PistaInfo>
+                  {pista.dataSolicitacao && (
+                    <InfoRow>
+                      <InfoLabel>Solicitada:</InfoLabel>
+                      <span>{new Date(pista.dataSolicitacao).toLocaleDateString('pt-BR')}</span>
+                    </InfoRow>
+                  )}
                   <InfoRow>
                     <InfoLabel>Localização:</InfoLabel>
                     <span>{pista.rua || pista.localizacao}</span>
@@ -366,19 +392,44 @@ const Pistas = () => {
                 </PistaInfo>
 
                 <ActionButtons>
-                  <ActionButton className="edit" onClick={() => handleEdit(pista.id)}>
-                    <FiEdit size={16} />
-                    Editar
-                  </ActionButton>
-                  
-                  <ActionButton 
-                    className="status" 
-                    active={pista.active}
-                    onClick={() => toggleStatus(pista.id)}
-                  >
-                    {pista.active ? <FiEyeOff size={16} /> : <FiEye size={16} />}
-                    {pista.active ? 'Ocultar' : 'Publicar'}
-                  </ActionButton>
+                  {pista.status === 'pendente' ? (
+                    <>
+                      <ActionButton 
+                        style={{
+                          background: '#dcfce7',
+                          color: '#166534'
+                        }}
+                        onClick={() => handleApprove(pista.id)}
+                      >
+                        ✓ Aprovar
+                      </ActionButton>
+                      <ActionButton 
+                        style={{
+                          background: '#fee2e2',
+                          color: '#dc2626'
+                        }}
+                        onClick={() => handleReject(pista.id)}
+                      >
+                        ✗ Rejeitar
+                      </ActionButton>
+                    </>
+                  ) : (
+                    <>
+                      <ActionButton className="edit" onClick={() => handleEdit(pista.id)}>
+                        <FiEdit size={16} />
+                        Editar
+                      </ActionButton>
+                      
+                      <ActionButton 
+                        className="status" 
+                        active={pista.active}
+                        onClick={() => toggleStatus(pista.id)}
+                      >
+                        {pista.active ? <FiEyeOff size={16} /> : <FiEye size={16} />}
+                        {pista.active ? 'Ocultar' : 'Publicar'}
+                      </ActionButton>
+                    </>
+                  )}
                   
                   <ActionButton className="delete" onClick={() => handleDelete(pista.id)}>
                     <FiTrash size={16} />

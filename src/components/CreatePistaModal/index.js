@@ -228,6 +228,8 @@ const CreatePistaModal = ({ isOpen, onClose, onSave }) => {
           id: Date.now(),
           localizacao: `${formData.rua}, ${formData.bairro}`,
           active: false,
+          status: 'pendente',
+          dataSolicitacao: new Date().toISOString(),
           fotos: processedImages
         };
         onSave(newPista);
