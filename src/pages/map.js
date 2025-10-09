@@ -9,6 +9,8 @@ import CreatePistaModal from '../components/CreatePistaModal';
 import PistaPopup from '../components/PistaPopup';
 import AllPistasModal from '../components/AllPistasModal';
 import { fetchSkateParks } from '../services/skateParksService';
+import { lugarService } from '../services/lugarService';
+import { cepService } from '../services/cepService';
 
 // Carregar Leaflet
 if (typeof window !== 'undefined' && !window.L) {
@@ -289,7 +291,9 @@ const Map = () => {
   const [typeFilter, setTypeFilter] = useState('todos');
 
   const [spots, setSpots] = useState([]);
+  const [lugares, setLugares] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [mapInstance, setMapInstance] = useState(null);
   const [showNotification, setShowNotification] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedPista, setSelectedPista] = useState(null);
@@ -314,8 +318,11 @@ const Map = () => {
 
   useEffect(() => {
     loadSkateParks();
-    
-    // Verificar se o mapa já foi inicializado
+    loadLugares();
+    initializeMap();
+  }, []);
+
+  const initializeMap = () => {
     const mapContainer = document.getElementById('map');
     if (mapContainer && !mapContainer._leaflet_id && window.L) {
       const map = window.L.map('map').setView([-23.5505, -46.6333], 13);
@@ -324,11 +331,38 @@ const Map = () => {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       }).addTo(map);
       
-      window.L.marker([-23.5505, -46.6333]).addTo(map)
-        .bindPopup('São Paulo - Pistas de Skate<br> Explore as melhores pistas da cidade.')
-        .openPopup();
+      setMapInstance(map);
     }
-  }, []);
+  };
+
+  const loadLugares = async () => {
+    try {
+      const data = await lugarService.listar();
+      const lugaresComCoordenadas = await Promise.all(
+        data.map(async (lugar) => {
+          if (!lugar.latitude || !lugar.longitude) {
+            try {
+              const endereco = await cepService.buscarEnderecoPorCep(lugar.cep);
+              const coordenadas = await cepService.obterCoordenadas(endereco.endereco);
+              return {
+                ...lugar,
+                latitude: coordenadas.latitude.toString(),
+                longitude: coordenadas.longitude.toString(),
+                endereco: endereco.endereco
+              };
+            } catch (error) {
+              console.error('Erro ao obter coordenadas para:', lugar.nome, error);
+              return lugar;
+            }
+          }
+          return lugar;
+        })
+      );
+      setLugares(lugaresComCoordenadas);
+    } catch (error) {
+      console.error('Erro ao carregar lugares:', error);
+    }
+  };
 
   const loadSkateParks = async () => {
     setLoading(true);
@@ -378,6 +412,31 @@ const Map = () => {
     return matchesSearch && matchesType;
   });
 
+  const filteredLugares = lugares.filter(lugar => {
+    const matchesSearch = lugar.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         lugar.descricao.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesType = typeFilter === 'todos' || lugar.tipo.toLowerCase() === typeFilter;
+    return matchesSearch && matchesType;
+  });
+
+  // Adicionar marcadores no mapa quando lugares são carregados
+  useEffect(() => {
+    if (mapInstance && lugares.length > 0) {
+      lugares.forEach(lugar => {
+        if (lugar.latitude && lugar.longitude) {
+          const marker = window.L.marker([parseFloat(lugar.latitude), parseFloat(lugar.longitude)])
+            .addTo(mapInstance)
+            .bindPopup(`<b>${lugar.nome}</b><br>${lugar.descricao}<br><small>${lugar.endereco || 'Endereço não disponível'}</small>`);
+          
+          marker.on('click', () => {
+            handlePistaClick(lugar);
+          });
+        }
+      });
+    }
+  }, [mapInstance, lugares]);
+
   return (
     <PageContainer>
       <ScrollToTop />
@@ -426,44 +485,105 @@ const Map = () => {
           <SpotsList>
             {loading ? (
               <div style={{ textAlign: 'center', padding: '48px 0', color: '#4a5568' }}>
-                Carregando pistas reais do Brasil...
-              </div>
-            ) : filteredSpots.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '48px 0', color: '#4a5568' }}>
-                Nenhuma pista encontrada com os filtros aplicados.
+                Carregando pistas...
               </div>
             ) : (
-              filteredSpots.map(spot => (
-                <SpotCard
-                  key={spot.id}
-                  isSelected={selectedSpot?.id === spot.id}
-                  onClick={() => handlePistaClick(spot)}
-                >
-                  <SpotImage src={spot.images[0]} alt={spot.name} />
-                  <SpotName>{spot.name}</SpotName>
-                  <SpotDescription>{spot.description}</SpotDescription>
-                  <SpotLocation>
-                    <FaMapMarkerAlt />
-                    <span>{spot.location}</span>
-                  </SpotLocation>
-                  <SpotStats>
-                    <StatItem>
-                      <FaStar color="#3182ce" />
-                      <span style={{ color: '#4a5568' }}>{spot.rating}</span>
-                    </StatItem>
-                    <StatItem>
-                      <FaHeart color="#4a5568" />
-                      <span style={{ color: '#4a5568' }}>{spot.likes}</span>
-                    </StatItem>
-                  </SpotStats>
-                </SpotCard>
-              ))
+              <>
+                {/* Lugares registrados */}
+                {filteredLugares.length > 0 && (
+                  <>
+                    <div style={{ padding: '0 16px', marginBottom: '16px' }}>
+                      <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#2d3748', margin: '0 0 8px 0' }}>
+                        Pistas Registradas ({filteredLugares.length})
+                      </h3>
+                    </div>
+                    {filteredLugares.map(lugar => (
+                      <SpotCard
+                        key={`lugar-${lugar.id}`}
+                        isSelected={selectedSpot?.id === lugar.id}
+                        onClick={() => handlePistaClick(lugar)}
+                      >
+                        {lugar.foto && (
+                          <SpotImage 
+                            src={`data:image/jpeg;base64,${lugar.foto}`} 
+                            alt={lugar.nome} 
+                          />
+                        )}
+                        <SpotName>{lugar.nome}</SpotName>
+                        <SpotDescription>{lugar.descricao}</SpotDescription>
+                        <SpotLocation>
+                          <FaMapMarkerAlt />
+                          <span>{lugar.endereco || lugar.cep}</span>
+                        </SpotLocation>
+                        <SpotStats>
+                          <StatItem>
+                            <span style={{ color: '#4a5568', fontSize: '12px' }}>
+                              {lugar.tipo} - R$ {lugar.valor}
+                            </span>
+                          </StatItem>
+                          <StatItem>
+                            <span style={{ 
+                              color: lugar.statusPista === 'ativada' ? '#38a169' : '#e53e3e', 
+                              fontSize: '12px',
+                              fontWeight: '600'
+                            }}>
+                              {lugar.statusPista}
+                            </span>
+                          </StatItem>
+                        </SpotStats>
+                      </SpotCard>
+                    ))}
+                  </>
+                )}
+                
+                {/* Pistas do serviço original */}
+                {filteredSpots.length > 0 && (
+                  <>
+                    <div style={{ padding: '0 16px', marginBottom: '16px' }}>
+                      <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#2d3748', margin: '0 0 8px 0' }}>
+                        Outras Pistas ({filteredSpots.length})
+                      </h3>
+                    </div>
+                    {filteredSpots.map(spot => (
+                      <SpotCard
+                        key={`spot-${spot.id}`}
+                        isSelected={selectedSpot?.id === spot.id}
+                        onClick={() => handlePistaClick(spot)}
+                      >
+                        <SpotImage src={spot.images[0]} alt={spot.name} />
+                        <SpotName>{spot.name}</SpotName>
+                        <SpotDescription>{spot.description}</SpotDescription>
+                        <SpotLocation>
+                          <FaMapMarkerAlt />
+                          <span>{spot.location}</span>
+                        </SpotLocation>
+                        <SpotStats>
+                          <StatItem>
+                            <FaStar color="#3182ce" />
+                            <span style={{ color: '#4a5568' }}>{spot.rating}</span>
+                          </StatItem>
+                          <StatItem>
+                            <FaHeart color="#4a5568" />
+                            <span style={{ color: '#4a5568' }}>{spot.likes}</span>
+                          </StatItem>
+                        </SpotStats>
+                      </SpotCard>
+                    ))}
+                  </>
+                )}
+                
+                {filteredLugares.length === 0 && filteredSpots.length === 0 && (
+                  <div style={{ textAlign: 'center', padding: '48px 0', color: '#4a5568' }}>
+                    Nenhuma pista encontrada com os filtros aplicados.
+                  </div>
+                )}
+              </>
             )}
           </SpotsList>
           
           <FooterStats>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span>{filteredSpots.length} de {spots.length} pistas encontradas</span>
+              <span>{filteredLugares.length + filteredSpots.length} de {lugares.length + spots.length} pistas encontradas</span>
               <button 
                 onClick={() => setShowAllPistasModal(true)}
                 style={{

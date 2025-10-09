@@ -377,34 +377,53 @@ const PistaPopup = ({ pista, onClose }) => {
         <InstructionText>clique fora para sair</InstructionText>
         
         <PopupBody>
-          <PistaCarousel images={pista.fotos} />
+          <PistaCarousel images={pista.foto ? [`data:image/jpeg;base64,${pista.foto}`] : pista.images || []} />
           
           <PistaHeader>
-            <PistaTitle>{pista.nome}</PistaTitle>
-            <StatusBadge publica={pista.publica}>
-              {pista.publica ? <FaGlobe size={12} /> : <FaLock size={12} />}
-              {pista.publica ? 'Pública' : 'Privada'}
+            <PistaTitle>{pista.nome || pista.name}</PistaTitle>
+            <StatusBadge publica={pista.tipo === 'Pública' || pista.publica}>
+              {(pista.tipo === 'Pública' || pista.publica) ? <FaGlobe size={12} /> : <FaLock size={12} />}
+              {pista.tipo || (pista.publica ? 'Pública' : 'Privada')}
             </StatusBadge>
           </PistaHeader>
           
-          <PistaDescription>{pista.descricao}</PistaDescription>
+          <PistaDescription>{pista.descricao || pista.description}</PistaDescription>
           
           <InfoSection>
             <InfoRow>
               <InfoIcon><FaMapMarkerAlt size={18} /></InfoIcon>
-              <InfoText>{pista.rua}, {pista.numero} - {pista.bairro}</InfoText>
+              <InfoText>{pista.endereco || pista.location || `${pista.rua || ''}, ${pista.numero || ''} - ${pista.bairro || ''}`}</InfoText>
             </InfoRow>
+            {pista.valor && (
+              <InfoRow>
+                <InfoIcon><FaSkating size={18} /></InfoIcon>
+                <InfoText>Valor: R$ {pista.valor}</InfoText>
+              </InfoRow>
+            )}
+            {pista.statusPista && (
+              <InfoRow>
+                <InfoIcon>
+                  <div style={{
+                    width: '12px',
+                    height: '12px',
+                    borderRadius: '50%',
+                    backgroundColor: pista.statusPista === 'ativada' ? '#10b981' : '#ef4444'
+                  }} />
+                </InfoIcon>
+                <InfoText>Status: {pista.statusPista}</InfoText>
+              </InfoRow>
+            )}
           </InfoSection>
 
           {(pista.latitude && pista.longitude) && (
             <CoordinatesRow>
               <CoordinateItem>
                 <CoordinateLabel>Latitude</CoordinateLabel>
-                <CoordinateValue>{pista.latitude}</CoordinateValue>
+                <CoordinateValue>{parseFloat(pista.latitude).toFixed(6)}</CoordinateValue>
               </CoordinateItem>
               <CoordinateItem>
                 <CoordinateLabel>Longitude</CoordinateLabel>
-                <CoordinateValue>{pista.longitude}</CoordinateValue>
+                <CoordinateValue>{parseFloat(pista.longitude).toFixed(6)}</CoordinateValue>
               </CoordinateItem>
             </CoordinatesRow>
           )}
