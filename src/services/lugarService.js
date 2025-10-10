@@ -49,5 +49,35 @@ export const lugarService = {
     } catch (error) {
       throw error.response?.data || 'Erro ao deletar pista';
     }
+  },
+
+  // Buscar foto1 em base64
+  buscarFoto1: async (id) => {
+    try {
+      const response = await api.get(`/lugar/foto1/${id}`);
+      return response.data;
+    } catch (error) {
+      return null;
+    }
+  },
+
+  // Buscar foto2 em base64
+  buscarFoto2: async (id) => {
+    try {
+      const response = await api.get(`/lugar/foto2/${id}`);
+      return response.data;
+    } catch (error) {
+      return null;
+    }
+  },
+
+  // Buscar foto3 em base64
+  buscarFoto3: async (id) => {
+    try {
+      const response = await api.get(`/lugar/foto3/${id}`);
+      return response.data;
+    } catch (error) {
+      return null;
+    }
   }
 };

@@ -214,20 +214,57 @@ const Solicitacoes = () => {
     try {
       if (solicitacao.tipo === 'pista') {
         const { lugarService } = await import('../../../services/lugarService');
-        await lugarService.criar({
+        const { categoriaService } = await import('../../../services/categoriaService');
+        const { usuarioService } = await import('../../../services/usuarioService');
+        
+        // Buscar todas as categorias
+        const categorias = await categoriaService.listar();
+        console.log('Categorias encontradas:', categorias);
+        
+        // Encontrar a categoria pelo nome
+        const categoriaNome = solicitacao.categoria || 'street';
+        const categoriaEncontrada = categorias.find(cat => 
+          cat.nome.toLowerCase() === categoriaNome.toLowerCase()
+        );
+        
+        console.log('Categoria procurada:', categoriaNome);
+        console.log('Categoria encontrada:', categoriaEncontrada);
+        
+        if (!categoriaEncontrada) {
+          throw new Error(`Categoria '${categoriaNome}' não encontrada`);
+        }
+        
+        // Buscar usuário admin
+        let usuarioAdmin;
+        try {
+          const usuarios = await usuarioService.listar();
+          usuarioAdmin = usuarios.find(user => user.nivelAcesso === 'ADMIN') || usuarios[0];
+          console.log('Usuario admin encontrado:', usuarioAdmin);
+        } catch (error) {
+          // Se não conseguir buscar usuários, usar ID 1 como fallback
+          usuarioAdmin = { id: 1 };
+          console.log('Usando usuario fallback:', usuarioAdmin);
+        }
+        
+        const dadosLugar = {
           nome: solicitacao.nome,
           descricao: solicitacao.descricao,
           cep: solicitacao.cep,
-          rua: solicitacao.rua,
-          bairro: solicitacao.bairro,
           numero: solicitacao.numero,
           latitude: solicitacao.latitude,
           longitude: solicitacao.longitude,
-          tipo: solicitacao.categoria || 'street',
-          valor: '0',
+          tipo: solicitacao.publica === false ? 'Particular' : 'Pública',
+          valor: 0,
           statusPista: 'ativada',
-          foto: solicitacao.fotos?.[0]?.replace('data:image/png;base64,', '') || ''
-        });
+          categoriaId: categoriaEncontrada.id,
+          usuarioId: usuarioAdmin.id,
+          foto1: solicitacao.fotos?.[0]?.replace(/^data:image\/[a-z]+;base64,/, '') || null,
+          foto2: solicitacao.fotos?.[1]?.replace(/^data:image\/[a-z]+;base64,/, '') || null,
+          foto3: solicitacao.fotos?.[2]?.replace(/^data:image\/[a-z]+;base64,/, '') || null
+        };
+        
+        console.log('Dados que serão enviados:', dadosLugar);
+        await lugarService.criar(dadosLugar);
         removerPistaPendente(solicitacao.id);
       } else {
         const eventosAtualizados = eventosPendentes.filter(e => e.id !== solicitacao.id);
@@ -237,7 +274,7 @@ const Solicitacoes = () => {
       alert('Solicitação aprovada com sucesso!');
     } catch (error) {
       console.error('Erro ao aprovar solicitação:', error);
-      alert('Erro ao aprovar solicitação');
+      alert(`Erro ao aprovar solicitação: ${error.message}`);
     }
   };
 

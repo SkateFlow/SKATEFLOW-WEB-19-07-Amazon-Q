@@ -342,22 +342,35 @@ const Map = () => {
       const data = await lugarService.listar();
       const lugaresComCoordenadas = await Promise.all(
         data.map(async (lugar) => {
+          let lugarAtualizado = { ...lugar };
+          
+          // Buscar coordenadas se necessário
           if (!lugar.latitude || !lugar.longitude) {
             try {
               const endereco = await cepService.buscarEnderecoPorCep(lugar.cep);
               const coordenadas = await cepService.obterCoordenadas(endereco.endereco);
-              return {
-                ...lugar,
+              lugarAtualizado = {
+                ...lugarAtualizado,
                 latitude: coordenadas.latitude.toString(),
                 longitude: coordenadas.longitude.toString(),
                 endereco: endereco.endereco
               };
             } catch (error) {
               console.error('Erro ao obter coordenadas para:', lugar.nome, error);
-              return lugar;
             }
           }
-          return lugar;
+          
+          // Carregar apenas foto1 para exibir no card
+          try {
+            const foto1 = await lugarService.buscarFoto1(lugar.id);
+            if (foto1) {
+              lugarAtualizado.foto1Base64 = `data:image/jpeg;base64,${foto1}`;
+            }
+          } catch (error) {}
+          
+          lugarAtualizado.fotosCarregadas = false;
+          
+          return lugarAtualizado;
         })
       );
       setLugares(lugaresComCoordenadas);
@@ -383,7 +396,30 @@ const Map = () => {
     alert('Pista solicitada com sucesso! Aguarde a aprovação do administrador.');
   };
 
-  const handlePistaClick = (pista) => {
+  const handlePistaClick = async (pista) => {
+    // Carregar fotos se ainda não foram carregadas
+    if (!pista.fotosCarregadas) {
+      const fotos = [];
+      
+      try {
+        const foto1 = await lugarService.buscarFoto1(pista.id);
+        if (foto1) fotos.push(`data:image/jpeg;base64,${foto1}`);
+      } catch (error) {}
+      
+      try {
+        const foto2 = await lugarService.buscarFoto2(pista.id);
+        if (foto2) fotos.push(`data:image/jpeg;base64,${foto2}`);
+      } catch (error) {}
+      
+      try {
+        const foto3 = await lugarService.buscarFoto3(pista.id);
+        if (foto3) fotos.push(`data:image/jpeg;base64,${foto3}`);
+      } catch (error) {}
+      
+      pista.fotos = fotos;
+      pista.fotosCarregadas = true;
+    }
+    
     setSelectedPista(pista);
   };
 
@@ -485,11 +521,26 @@ const Map = () => {
                         isSelected={selectedSpot?.id === lugar.id}
                         onClick={() => handlePistaClick(lugar)}
                       >
-                        {lugar.foto && (
+                        {lugar.foto1Base64 ? (
                           <SpotImage 
-                            src={`data:image/jpeg;base64,${lugar.foto}`} 
-                            alt={lugar.nome} 
+                            src={lugar.foto1Base64} 
+                            alt={lugar.nome}
                           />
+                        ) : (
+                          <div style={{
+                            width: '100%',
+                            height: '120px',
+                            backgroundColor: '#f1f5f9',
+                            borderRadius: '8px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: '#64748b',
+                            fontSize: '14px',
+                            marginBottom: '12px'
+                          }}>
+                            🛹 {lugar.nome}
+                          </div>
                         )}
                         <SpotName>{lugar.nome}</SpotName>
                         <SpotDescription>{lugar.descricao}</SpotDescription>

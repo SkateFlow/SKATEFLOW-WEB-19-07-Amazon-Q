@@ -38,11 +38,12 @@ const PopupContent = styled.div`
   background: #ffffff;
   border-radius: 20px;
   padding: 0;
-  max-width: 480px;
-  width: 90%;
+  max-width: 650px;
+  width: 95%;
+  max-height: 90vh;
+  overflow-y: auto;
   position: relative;
   box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
-  overflow: hidden;
   animation: ${props => props.isClosing ? 'slideOut' : 'slideIn'} 300ms ease-in-out forwards;
   
   @keyframes slideIn {
@@ -79,16 +80,16 @@ const InstructionText = styled.div`
 `;
 
 const PopupBody = styled.div`
-  padding: 28px;
+  padding: 32px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 24px;
 `;
 
 const CarouselContainer = styled.div`
   position: relative;
   width: 100%;
-  height: 220px;
+  height: 300px;
   overflow: hidden;
   border-radius: 16px;
   background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
@@ -300,7 +301,7 @@ const CoordinateValue = styled.span`
 const PistaCarousel = ({ images = [] }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const validImages = images.filter(img => img && img.trim() !== '');
-  const displayImages = validImages.length > 0 ? validImages : ['https://via.placeholder.com/480x220/667eea/ffffff?text=🛹+Pista+de+Skate'];
+  const displayImages = validImages.length > 0 ? validImages : ['https://via.placeholder.com/650x300/667eea/ffffff?text=🛹+Pista+de+Skate'];
 
   const goToPrevious = () => {
     setCurrentIndex(prevIndex => 
@@ -377,7 +378,7 @@ const PistaPopup = ({ pista, onClose }) => {
         <InstructionText>clique fora para sair</InstructionText>
         
         <PopupBody>
-          <PistaCarousel images={pista.foto ? [`data:image/jpeg;base64,${pista.foto}`] : pista.images || []} />
+          <PistaCarousel images={pista.fotos || pista.images || []} />
           
           <PistaHeader>
             <PistaTitle>{pista.nome || pista.name}</PistaTitle>
