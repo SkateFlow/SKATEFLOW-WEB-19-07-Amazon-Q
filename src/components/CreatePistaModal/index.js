@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { FiX, FiUpload } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
+import PistaRequestConfirmModal from '../PistaRequestConfirmModal';
 import {
   ModalOverlay,
   ModalContainer,
@@ -43,6 +44,7 @@ const CreatePistaModal = ({ isOpen, onClose, onSave }) => {
   const [locationInfo, setLocationInfo] = useState('');
   const [errors, setErrors] = useState({});
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const formatCep = (value) => {
     const numbers = value.replace(/\D/g, '');
@@ -197,6 +199,7 @@ const CreatePistaModal = ({ isOpen, onClose, onSave }) => {
     const fieldMessages = {
       nome: 'Por favor, insira o nome da pista',
       descricao: 'Por favor, insira uma descrição',
+      categoria: 'Por favor, selecione uma categoria',
       cep: 'Por favor, insira o CEP',
       numero: 'Por favor, insira o número do local'
     };
@@ -239,6 +242,7 @@ const CreatePistaModal = ({ isOpen, onClose, onSave }) => {
         onSave(newPista);
         resetForm();
         onClose();
+        setShowSuccessModal(true);
       });
     }
   };
@@ -379,6 +383,19 @@ const CreatePistaModal = ({ isOpen, onClose, onSave }) => {
                       </label>
                     ))}
                   </div>
+                  <AnimatePresence>
+                    {errors.categoria && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.2 }}
+                        style={{ color: '#dc2626', fontSize: '12px', marginTop: '4px' }}
+                      >
+                        {errors.categoria}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </FormGroup>
 
                 <FormGroup>
@@ -553,6 +570,11 @@ const CreatePistaModal = ({ isOpen, onClose, onSave }) => {
           </AnimatePresence>
         </ModalOverlay>
       )}
+      
+      <PistaRequestConfirmModal 
+        isOpen={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+      />
     </AnimatePresence>
   );
 };

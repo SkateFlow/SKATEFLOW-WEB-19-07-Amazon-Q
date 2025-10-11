@@ -220,6 +220,7 @@ const Pistas = () => {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [pistaToDelete, setPistaToDelete] = useState(null);
   const [filterStatus, setFilterStatus] = useState('todas');
+  const [loading, setLoading] = useState(true);
   const { pistasPendentes, aprovarPista, rejeitarPista } = usePistasPendentes();
 
   const truncateDescription = (text) => {
@@ -244,46 +245,74 @@ const Pistas = () => {
     setPistas(todasPistas);
   }, [pistasPendentes, pistasBackend]);
 
+  const loadPistasBackend = async () => {
+    try {
+      setLoading(true);
+      const { lugarService } = await import('../../../services/lugarService');
+      const lugares = await lugarService.listar();
+      const pistasFormatadas = lugares.map(lugar => ({
+        id: lugar.id,
+        nome: lugar.nome,
+        descricao: lugar.descricao,
+        localizacao: lugar.endereco || `${lugar.rua || ''}, ${lugar.bairro || ''}`.replace(/^,\s*|,\s*$/g, '') || 'Não informado',
+        rua: lugar.rua,
+        bairro: lugar.bairro,
+        cep: lugar.cep,
+        latitude: lugar.latitude,
+        longitude: lugar.longitude,
+        active: lugar.statusPista === 'ativada',
+        status: 'backend',
+        tipo: lugar.tipo,
+        valor: lugar.valor,
+        fotos: lugar.foto ? [`data:image/jpeg;base64,${lugar.foto}`] : []
+      }));
+      setPistasBackend(pistasFormatadas);
+    } catch (error) {
+      console.error('Erro ao carregar pistas do backend:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const loadPistasBackend = async () => {
-      try {
-        const { lugarService } = await import('../../../services/lugarService');
-        const lugares = await lugarService.listar();
-        const pistasFormatadas = lugares.map(lugar => ({
-          id: lugar.id,
-          nome: lugar.nome,
-          descricao: lugar.descricao,
-          localizacao: lugar.endereco || `${lugar.rua || ''}, ${lugar.bairro || ''}`.replace(/^,\s*|,\s*$/g, '') || 'Não informado',
-          rua: lugar.rua,
-          bairro: lugar.bairro,
-          cep: lugar.cep,
-          latitude: lugar.latitude,
-          longitude: lugar.longitude,
-          active: lugar.statusPista === 'ativada',
-          status: 'backend',
-          tipo: lugar.tipo,
-          valor: lugar.valor,
-          fotos: lugar.foto ? [`data:image/jpeg;base64,${lugar.foto}`] : []
-        }));
-        setPistasBackend(pistasFormatadas);
-      } catch (error) {
-        console.error('Erro ao carregar pistas do backend:', error);
-      }
-    };
-    
     loadPistasBackend();
   }, []);
 
   const handleDelete = (pistaId) => {
     const pista = pistas.find(p => p.id === pistaId);
-    setPistaToDelete(pista);
-    setShowConfirmModal(true);
+    if (pista) {
+      setPistaToDelete(pista);
+      setShowConfirmModal(true);
+    }
   };
 
-  const confirmDelete = () => {
-    setPistas(pistas.filter(pista => pista.id !== pistaToDelete.id));
-    setShowConfirmModal(false);
-    setPistaToDelete(null);
+  const confirmDelete = async () => {
+    if (!pistaToDelete) return;
+    
+    try {
+      if (pistaToDelete.status === 'backend') {
+        // Excluir do backend
+        const { lugarService } = await import('../../../services/lugarService');
+        await lugarService.deletar(pistaToDelete.id);
+        
+        // Recarregar lista do backend
+        await loadPistasBackend();
+      } else {
+        // Remover do localStorage para pistas aprovadas/rejeitadas
+        const storageKey = pistaToDelete.status === 'aprovada' ? 'pistasAprovadas' : 'pistasRejeitadas';
+        const pistasStorage = JSON.parse(localStorage.getItem(storageKey) || '[]');
+        const pistasAtualizadas = pistasStorage.filter(p => p.id !== pistaToDelete.id);
+        localStorage.setItem(storageKey, JSON.stringify(pistasAtualizadas));
+      }
+      
+    } catch (error) {
+      console.error('Erro ao excluir pista:', error);
+      const errorMessage = typeof error === 'string' ? error : 'Erro ao excluir pista. Tente novamente.';
+      alert(errorMessage);
+    } finally {
+      setShowConfirmModal(false);
+      setPistaToDelete(null);
+    }
   };
 
   const handleEdit = (pistaId) => {
@@ -292,12 +321,29 @@ const Pistas = () => {
     setIsModalOpen(true);
   };
 
-  const handleSavePista = (updatedPista) => {
-    setPistas(pistas.map(pista => 
-      pista.id === updatedPista.id ? updatedPista : pista
-    ));
-    setIsModalOpen(false);
-    setEditingPista(null);
+  const handleSavePista = async (updatedPista) => {
+    try {
+      if (updatedPista.status === 'backend') {
+        // Atualizar no backend
+        const { lugarService } = await import('../../../services/lugarService');
+        await lugarService.atualizar(updatedPista.id, updatedPista);
+        
+        // Recarregar lista do backend
+        await loadPistasBackend();
+      } else {
+        // Atualizar no localStorage
+        const storageKey = updatedPista.status === 'aprovada' ? 'pistasAprovadas' : 'pistasRejeitadas';
+        const pistasStorage = JSON.parse(localStorage.getItem(storageKey) || '[]');
+        const pistasAtualizadas = pistasStorage.map(p => p.id === updatedPista.id ? updatedPista : p);
+        localStorage.setItem(storageKey, JSON.stringify(pistasAtualizadas));
+      }
+    } catch (error) {
+      console.error('Erro ao salvar pista:', error);
+      alert('Erro ao salvar pista. Tente novamente.');
+    } finally {
+      setIsModalOpen(false);
+      setEditingPista(null);
+    }
   };
 
   const handleCreatePista = (newPista) => {
@@ -355,7 +401,13 @@ const Pistas = () => {
         
 
 
-        {filteredPistas.length === 0 ? (
+        {loading ? (
+          <EmptyState>
+            <EmptyIcon>⏳</EmptyIcon>
+            <EmptyText>Atualizando lista de pistas...</EmptyText>
+            <EmptySubtext>Carregando dados do sistema</EmptySubtext>
+          </EmptyState>
+        ) : filteredPistas.length === 0 ? (
           <EmptyState>
             <EmptyIcon>🛹</EmptyIcon>
             <EmptyText>{searchTerm ? 'Nenhuma pista encontrada' : 'Nenhuma pista cadastrada'}</EmptyText>
@@ -377,7 +429,7 @@ const Pistas = () => {
                              pista.status === 'aprovada' ? '#166534' : '#dc2626'
                     }}
                   >
-                    {pista.status === 'backend' ? 'Registrada' :
+                    {pista.status === 'backend' ? 'Aprovada' :
                      pista.status === 'aprovada' ? 'Aprovada' : 'Rejeitada'}
                   </StatusBadge>
                 </div>

@@ -393,7 +393,6 @@ const Map = () => {
 
   const handleCreatePista = (newPista) => {
     adicionarPistaPendente(newPista);
-    alert('Pista solicitada com sucesso! Aguarde a aprovação do administrador.');
   };
 
   const handlePistaClick = async (pista) => {

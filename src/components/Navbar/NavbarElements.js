@@ -205,7 +205,7 @@ export const ProfileDropdown = styled(motion.div)`
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     min-width: 200px;
-    z-index: 1000;
+    z-index: 10000;
     margin-top: 8px;
     overflow: hidden;
 `;

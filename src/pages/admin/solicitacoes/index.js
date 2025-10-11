@@ -4,6 +4,7 @@ import { FiTrash } from 'react-icons/fi';
 import SidebarAdmin from '../../../components/SidebarAdmin';
 import SearchBar from '../../../components/SearchBar';
 import ConfirmModal from '../../../components/ConfirmModal';
+import SolicitacaoPistDetalsModal from '../../../components/SolicitacaoPistDetalsModal';
 import { usePistasPendentes } from '../../../hooks/usePistasPendentes';
 
 const AdminContainer = styled.div`
@@ -48,15 +49,15 @@ const Subtitle = styled.p`
 
 const SolicitacaoGrid = styled.div`
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
+  grid-template-columns: 1fr;
+  gap: 16px;
   margin-top: 24px;
 `;
 
 const SolicitacaoCard = styled.div`
   background: white;
-  border-radius: 16px;
-  padding: 20px;
+  border-radius: 12px;
+  padding: 16px 20px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   border: 1px solid #e2e8f0;
   transition: all 0.3s ease;
@@ -65,6 +66,7 @@ const SolicitacaoCard = styled.div`
   display: flex;
   align-items: center;
   gap: 16px;
+  height: 100px;
 
   &:hover {
     transform: translateY(-2px);
@@ -188,6 +190,8 @@ const Solicitacoes = () => {
   const [filterStatus, setFilterStatus] = useState('todas');
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [solicitacaoToDelete, setSolicitacaoToDelete] = useState(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [selectedSolicitacao, setSelectedSolicitacao] = useState(null);
   const { pistasPendentes, removerPistaPendente } = usePistasPendentes();
   const [todasSolicitacoes, setTodasSolicitacoes] = useState([]);
   const [eventosPendentes, setEventosPendentes] = useState([]);
@@ -208,6 +212,11 @@ const Solicitacoes = () => {
     if (!text) return 'Sem descrição';
     if (text.length <= 25) return text;
     return text.substring(0, 25) + '...';
+  };
+
+  const handleCardClick = (solicitacao) => {
+    setSelectedSolicitacao(solicitacao);
+    setShowDetailsModal(true);
   };
 
   const handleApprove = async (solicitacao) => {
@@ -271,6 +280,7 @@ const Solicitacoes = () => {
         localStorage.setItem('eventosPendentes', JSON.stringify(eventosAtualizados));
         setEventosPendentes(eventosAtualizados);
       }
+      setShowDetailsModal(false);
       alert('Solicitação aprovada com sucesso!');
     } catch (error) {
       console.error('Erro ao aprovar solicitação:', error);
@@ -286,6 +296,7 @@ const Solicitacoes = () => {
       localStorage.setItem('eventosPendentes', JSON.stringify(eventosAtualizados));
       setEventosPendentes(eventosAtualizados);
     }
+    setShowDetailsModal(false);
   };
 
   const filteredSolicitacoes = useMemo(() => {
@@ -355,53 +366,40 @@ const Solicitacoes = () => {
           <SolicitacaoGrid>
             {filteredSolicitacoes.map((solicitacao) => (
               <SolicitacaoCard key={`${solicitacao.tipo}-${solicitacao.id}`}>
-                <CardContent>
-                  <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
-                    <StatusBadge 
-                      style={{
-                        background: solicitacao.tipo === 'pista' ? '#e0f2fe' : '#f3e8ff',
-                        color: solicitacao.tipo === 'pista' ? '#0277bd' : '#7c3aed'
-                      }}
-                    >
-                      {solicitacao.tipo === 'pista' ? '🛹 Pista' : '🎆 Evento'}
-                    </StatusBadge>
+                <div onClick={() => handleCardClick(solicitacao)} style={{ flex: 1, cursor: 'pointer' }}>
+                  <StatusBadge 
+                    style={{
+                      background: solicitacao.tipo === 'pista' ? '#e0f2fe' : '#f3e8ff',
+                      color: solicitacao.tipo === 'pista' ? '#0277bd' : '#7c3aed',
+                      marginBottom: '8px'
+                    }}
+                  >
+                    {solicitacao.tipo === 'pista' ? '🛹 Pista' : '🎆 Evento'}
+                  </StatusBadge>
+                  <SolicitacaoTitle style={{ marginBottom: '4px' }}>{solicitacao.nome}</SolicitacaoTitle>
+                  <div style={{ color: '#64748b', fontSize: '14px' }}>
+                    {solicitacao.tipo === 'pista' 
+                      ? (solicitacao.localizacao || `${solicitacao.rua || ''}, ${solicitacao.bairro || ''}`.replace(/^,\s*|,\s*$/g, '') || 'Não informado')
+                      : (solicitacao.dataEvento ? new Date(solicitacao.dataEvento).toLocaleDateString('pt-BR') : 'Não informado')
+                    }
                   </div>
-                  
-                  <SolicitacaoTitle>{solicitacao.nome}</SolicitacaoTitle>
-                  
-                  <SolicitacaoInfo>
-                    <InfoRow>
-                      <InfoLabel>Solicitada:</InfoLabel>
-                      <span>{new Date(solicitacao.dataSolicitacao || solicitacao.dataEvento).toLocaleDateString('pt-BR')}</span>
-                    </InfoRow>
-                    {solicitacao.tipo === 'pista' ? (
-                      <InfoRow>
-                        <InfoLabel>Localização:</InfoLabel>
-                        <span>{solicitacao.localizacao || `${solicitacao.rua || ''}, ${solicitacao.bairro || ''}`.replace(/^,\s*|,\s*$/g, '') || 'Não informado'}</span>
-                      </InfoRow>
-                    ) : (
-                      <InfoRow>
-                        <InfoLabel>Data:</InfoLabel>
-                        <span>{solicitacao.dataEvento ? new Date(solicitacao.dataEvento).toLocaleDateString('pt-BR') : 'Não informado'}</span>
-                      </InfoRow>
-                    )}
-                    <InfoRow>
-                      <InfoLabel>Descrição:</InfoLabel>
-                      <span>{truncateDescription(solicitacao.descricao)}</span>
-                    </InfoRow>
-                  </SolicitacaoInfo>
-                </CardContent>
-                
+                </div>
                 <CardActions>
                   <ActionButton 
                     className="approve"
-                    onClick={() => handleApprove(solicitacao)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleApprove(solicitacao);
+                    }}
                   >
                     ✓ Aprovar
                   </ActionButton>
                   <ActionButton 
                     className="reject"
-                    onClick={() => handleReject(solicitacao)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleReject(solicitacao);
+                    }}
                   >
                     ✗ Reprovar
                   </ActionButton>
@@ -410,6 +408,14 @@ const Solicitacoes = () => {
             ))}
           </SolicitacaoGrid>
         )}
+        
+        <SolicitacaoPistDetalsModal 
+          isOpen={showDetailsModal}
+          onClose={() => setShowDetailsModal(false)}
+          solicitacao={selectedSolicitacao}
+          onApprove={handleApprove}
+          onReject={handleReject}
+        />
       </ContentContainer>
     </AdminContainer>
   );

@@ -59,17 +59,38 @@ const EditPistaModal = ({ isOpen, onClose, pista, onSave }) => {
       };
       setFormData(data);
       setOriginalData(data);
+      
+      // Buscar endereço automaticamente se CEP existir
+      if (pista.cep && pista.cep.length === 8) {
+        fetchAddressByCep(pista.cep);
+      }
     }
   }, [pista]);
 
+  const formatCep = (value) => {
+    const cleanCep = value.replace(/\D/g, '');
+    if (cleanCep.length <= 5) {
+      return cleanCep;
+    }
+    return cleanCep.replace(/(\d{5})(\d{1,3})/, '$1-$2');
+  };
+
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-    
-    if (field === 'cep' && value.length === 8) {
-      fetchAddressByCep(value);
+    if (field === 'cep') {
+      const cleanCep = value.replace(/\D/g, '');
+      setFormData(prev => ({
+        ...prev,
+        [field]: cleanCep
+      }));
+      
+      if (cleanCep.length === 8) {
+        fetchAddressByCep(cleanCep);
+      }
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [field]: value
+      }));
     }
   };
 
@@ -282,10 +303,10 @@ const EditPistaModal = ({ isOpen, onClose, pista, onSave }) => {
               <Label>CEP</Label>
               <Input
                 type="text"
-                value={formData.cep}
+                value={formatCep(formData.cep)}
                 onChange={(e) => handleInputChange('cep', e.target.value)}
                 placeholder="00000-000"
-                maxLength={8}
+                maxLength={9}
               />
               <AnimatePresence>
                 {errors.cep && (
@@ -307,7 +328,8 @@ const EditPistaModal = ({ isOpen, onClose, pista, onSave }) => {
               <Input
                 type="text"
                 value={formData.rua}
-                onChange={(e) => handleRuaChange(e.target.value)}
+                readOnly
+                style={{ backgroundColor: '#f8fafc' }}
               />
               {locationInfo && (
                 <div style={{ 
