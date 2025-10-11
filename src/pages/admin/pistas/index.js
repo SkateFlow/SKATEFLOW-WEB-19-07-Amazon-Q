@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import styled from 'styled-components';
-import { FiEdit, FiTrash, FiEye, FiEyeOff, FiPlus } from 'react-icons/fi';
+import { FiEdit, FiTrash, FiEye, FiEyeOff, FiPlus, FiRefreshCw } from 'react-icons/fi';
 import SidebarAdmin from '../../../components/SidebarAdmin';
 import SearchBar from '../../../components/SearchBar';
 import EditPistaModal from '../../../components/EditPistaModal';
@@ -58,6 +58,36 @@ const SearchContainer = styled.div`
   display: flex;
   justify-content: flex-start;
   margin-bottom: 30px;
+`;
+
+const RefreshContainer = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 8px;
+`;
+
+const RefreshButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: #1a237e;
+  color: white;
+  
+  &:hover {
+    background: #303f9f;
+  }
+  
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
 `;
 
 const Title = styled.h1`
@@ -129,6 +159,7 @@ const InfoLabel = styled.span`
   font-weight: 500;
   min-width: 60px;
   color: #475569;
+  margin-right: 8px;
 `;
 
 const StatusBadge = styled.span`
@@ -245,27 +276,52 @@ const Pistas = () => {
     setPistas(todasPistas);
   }, [pistasPendentes, pistasBackend]);
 
+  const getLocationFromCep = async (cep) => {
+    if (!cep || cep.length !== 8) return 'Não informado';
+    
+    try {
+      const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+      const data = await response.json();
+      
+      if (!data.erro) {
+        return `${data.localidade || ''} - ${data.uf || ''}`.replace(/^\s*-\s*|\s*-\s*$/g, '') || 'Não informado';
+      }
+    } catch (error) {
+      console.error('Erro ao buscar CEP:', error);
+    }
+    
+    return 'Não informado';
+  };
+
   const loadPistasBackend = async () => {
     try {
       setLoading(true);
       const { lugarService } = await import('../../../services/lugarService');
       const lugares = await lugarService.listar();
-      const pistasFormatadas = lugares.map(lugar => ({
-        id: lugar.id,
-        nome: lugar.nome,
-        descricao: lugar.descricao,
-        localizacao: lugar.endereco || `${lugar.rua || ''}, ${lugar.bairro || ''}`.replace(/^,\s*|,\s*$/g, '') || 'Não informado',
-        rua: lugar.rua,
-        bairro: lugar.bairro,
-        cep: lugar.cep,
-        latitude: lugar.latitude,
-        longitude: lugar.longitude,
-        active: lugar.statusPista === 'ativada',
-        status: 'backend',
-        tipo: lugar.tipo,
-        valor: lugar.valor,
-        fotos: lugar.foto ? [`data:image/jpeg;base64,${lugar.foto}`] : []
-      }));
+      
+      const pistasFormatadas = await Promise.all(
+        lugares.map(async (lugar) => {
+          const localizacao = await getLocationFromCep(lugar.cep);
+          
+          return {
+            id: lugar.id,
+            nome: lugar.nome,
+            descricao: lugar.descricao,
+            localizacao,
+            rua: lugar.rua,
+            bairro: lugar.bairro,
+            cep: lugar.cep,
+            latitude: lugar.latitude,
+            longitude: lugar.longitude,
+            active: lugar.statusPista === 'ativada',
+            status: 'backend',
+            tipo: lugar.tipo,
+            valor: lugar.valor,
+            fotos: lugar.foto ? [`data:image/jpeg;base64,${lugar.foto}`] : []
+          };
+        })
+      );
+      
       setPistasBackend(pistasFormatadas);
     } catch (error) {
       console.error('Erro ao carregar pistas do backend:', error);
@@ -398,6 +454,13 @@ const Pistas = () => {
             onChange={setSearchTerm}
           />
         </SearchContainer>
+
+        <RefreshContainer>
+          <RefreshButton onClick={loadPistasBackend} disabled={loading}>
+            <FiRefreshCw size={16} />
+            Atualizar
+          </RefreshButton>
+        </RefreshContainer>
         
 
 
@@ -437,12 +500,6 @@ const Pistas = () => {
                 <PistaTitle>{pista.nome}</PistaTitle>
                 
                 <PistaInfo>
-                  {pista.dataSolicitacao && (
-                    <InfoRow>
-                      <InfoLabel>Solicitada:</InfoLabel>
-                      <span>{new Date(pista.dataSolicitacao).toLocaleDateString('pt-BR')}</span>
-                    </InfoRow>
-                  )}
                   <InfoRow>
                     <InfoLabel>Localização:</InfoLabel>
                     <span>{pista.localizacao || `${pista.rua || ''}, ${pista.bairro || ''}`.replace(/^,\s*|,\s*$/g, '') || 'Não informado'}</span>
@@ -451,18 +508,18 @@ const Pistas = () => {
                     <InfoLabel>Descrição:</InfoLabel>
                     <span>{truncateDescription(pista.descricao)}</span>
                   </InfoRow>
-                  {pista.tipo && (
-                    <InfoRow>
-                      <InfoLabel>Tipo:</InfoLabel>
-                      <span>{pista.tipo}</span>
-                    </InfoRow>
-                  )}
-                  {pista.valor && (
-                    <InfoRow>
-                      <InfoLabel>Valor:</InfoLabel>
-                      <span>R$ {pista.valor}</span>
-                    </InfoRow>
-                  )}
+                  <div style={{ display: 'flex', gap: '16px', marginTop: '8px' }}>
+                    {pista.tipo && (
+                      <div style={{ fontSize: '12px', color: '#64748b' }}>
+                        <strong>Tipo: </strong>{pista.tipo}
+                      </div>
+                    )}
+                    {pista.valor > 0 && (
+                      <div style={{ fontSize: '12px', color: '#64748b' }}>
+                        <strong>Valor: </strong>R$ {pista.valor}
+                      </div>
+                    )}
+                  </div>
                 </PistaInfo>
 
                 <ActionButtons>

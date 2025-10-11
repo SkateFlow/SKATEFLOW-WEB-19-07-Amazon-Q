@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FiX, FiUpload } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
+import { lugarService } from '../../services/lugarService';
 import {
   ModalOverlay,
   ModalContainer,
@@ -43,27 +44,50 @@ const EditPistaModal = ({ isOpen, onClose, pista, onSave }) => {
   const [originalData, setOriginalData] = useState({});
 
   // Update form data when pista changes
-  React.useEffect(() => {
+  useEffect(() => {
     if (pista) {
-      const data = {
-        nome: pista.nome || '',
-        descricao: pista.descricao || '',
-        cep: pista.cep || '',
-        rua: pista.rua || '',
-        bairro: pista.bairro || '',
-        numero: pista.numero || '',
-        latitude: pista.latitude || '',
-        longitude: pista.longitude || '',
-        publica: pista.publica || false,
-        fotos: pista.fotos || ['', '', '']
+      const loadPistaData = async () => {
+        const data = {
+          nome: pista.nome || '',
+          descricao: pista.descricao || '',
+          cep: pista.cep || '',
+          rua: pista.rua || '',
+          bairro: pista.bairro || '',
+          numero: pista.numero || '',
+          latitude: pista.latitude || '',
+          longitude: pista.longitude || '',
+          publica: pista.publica || false,
+          fotos: ['', '', '']
+        };
+        
+        // Carregar fotos do sistema
+        if (pista.id) {
+          try {
+            const foto1 = await lugarService.buscarFoto1(pista.id);
+            if (foto1) data.fotos[0] = `data:image/jpeg;base64,${foto1}`;
+          } catch (error) {}
+          
+          try {
+            const foto2 = await lugarService.buscarFoto2(pista.id);
+            if (foto2) data.fotos[1] = `data:image/jpeg;base64,${foto2}`;
+          } catch (error) {}
+          
+          try {
+            const foto3 = await lugarService.buscarFoto3(pista.id);
+            if (foto3) data.fotos[2] = `data:image/jpeg;base64,${foto3}`;
+          } catch (error) {}
+        }
+        
+        setFormData(data);
+        setOriginalData(data);
+        
+        // Buscar endereço automaticamente se CEP existir
+        if (pista.cep && pista.cep.length === 8) {
+          fetchAddressByCep(pista.cep);
+        }
       };
-      setFormData(data);
-      setOriginalData(data);
       
-      // Buscar endereço automaticamente se CEP existir
-      if (pista.cep && pista.cep.length === 8) {
-        fetchAddressByCep(pista.cep);
-      }
+      loadPistaData();
     }
   }, [pista]);
 
@@ -236,8 +260,17 @@ const EditPistaModal = ({ isOpen, onClose, pista, onSave }) => {
           <PhotoSection>
             {[0, 1, 2].map((index) => (
               <PhotoUpload key={index}>
-                <FiUpload />
-                <span>Foto {index + 1}</span>
+                {formData.fotos[index] ? (
+                  <img 
+                    src={formData.fotos[index]} 
+                    alt={`Preview ${index + 1}`}
+                  />
+                ) : (
+                  <>
+                    <FiUpload />
+                    <span>Foto {index + 1}</span>
+                  </>
+                )}
                 <input
                   type="file"
                   accept="image/*"

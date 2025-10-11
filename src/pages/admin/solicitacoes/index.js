@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import styled from 'styled-components';
 import { FiTrash } from 'react-icons/fi';
+import { motion, AnimatePresence } from 'framer-motion';
 import SidebarAdmin from '../../../components/SidebarAdmin';
 import SearchBar from '../../../components/SearchBar';
 import ConfirmModal from '../../../components/ConfirmModal';
@@ -192,6 +193,8 @@ const Solicitacoes = () => {
   const [solicitacaoToDelete, setSolicitacaoToDelete] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedSolicitacao, setSelectedSolicitacao] = useState(null);
+  const [aprovandoPista, setAprovandoPista] = useState(null);
+  const [showMessage, setShowMessage] = useState('');
   const { pistasPendentes, removerPistaPendente } = usePistasPendentes();
   const [todasSolicitacoes, setTodasSolicitacoes] = useState([]);
   const [eventosPendentes, setEventosPendentes] = useState([]);
@@ -220,6 +223,13 @@ const Solicitacoes = () => {
   };
 
   const handleApprove = async (solicitacao) => {
+    if (aprovandoPista === solicitacao.id) {
+      setShowMessage('Aprovação em andamento...');
+      setTimeout(() => setShowMessage(''), 2000);
+      return;
+    }
+    
+    setAprovandoPista(solicitacao.id);
     try {
       if (solicitacao.tipo === 'pista') {
         const { lugarService } = await import('../../../services/lugarService');
@@ -281,10 +291,14 @@ const Solicitacoes = () => {
         setEventosPendentes(eventosAtualizados);
       }
       setShowDetailsModal(false);
-      alert('Solicitação aprovada com sucesso!');
+      setShowMessage('Aprovação concluída');
+      setTimeout(() => setShowMessage(''), 2500);
     } catch (error) {
       console.error('Erro ao aprovar solicitação:', error);
-      alert(`Erro ao aprovar solicitação: ${error.message}`);
+      setShowMessage(`Erro ao aprovar solicitação: ${error.message}`);
+      setTimeout(() => setShowMessage(''), 3000);
+    } finally {
+      setAprovandoPista(null);
     }
   };
 
@@ -324,6 +338,33 @@ const Solicitacoes = () => {
             <Subtitle>Gerencie as solicitações de pistas e eventos enviadas pelos usuários</Subtitle>
           </HeaderContent>
         </Header>
+        
+        <AnimatePresence>
+          {showMessage && (
+            <motion.div 
+              initial={{ opacity: 0, y: -20, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -20, scale: 0.9 }}
+              transition={{ duration: 0.3, ease: 'easeOut' }}
+              style={{
+                position: 'fixed',
+                top: '80px',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                background: showMessage.includes('concluída') ? '#10b981' : showMessage.includes('andamento') ? '#f59e0b' : '#ef4444',
+                color: 'white',
+                padding: '10px 20px',
+                borderRadius: '6px',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                zIndex: 1000,
+                fontSize: '13px',
+                fontWeight: '500'
+              }}
+            >
+              {showMessage}
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <SearchContainer>
           <SearchBar
@@ -391,8 +432,13 @@ const Solicitacoes = () => {
                       e.stopPropagation();
                       handleApprove(solicitacao);
                     }}
+                    disabled={aprovandoPista === solicitacao.id}
+                    style={{
+                      opacity: aprovandoPista === solicitacao.id ? 0.6 : 1,
+                      cursor: aprovandoPista === solicitacao.id ? 'not-allowed' : 'pointer'
+                    }}
                   >
-                    ✓ Aprovar
+                    {aprovandoPista === solicitacao.id ? '⏳ Aprovando...' : '✓ Aprovar'}
                   </ActionButton>
                   <ActionButton 
                     className="reject"

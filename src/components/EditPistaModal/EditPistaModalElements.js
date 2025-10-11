@@ -70,6 +70,8 @@ export const PhotoUpload = styled.div`
   border: 2px dashed #cbd5e0;
   border-radius: 12px;
   padding: 32px 16px;
+  min-height: 120px;
+  overflow: hidden;
   text-align: center;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -77,7 +79,7 @@ export const PhotoUpload = styled.div`
 
   &:hover {
     border-color: #667eea;
-    background: #f8fafc;
+    background: ${props => props.hasImage ? 'transparent' : '#f8fafc'};
   }
 
   input {
@@ -88,6 +90,17 @@ export const PhotoUpload = styled.div`
     height: 100%;
     opacity: 0;
     cursor: pointer;
+    z-index: 1;
+  }
+
+  img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 10px;
   }
 
   svg {
