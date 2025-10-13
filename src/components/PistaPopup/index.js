@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { FaMapMarkerAlt, FaGlobe, FaLock, FaChevronLeft, FaChevronRight, FaSkating } from 'react-icons/fa';
+import { FaMapMarkerAlt, FaGlobe, FaLock, FaChevronLeft, FaChevronRight, FaSkating, FaStar, FaUser } from 'react-icons/fa';
+import AllReviewsModalComponent from '../AllReviewsModal';
+import AddReviewModalComponent from '../AddReviewModal';
+import ThankYouModalComponent from '../ThankYouModal';
 
 const PopupOverlay = styled.div`
   position: fixed;
@@ -12,7 +15,7 @@ const PopupOverlay = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 9999;
+  z-index: 10003;
   animation: ${props => props.isClosing ? 'fadeOut' : 'fadeIn'} 200ms ease-in-out forwards;
   
   @keyframes fadeIn {
@@ -362,8 +365,115 @@ const PistaCarousel = ({ images = [] }) => {
   );
 };
 
+// Dados mock de avaliações
+const mockAvaliacoes = [
+  { id: 1, usuario: 'João Silva', rating: 5, comentario: 'Pista incrível! Muito bem conservada e com ótimos obstáculos.', data: '2024-01-15' },
+  { id: 2, usuario: 'Maria Santos', rating: 4, comentario: 'Boa pista, mas poderia ter mais iluminação à noite.', data: '2024-01-10' },
+  { id: 3, usuario: 'Pedro Costa', rating: 5, comentario: 'Perfeita para treinar manobras. Recomendo!', data: '2024-01-08' },
+  { id: 4, usuario: 'Ana Lima', rating: 3, comentario: 'Pista ok, mas precisa de manutenção em alguns pontos.', data: '2024-01-05' },
+  { id: 5, usuario: 'Carlos Oliveira', rating: 4, comentario: 'Muito boa para iniciantes e intermediários.', data: '2024-01-03' }
+];
+
+const ReviewsSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+`;
+
+const ReviewsHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+const ReviewsTitle = styled.h3`
+  color: #1a237e;
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+`;
+
+const AddReviewButton = styled.button`
+  padding: 8px 16px;
+  border: 1px solid #d1d5db;
+  background: #f9fafb;
+  color: #6b7280;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: #e5e7eb;
+    border-color: #9ca3af;
+  }
+`;
+
+const ReviewsList = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+const ReviewCard = styled.div`
+  padding: 16px 0;
+  border-bottom: 1px solid #e2e8f0;
+  
+  &:last-child {
+    border-bottom: none;
+  }
+`;
+
+const ReviewHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+`;
+
+const ReviewUser = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: #1f2937;
+  font-size: 14px;
+`;
+
+const ReviewStars = styled.div`
+  display: flex;
+  gap: 2px;
+`;
+
+const ReviewComment = styled.p`
+  color: #64748b;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.4;
+`;
+
+const ViewMoreButton = styled.button`
+  background: none;
+  border: none;
+  color: #667eea;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  transition: all 0.3s ease;
+
+  &:hover {
+    color: #5a67d8;
+  }
+`;
+
 const PistaPopup = ({ pista, onClose }) => {
   const [isClosing, setIsClosing] = useState(false);
+  const [showAllReviews, setShowAllReviews] = useState(false);
+  const [showAddReview, setShowAddReview] = useState(false);
+  const [showThankYou, setShowThankYou] = useState(false);
+  const [newRating, setNewRating] = useState(0);
+  const [newComment, setNewComment] = useState('');
   
   const handleClose = () => {
     setIsClosing(true);
@@ -371,66 +481,111 @@ const PistaPopup = ({ pista, onClose }) => {
       onClose();
     }, 300);
   };
+
+  const handleSubmitReview = () => {
+    setShowAddReview(false);
+    setShowThankYou(true);
+    setNewRating(0);
+    setNewComment('');
+  };
+
+  const renderStars = (rating) => {
+    return Array.from({ length: 5 }, (_, index) => (
+      <FaStar 
+        key={index}
+        size={14} 
+        color={index < rating ? '#fbbf24' : '#d1d5db'} 
+      />
+    ));
+  };
   
   return (
-    <PopupOverlay onClick={handleClose} isClosing={isClosing}>
-      <PopupContent onClick={(e) => e.stopPropagation()} isClosing={isClosing}>
-        <InstructionText>clique fora para sair</InstructionText>
-        
-        <PopupBody>
-          <PistaCarousel images={pista.fotos || pista.images || []} />
+    <>
+      <PopupOverlay onClick={handleClose} isClosing={isClosing}>
+        <PopupContent onClick={(e) => e.stopPropagation()} isClosing={isClosing}>
+          <InstructionText>clique fora para sair</InstructionText>
           
-          <PistaHeader>
-            <PistaTitle>{pista.nome || pista.name}</PistaTitle>
-            <StatusBadge publica={pista.tipo === 'Pública' || pista.publica}>
-              {(pista.tipo === 'Pública' || pista.publica) ? <FaGlobe size={12} /> : <FaLock size={12} />}
-              {pista.tipo || (pista.publica ? 'Pública' : 'Privada')}
-            </StatusBadge>
-          </PistaHeader>
-          
-          <PistaDescription>{pista.descricao || pista.description}</PistaDescription>
-          
-          <InfoSection>
-            <InfoRow>
-              <InfoIcon><FaMapMarkerAlt size={18} /></InfoIcon>
-              <InfoText>{pista.endereco || pista.location || `${pista.rua || ''}, ${pista.numero || ''} - ${pista.bairro || ''}`}</InfoText>
-            </InfoRow>
-            {pista.valor && (
+          <PopupBody>
+            <PistaCarousel images={pista.fotos || pista.images || []} />
+            
+            <PistaHeader>
+              <PistaTitle>{pista.nome || pista.name}</PistaTitle>
+              <StatusBadge publica={pista.tipo === 'Pública' || pista.publica}>
+                {(pista.tipo === 'Pública' || pista.publica) ? <FaGlobe size={12} /> : <FaLock size={12} />}
+                {pista.tipo || (pista.publica ? 'Pública' : 'Privada')}
+              </StatusBadge>
+            </PistaHeader>
+            
+            <PistaDescription>{pista.descricao || pista.description}</PistaDescription>
+            
+            <InfoSection>
               <InfoRow>
-                <InfoIcon><FaSkating size={18} /></InfoIcon>
-                <InfoText>Valor: R$ {pista.valor}</InfoText>
+                <InfoIcon><FaMapMarkerAlt size={18} /></InfoIcon>
+                <InfoText>{pista.endereco || pista.location || `${pista.rua || ''}${pista.numero && pista.numero !== '0' ? `, ${pista.numero}` : ''} - ${pista.cep || ''}`}</InfoText>
               </InfoRow>
-            )}
-            {pista.statusPista && (
-              <InfoRow>
-                <InfoIcon>
-                  <div style={{
-                    width: '12px',
-                    height: '12px',
-                    borderRadius: '50%',
-                    backgroundColor: pista.statusPista === 'ativada' ? '#10b981' : '#ef4444'
-                  }} />
-                </InfoIcon>
-                <InfoText>Status: {pista.statusPista}</InfoText>
-              </InfoRow>
-            )}
-          </InfoSection>
+              {pista.valor && (
+                <InfoRow>
+                  <InfoIcon><FaSkating size={18} /></InfoIcon>
+                  <InfoText>Valor: R$ {pista.valor}</InfoText>
+                </InfoRow>
+              )}
 
-          {(pista.latitude && pista.longitude) && (
-            <CoordinatesRow>
-              <CoordinateItem>
-                <CoordinateLabel>Latitude</CoordinateLabel>
-                <CoordinateValue>{parseFloat(pista.latitude).toFixed(6)}</CoordinateValue>
-              </CoordinateItem>
-              <CoordinateItem>
-                <CoordinateLabel>Longitude</CoordinateLabel>
-                <CoordinateValue>{parseFloat(pista.longitude).toFixed(6)}</CoordinateValue>
-              </CoordinateItem>
-            </CoordinatesRow>
-          )}
-        </PopupBody>
-      </PopupContent>
-    </PopupOverlay>
+            </InfoSection>
+
+            <ReviewsSection>
+              <ReviewsHeader>
+                <ReviewsTitle>Avaliações</ReviewsTitle>
+                <AddReviewButton onClick={() => setShowAddReview(true)}>
+                  Avaliar
+                </AddReviewButton>
+              </ReviewsHeader>
+              
+              <ReviewsList>
+                {mockAvaliacoes.slice(0, 3).map((review) => (
+                  <ReviewCard key={review.id}>
+                    <ReviewHeader>
+                      <ReviewUser>
+                        <FaUser size={12} color="#64748b" />
+                        {review.usuario}
+                      </ReviewUser>
+                      <ReviewStars>
+                        {renderStars(review.rating)}
+                      </ReviewStars>
+                    </ReviewHeader>
+                    <ReviewComment>{review.comentario}</ReviewComment>
+                  </ReviewCard>
+                ))}
+              </ReviewsList>
+              
+              <ViewMoreButton onClick={() => setShowAllReviews(true)}>
+                Ver mais avaliações
+              </ViewMoreButton>
+            </ReviewsSection>
+          </PopupBody>
+        </PopupContent>
+      </PopupOverlay>
+      
+      <AllReviewsModalComponent 
+        isOpen={showAllReviews}
+        onClose={() => setShowAllReviews(false)}
+        avaliacoes={mockAvaliacoes}
+      />
+      
+      <AddReviewModalComponent 
+        isOpen={showAddReview}
+        onClose={() => setShowAddReview(false)}
+        onSubmit={handleSubmitReview}
+        rating={newRating}
+        setRating={setNewRating}
+        comment={newComment}
+        setComment={setNewComment}
+      />
+      
+      <ThankYouModalComponent 
+        isOpen={showThankYou}
+        onClose={() => setShowThankYou(false)}
+      />
+    </>
   );
 };
 

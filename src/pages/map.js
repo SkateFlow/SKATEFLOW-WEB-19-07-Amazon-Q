@@ -199,6 +199,7 @@ const SpotCard = styled.div`
   transition: all 0.3s ease;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   margin-bottom: 16px;
+  position: relative;
   
   &:hover {
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
@@ -253,6 +254,22 @@ const StatItem = styled.div`
   align-items: center;
   gap: 4px;
   font-size: 14px;
+`;
+
+const RatingBadge = styled.div`
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  backdrop-filter: blur(4px);
 `;
 
 const FooterStats = styled.div`
@@ -520,6 +537,8 @@ const Map = () => {
                         isSelected={selectedSpot?.id === lugar.id}
                         onClick={() => handlePistaClick(lugar)}
                       >
+
+                        
                         {lugar.foto1Base64 ? (
                           <SpotImage 
                             src={lugar.foto1Base64} 
@@ -554,13 +573,8 @@ const Map = () => {
                             </span>
                           </StatItem>
                           <StatItem>
-                            <span style={{ 
-                              color: lugar.statusPista === 'ativada' ? '#38a169' : '#e53e3e', 
-                              fontSize: '12px',
-                              fontWeight: '600'
-                            }}>
-                              {lugar.statusPista}
-                            </span>
+                            <FaStar color="#fbbf24" size={14} />
+                            <span style={{ color: '#4a5568', fontWeight: '600' }}>4.0</span>
                           </StatItem>
                         </SpotStats>
                       </SpotCard>
@@ -582,6 +596,8 @@ const Map = () => {
                         isSelected={selectedSpot?.id === spot.id}
                         onClick={() => handlePistaClick(spot)}
                       >
+
+                        
                         <SpotImage src={spot.images[0]} alt={spot.name} />
                         <SpotName>{spot.name}</SpotName>
                         <SpotDescription>{spot.description}</SpotDescription>
@@ -663,6 +679,7 @@ const Map = () => {
         isOpen={showAllPistasModal}
         onClose={() => setShowAllPistasModal(false)}
         pistas={spots}
+        lugares={lugares}
         onPistaClick={handlePistaClick}
       />
       
