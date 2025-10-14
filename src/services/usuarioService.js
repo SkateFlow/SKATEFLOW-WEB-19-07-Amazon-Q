@@ -35,5 +35,40 @@ export const usuarioService = {
     } catch (error) {
       throw error.response?.data || 'Erro ao criar usuário';
     }
+  },
+
+  atualizar: async (id, usuario) => {
+    try {
+      const formData = new FormData();
+      if (usuario.nome) formData.append('nome', usuario.nome);
+      if (usuario.email) formData.append('email', usuario.email);
+      if (usuario.isAdmin !== undefined) formData.append('nivelAcesso', usuario.isAdmin ? 'ADMIN' : 'USER');
+      if (usuario.isActive !== undefined) formData.append('statusUsuario', usuario.isActive ? 'ATIVO' : 'INATIVO');
+      
+      const response = await api.put(`/usuario/atualizar/${id}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || 'Erro ao atualizar usuário';
+    }
+  },
+
+  alterarSenha: async (id, senhaData) => {
+    try {
+      const response = await api.put(`/usuario/alterarSenha/${id}`, senhaData);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || 'Erro ao alterar senha';
+    }
+  },
+
+  deletar: async (id) => {
+    try {
+      const response = await api.delete(`/usuario/delete/${id}`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || 'Erro ao deletar usuário';
+    }
   }
 };

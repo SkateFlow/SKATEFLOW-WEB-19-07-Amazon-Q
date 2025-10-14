@@ -105,7 +105,7 @@ const Subtitle = styled.p`
 
 const PistaGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 24px;
   margin-top: 24px;
 `;
@@ -501,8 +501,12 @@ const Pistas = () => {
                 
                 <PistaInfo>
                   <InfoRow>
-                    <InfoLabel>Localização:</InfoLabel>
-                    <span>{pista.localizacao || `${pista.rua || ''}, ${pista.bairro || ''}`.replace(/^,\s*|,\s*$/g, '') || 'Não informado'}</span>
+                    <InfoLabel>Endereço:</InfoLabel>
+                    <span>{`${pista.rua || ''}, ${pista.bairro || ''}`.replace(/^,\s*|,\s*$/g, '') || 'Não informado'}</span>
+                  </InfoRow>
+                  <InfoRow>
+                    <InfoLabel>CEP:</InfoLabel>
+                    <span>{pista.cep || 'Não informado'}</span>
                   </InfoRow>
                   <InfoRow>
                     <InfoLabel>Descrição:</InfoLabel>

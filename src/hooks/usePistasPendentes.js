@@ -37,7 +37,7 @@ export const usePistasPendentes = () => {
   const aprovarPista = (pistaId) => {
     const pista = pistasPendentes.find(p => p.id === pistaId);
     if (pista) {
-      // Adicionar à lista de pistas aprovadas
+            // Adicionar à lista de pistas aprovadas
       const pistasAprovadas = JSON.parse(localStorage.getItem('pistasAprovadas') || '[]');
       pistasAprovadas.push({
         ...pista,
@@ -46,7 +46,7 @@ export const usePistasPendentes = () => {
         dataAprovacao: new Date().toISOString()
       });
       localStorage.setItem('pistasAprovadas', JSON.stringify(pistasAprovadas));
-      
+
       // Remover da lista de pendentes
       removerPistaPendente(pistaId);
     }
