@@ -285,7 +285,7 @@ const CreatePistaModal = ({ isOpen, onClose, onSave }) => {
         const newPista = {
           ...formData,
           id: Date.now(),
-          localizacao: localizacao || 'Endereço não informado',
+          localizacao,
           active: false,
           status: 'pendente',
           dataSolicitacao: new Date().toISOString(),

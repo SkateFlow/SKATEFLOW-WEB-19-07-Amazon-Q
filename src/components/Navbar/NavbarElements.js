@@ -218,7 +218,7 @@ export const ProfileEmail = styled.div`
     font-weight: 500;
 `;
 
-export const AdminLink = styled(motion(LinkR))`
+export const AdminLink = styled(motion.create(LinkR))`
     width: 100%;
     padding: 12px 16px;
     background: none;
@@ -238,7 +238,7 @@ export const AdminLink = styled(motion(LinkR))`
     }
 `;
 
-export const LogoutButton = styled(motion.button)`
+export const LogoutButton = styled(motion.create('button'))`
     width: 100%;
     padding: 12px 16px;
     background: none;
