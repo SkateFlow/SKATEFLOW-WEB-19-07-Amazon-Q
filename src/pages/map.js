@@ -11,6 +11,7 @@ import AllPistasModal from '../components/AllPistasModal';
 import { fetchSkateParks } from '../services/skateParksService';
 import { lugarService } from '../services/lugarService';
 import { cepService } from '../services/cepService';
+import { avaliacaoService } from '../services/avaliacaoService';
 import { usePistasPendentes } from '../hooks/usePistasPendentes';
 import { memoryOptimizer } from '../utils/memoryOptimizer';
 
@@ -420,6 +421,14 @@ const Map = () => {
             }
           }
           
+          // Carregar média de avaliações
+          try {
+            const media = await avaliacaoService.buscarMedia(lugar.id);
+            lugarAtualizado.mediaAvaliacoes = media || 0;
+          } catch (error) {
+            lugarAtualizado.mediaAvaliacoes = 0;
+          }
+          
           return lugarAtualizado;
         })
       );
@@ -663,7 +672,9 @@ const Map = () => {
                           </StatItem>
                           <StatItem>
                             <FaStar color="#fbbf24" size={14} />
-                            <span style={{ color: '#4a5568', fontWeight: '600' }}>4.0</span>
+                            <span style={{ color: '#4a5568', fontWeight: '600' }}>
+                              {lugar.mediaAvaliacoes > 0 ? lugar.mediaAvaliacoes.toFixed(1) : 'S/A'}
+                            </span>
                           </StatItem>
                         </SpotStats>
                       </SpotCard>

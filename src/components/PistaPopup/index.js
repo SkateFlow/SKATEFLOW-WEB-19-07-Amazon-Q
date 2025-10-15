@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { FaMapMarkerAlt, FaGlobe, FaLock, FaChevronLeft, FaChevronRight, FaSkating, FaStar, FaUser } from 'react-icons/fa';
+import { FaMapMarkerAlt, FaGlobe, FaLock, FaChevronLeft, FaChevronRight, FaSkating, FaStar, FaUser, FaEdit, FaTrash } from 'react-icons/fa';
 import AllReviewsModalComponent from '../AllReviewsModal';
 import AddReviewModalComponent from '../AddReviewModal';
 import ThankYouModalComponent from '../ThankYouModal';
+import { avaliacaoService } from '../../services/avaliacaoService';
 
 const PopupOverlay = styled.div`
   position: fixed;
@@ -365,14 +366,7 @@ const PistaCarousel = ({ images = [] }) => {
   );
 };
 
-// Dados mock de avaliações
-const mockAvaliacoes = [
-  { id: 1, usuario: 'João Silva', rating: 5, comentario: 'Pista incrível! Muito bem conservada e com ótimos obstáculos.', data: '2024-01-15' },
-  { id: 2, usuario: 'Maria Santos', rating: 4, comentario: 'Boa pista, mas poderia ter mais iluminação à noite.', data: '2024-01-10' },
-  { id: 3, usuario: 'Pedro Costa', rating: 5, comentario: 'Perfeita para treinar manobras. Recomendo!', data: '2024-01-08' },
-  { id: 4, usuario: 'Ana Lima', rating: 3, comentario: 'Pista ok, mas precisa de manutenção em alguns pontos.', data: '2024-01-05' },
-  { id: 5, usuario: 'Carlos Oliveira', rating: 4, comentario: 'Muito boa para iniciantes e intermediários.', data: '2024-01-03' }
-];
+
 
 const ReviewsSection = styled.div`
   display: flex;
@@ -474,6 +468,33 @@ const PistaPopup = ({ pista, onClose }) => {
   const [showThankYou, setShowThankYou] = useState(false);
   const [newRating, setNewRating] = useState(0);
   const [newComment, setNewComment] = useState('');
+  const [avaliacoes, setAvaliacoes] = useState([]);
+  const [mediaAvaliacoes, setMediaAvaliacoes] = useState(0);
+  const [editingReview, setEditingReview] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
+  
+  useEffect(() => {
+    if (pista?.id) {
+      loadAvaliacoes();
+    }
+    
+    // Carregar usuário atual
+    const savedUser = localStorage.getItem('skateflow_user');
+    if (savedUser) {
+      setCurrentUser(JSON.parse(savedUser));
+    }
+  }, [pista]);
+  
+  const loadAvaliacoes = async () => {
+    try {
+      const avaliacoesData = await avaliacaoService.buscarPorLugar(pista.id);
+      const media = await avaliacaoService.buscarMedia(pista.id);
+      setAvaliacoes(avaliacoesData);
+      setMediaAvaliacoes(media);
+    } catch (error) {
+      console.error('Erro ao carregar avaliações:', error);
+    }
+  };
   
   const handleClose = () => {
     setIsClosing(true);
@@ -482,11 +503,93 @@ const PistaPopup = ({ pista, onClose }) => {
     }, 300);
   };
 
-  const handleSubmitReview = () => {
-    setShowAddReview(false);
-    setShowThankYou(true);
-    setNewRating(0);
-    setNewComment('');
+  const handleSubmitReview = async () => {
+    try {
+      // Verificar se usuário está logado
+      const savedUser = localStorage.getItem('skateflow_user');
+      if (!savedUser) {
+        alert('Você precisa estar logado para avaliar uma pista');
+        return;
+      }
+      
+      const userData = JSON.parse(savedUser);
+      if (!userData || !userData.id) {
+        alert('Você precisa estar logado para avaliar uma pista');
+        return;
+      }
+      
+      await avaliacaoService.criar({
+        lugarId: pista.id,
+        usuarioId: userData.id,
+        rating: newRating,
+        comentario: newComment
+      });
+      
+      setShowAddReview(false);
+      setShowThankYou(true);
+      setNewRating(0);
+      setNewComment('');
+      
+      // Recarregar avaliações
+      await loadAvaliacoes();
+    } catch (error) {
+      alert(error);
+    }
+  };
+  
+  const handleEditReview = (review) => {
+    setEditingReview(review);
+    setNewRating(review.rating);
+    setNewComment(review.comentario);
+    setShowAddReview(true);
+  };
+  
+  const handleUpdateReview = async () => {
+    try {
+      const savedUser = localStorage.getItem('skateflow_user');
+      if (!savedUser) {
+        alert('Você precisa estar logado');
+        return;
+      }
+      
+      const userData = JSON.parse(savedUser);
+      
+      await avaliacaoService.atualizar(editingReview.id, {
+        usuarioId: userData.id,
+        rating: newRating,
+        comentario: newComment
+      });
+      
+      setShowAddReview(false);
+      setEditingReview(null);
+      setNewRating(0);
+      setNewComment('');
+      
+      await loadAvaliacoes();
+    } catch (error) {
+      alert(error);
+    }
+  };
+  
+  const handleDeleteReview = async (reviewId) => {
+    if (!confirm('Tem certeza que deseja excluir sua avaliação?')) {
+      return;
+    }
+    
+    try {
+      const savedUser = localStorage.getItem('skateflow_user');
+      if (!savedUser) {
+        alert('Você precisa estar logado');
+        return;
+      }
+      
+      const userData = JSON.parse(savedUser);
+      
+      await avaliacaoService.deletar(reviewId, userData.id);
+      await loadAvaliacoes();
+    } catch (error) {
+      alert(error);
+    }
   };
 
   const renderStars = (rating) => {
@@ -553,25 +656,88 @@ const PistaPopup = ({ pista, onClose }) => {
               </ReviewsHeader>
               
               <ReviewsList>
-                {mockAvaliacoes.slice(0, 3).map((review) => (
-                  <ReviewCard key={review.id}>
-                    <ReviewHeader>
-                      <ReviewUser>
-                        <FaUser size={12} color="#64748b" />
-                        {review.usuario}
-                      </ReviewUser>
-                      <ReviewStars>
-                        {renderStars(review.rating)}
-                      </ReviewStars>
-                    </ReviewHeader>
-                    <ReviewComment>{review.comentario}</ReviewComment>
-                  </ReviewCard>
-                ))}
+                {avaliacoes.length > 0 ? (
+                  <>
+                    {avaliacoes.slice(0, 3).map((review) => (
+                      <ReviewCard key={review.id}>
+                        <ReviewHeader>
+                          <ReviewUser>
+                            <FaUser size={12} color="#64748b" />
+                            {review.usuario?.nome || 'Usuário'}
+                          </ReviewUser>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <ReviewStars>
+                              {renderStars(review.rating)}
+                            </ReviewStars>
+                            {currentUser && currentUser.id === review.usuario?.id && (
+                              <div style={{ display: 'flex', gap: '6px', marginLeft: '8px' }}>
+                                <button
+                                  onClick={() => handleEditReview(review)}
+                                  style={{
+                                    background: '#e0f2fe',
+                                    border: 'none',
+                                    borderRadius: '6px',
+                                    padding: '4px 6px',
+                                    color: '#0277bd',
+                                    cursor: 'pointer',
+                                    fontSize: '12px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '3px',
+                                    transition: 'all 0.2s ease'
+                                  }}
+                                  onMouseEnter={(e) => e.target.style.background = '#b3e5fc'}
+                                  onMouseLeave={(e) => e.target.style.background = '#e0f2fe'}
+                                >
+                                  <FaEdit size={10} />
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteReview(review.id)}
+                                  style={{
+                                    background: '#fee2e2',
+                                    border: 'none',
+                                    borderRadius: '6px',
+                                    padding: '4px 6px',
+                                    color: '#dc2626',
+                                    cursor: 'pointer',
+                                    fontSize: '12px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '3px',
+                                    transition: 'all 0.2s ease'
+                                  }}
+                                  onMouseEnter={(e) => e.target.style.background = '#fecaca'}
+                                  onMouseLeave={(e) => e.target.style.background = '#fee2e2'}
+                                >
+                                  <FaTrash size={10} />
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </ReviewHeader>
+                        <ReviewComment>{review.comentario}</ReviewComment>
+                      </ReviewCard>
+                    ))}
+                    {avaliacoes.length > 3 && (
+                      <ViewMoreButton onClick={() => setShowAllReviews(true)}>
+                        Ver mais avaliações
+                      </ViewMoreButton>
+                    )}
+                  </>
+                ) : (
+                  <div style={{
+                    textAlign: 'center',
+                    padding: '32px 16px',
+                    color: '#64748b',
+                    fontSize: '14px'
+                  }}>
+                    <div style={{ fontSize: '24px', marginBottom: '8px' }}>⭐</div>
+                    Esta pista ainda não tem nenhuma avaliação.
+                    <br />
+                    Seja o primeiro a avaliar!
+                  </div>
+                )}
               </ReviewsList>
-              
-              <ViewMoreButton onClick={() => setShowAllReviews(true)}>
-                Ver mais avaliações
-              </ViewMoreButton>
             </ReviewsSection>
           </PopupBody>
         </PopupContent>
@@ -580,17 +746,23 @@ const PistaPopup = ({ pista, onClose }) => {
       <AllReviewsModalComponent 
         isOpen={showAllReviews}
         onClose={() => setShowAllReviews(false)}
-        avaliacoes={mockAvaliacoes}
+        avaliacoes={avaliacoes}
       />
       
       <AddReviewModalComponent 
         isOpen={showAddReview}
-        onClose={() => setShowAddReview(false)}
-        onSubmit={handleSubmitReview}
+        onClose={() => {
+          setShowAddReview(false);
+          setEditingReview(null);
+          setNewRating(0);
+          setNewComment('');
+        }}
+        onSubmit={editingReview ? handleUpdateReview : handleSubmitReview}
         rating={newRating}
         setRating={setNewRating}
         comment={newComment}
         setComment={setNewComment}
+        isEditing={!!editingReview}
       />
       
       <ThankYouModalComponent 
