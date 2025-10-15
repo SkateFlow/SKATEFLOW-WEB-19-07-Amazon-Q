@@ -1,7 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FiX, FiUpload } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import PistaRequestConfirmModal from '../PistaRequestConfirmModal';
+import { categoriaService } from '../../services/categoriaService';
+import { lugarService } from '../../services/lugarService';
+import { usuarioService } from '../../services/usuarioService';
+import { memoryOptimizer } from '../../utils/memoryOptimizer';
+import { useAuth } from '../../context/AuthContext';
 import {
   ModalOverlay,
   ModalContainer,
@@ -25,10 +30,12 @@ import {
 } from '../EditEventModal/EditEventModalElements';
 
 const CreatePistaModal = ({ isOpen, onClose, onSave }) => {
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     nome: '',
     descricao: '',
-    categoria: '',
+    categoriaId: '',
+    usuarioId: user?.id || '',
     cep: '',
     rua: '',
     bairro: '',
@@ -36,15 +43,52 @@ const CreatePistaModal = ({ isOpen, onClose, onSave }) => {
     latitude: '',
     longitude: '',
     publica: true,
+    valor: 0,
     fotos: ['', '', '']
   });
   
-  const categorias = ['bowl', 'street', 'park'];
+  const [categorias, setCategorias] = useState([]);
+  const [usuarios, setUsuarios] = useState([]);
   
   const [locationInfo, setLocationInfo] = useState('');
   const [errors, setErrors] = useState({});
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      loadCategorias();
+      loadUsuarios();
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (user?.id) {
+      setFormData(prev => ({ ...prev, usuarioId: user.id }));
+    }
+  }, [user]);
+
+  const loadCategorias = async () => {
+    try {
+      const data = await categoriaService.listar();
+      setCategorias(data);
+    } catch (error) {
+      console.error('Erro ao carregar categorias:', error);
+    }
+  };
+
+  const loadUsuarios = async () => {
+    try {
+      const data = await usuarioService.listar();
+      setUsuarios(data);
+      // Usar usuário logado
+      if (user?.id) {
+        setFormData(prev => ({ ...prev, usuarioId: user.id }));
+      }
+    } catch (error) {
+      console.error('Erro ao carregar usuários:', error);
+    }
+  };
 
   const formatCep = (value) => {
     const numbers = value.replace(/\D/g, '');
@@ -54,7 +98,7 @@ const CreatePistaModal = ({ isOpen, onClose, onSave }) => {
     return numbers.replace(/(\d{5})(\d{1,3})/, '$1-$2');
   };
 
-  const handleInputChange = (field, value) => {
+  const handleInputChange = memoryOptimizer.debounce((field, value) => {
     if (field === 'cep') {
       const formattedCep = formatCep(value);
       const numbersOnly = formattedCep.replace(/\D/g, '');
@@ -73,7 +117,7 @@ const CreatePistaModal = ({ isOpen, onClose, onSave }) => {
         [field]: value
       }));
     }
-  };
+  }, 300);
 
   const fetchCoordinates = async (address) => {
     try {
@@ -158,7 +202,8 @@ const CreatePistaModal = ({ isOpen, onClose, onSave }) => {
     setFormData({
       nome: '',
       descricao: '',
-      categoria: '',
+      categoriaId: '',
+      usuarioId: user?.id || '',
       cep: '',
       rua: '',
       bairro: '',
@@ -166,6 +211,7 @@ const CreatePistaModal = ({ isOpen, onClose, onSave }) => {
       latitude: '',
       longitude: '',
       publica: true,
+      valor: 0,
       fotos: ['', '', '']
     });
     setLocationInfo('');
@@ -173,6 +219,8 @@ const CreatePistaModal = ({ isOpen, onClose, onSave }) => {
   };
 
   const handleClose = () => {
+    memoryOptimizer.clearImageCache();
+    
     const hasData = Object.values(formData).some(value => 
       value !== '' && value !== true && !Array.isArray(value)
     ) || formData.fotos.some(foto => foto !== '');
@@ -199,7 +247,7 @@ const CreatePistaModal = ({ isOpen, onClose, onSave }) => {
     const fieldMessages = {
       nome: 'Por favor, insira o nome da pista',
       descricao: 'Por favor, insira uma descrição',
-      categoria: 'Por favor, selecione uma categoria',
+      categoriaId: 'Por favor, selecione uma categoria',
       cep: 'Por favor, insira o CEP',
       numero: 'Por favor, insira o número do local'
     };
@@ -211,6 +259,10 @@ const CreatePistaModal = ({ isOpen, onClose, onSave }) => {
         const numbersOnly = formData[field].replace(/\D/g, '');
         if (!numbersOnly || numbersOnly.length !== 8) {
           newErrors[field] = 'Por favor, insira um CEP válido com 8 dígitos';
+        }
+      } else if (field === 'categoriaId') {
+        if (!formData[field] || formData[field] === '') {
+          newErrors[field] = fieldMessages[field];
         }
       } else if (!formData[field] || formData[field].toString().trim() === '') {
         newErrors[field] = fieldMessages[field];
@@ -225,7 +277,7 @@ const CreatePistaModal = ({ isOpen, onClose, onSave }) => {
         return await processImages(formData.fotos);
       };
       
-      processImagesForSave().then(processedImages => {
+      processImagesForSave().then((processedImages) => {
         const localizacao = [formData.rua, formData.bairro, formData.numero]
           .filter(item => item && item.trim())
           .join(', ');
@@ -239,6 +291,7 @@ const CreatePistaModal = ({ isOpen, onClose, onSave }) => {
           dataSolicitacao: new Date().toISOString(),
           fotos: processedImages
         };
+        
         onSave(newPista);
         resetForm();
         onClose();
@@ -355,9 +408,9 @@ const CreatePistaModal = ({ isOpen, onClose, onSave }) => {
 
                 <FormGroup span={2}>
                   <Label>Categoria da Pista</Label>
-                  <div style={{ display: 'flex', gap: '16px', marginTop: '8px' }}>
+                  <div style={{ display: 'flex', gap: '16px', marginTop: '8px', flexWrap: 'wrap' }}>
                     {categorias.map(categoria => (
-                      <label key={categoria} style={{ 
+                      <label key={categoria.id} style={{ 
                         display: 'flex', 
                         alignItems: 'center', 
                         gap: '8px',
@@ -365,26 +418,26 @@ const CreatePistaModal = ({ isOpen, onClose, onSave }) => {
                         padding: '8px 12px',
                         borderRadius: '20px',
                         border: '2px solid #e2e8f0',
-                        backgroundColor: formData.categoria === categoria ? '#667eea' : 'white',
-                        color: formData.categoria === categoria ? 'white' : '#64748b',
+                        backgroundColor: formData.categoriaId === categoria.id ? '#667eea' : 'white',
+                        color: formData.categoriaId === categoria.id ? 'white' : '#64748b',
                         transition: 'all 0.3s ease',
                         fontWeight: '500',
                         fontSize: '14px'
                       }}>
                         <input
                           type="radio"
-                          name="categoria"
-                          value={categoria}
-                          checked={formData.categoria === categoria}
-                          onChange={(e) => handleInputChange('categoria', e.target.value)}
+                          name="categoriaId"
+                          value={categoria.id}
+                          checked={formData.categoriaId === categoria.id}
+                          onChange={(e) => handleInputChange('categoriaId', parseInt(e.target.value))}
                           style={{ display: 'none' }}
                         />
-                        {categoria.charAt(0).toUpperCase() + categoria.slice(1)}
+                        {categoria.nome}
                       </label>
                     ))}
                   </div>
                   <AnimatePresence>
-                    {errors.categoria && (
+                    {errors.categoriaId && (
                       <motion.div
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -392,7 +445,7 @@ const CreatePistaModal = ({ isOpen, onClose, onSave }) => {
                         transition={{ duration: 0.2 }}
                         style={{ color: '#dc2626', fontSize: '12px', marginTop: '4px' }}
                       >
-                        {errors.categoria}
+                        {errors.categoriaId}
                       </motion.div>
                     )}
                   </AnimatePresence>
@@ -427,8 +480,9 @@ const CreatePistaModal = ({ isOpen, onClose, onSave }) => {
                   <Input
                     type="text"
                     value={formData.rua}
-                    readOnly
-                    style={{ backgroundColor: '#f8fafc' }}
+                    onChange={(e) => handleInputChange('rua', e.target.value)}
+                    placeholder="Rua será preenchida automaticamente pelo CEP"
+                    style={{ backgroundColor: formData.rua ? '#f8fafc' : '#ffffff' }}
                   />
                   {locationInfo && (
                     <div style={{ 
@@ -447,8 +501,9 @@ const CreatePistaModal = ({ isOpen, onClose, onSave }) => {
                   <Input
                     type="text"
                     value={formData.bairro}
-                    readOnly
-                    style={{ backgroundColor: '#f8fafc' }}
+                    onChange={(e) => handleInputChange('bairro', e.target.value)}
+                    placeholder="Bairro será preenchido automaticamente pelo CEP"
+                    style={{ backgroundColor: formData.bairro ? '#f8fafc' : '#ffffff' }}
                   />
                 </FormGroup>
 
@@ -503,6 +558,20 @@ const CreatePistaModal = ({ isOpen, onClose, onSave }) => {
                   onClick={() => handleInputChange('publica', !formData.publica)}
                 />
               </SwitchGroup>
+
+              {!formData.publica && (
+                <FormGroup>
+                  <Label>Valor da Reserva (R$)</Label>
+                  <Input
+                    type="number"
+                    value={formData.valor || ''}
+                    onChange={(e) => handleInputChange('valor', parseFloat(e.target.value) || 0)}
+                    placeholder="0.00"
+                    min="0"
+                    step="0.01"
+                  />
+                </FormGroup>
+              )}
 
               <FormGrid>
               </FormGrid>

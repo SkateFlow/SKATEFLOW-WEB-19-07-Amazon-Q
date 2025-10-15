@@ -521,15 +521,27 @@ const PistaPopup = ({ pista, onClose }) => {
             <InfoSection>
               <InfoRow>
                 <InfoIcon><FaMapMarkerAlt size={18} /></InfoIcon>
-                <InfoText>{pista.endereco || pista.location || `${pista.rua || ''}${pista.numero && pista.numero !== '0' ? `, ${pista.numero}` : ''} - ${pista.cep || ''}`}</InfoText>
+                <InfoText>
+                  {pista.rua && pista.bairro 
+                    ? `${pista.rua}${pista.numero && pista.numero !== '0' ? `, ${pista.numero}` : ''} - ${pista.bairro}${pista.cep ? ` (${pista.cep})` : ''}`
+                    : pista.endereco || pista.location || 'Endereço não informado'
+                  }
+                </InfoText>
               </InfoRow>
-              {pista.valor && (
+              <InfoRow>
+                <InfoIcon><span style={{ fontSize: '16px' }}>🛹</span></InfoIcon>
+                <InfoText>Categoria: {pista.categoria?.nome || 'Não informada'}</InfoText>
+              </InfoRow>
+              <InfoRow>
+                <InfoIcon><FaUser size={16} /></InfoIcon>
+                <InfoText>Cadastrado por: {(pista.usuario?.nome || 'Usuário não informado').replace(/0$/, '')}</InfoText>
+              </InfoRow>
+              {(pista.tipo === 'Privada' || (!pista.publica && pista.tipo !== 'Pública')) && pista.valor && parseFloat(pista.valor) > 0 && (
                 <InfoRow>
-                  <InfoIcon><FaSkating size={18} /></InfoIcon>
-                  <InfoText>Valor: R$ {pista.valor}</InfoText>
+                  <InfoIcon><span style={{ fontSize: '16px' }}>💵</span></InfoIcon>
+                  <InfoText>Valor: R$ {parseFloat(pista.valor).toFixed(2).replace('.', ',')}</InfoText>
                 </InfoRow>
               )}
-
             </InfoSection>
 
             <ReviewsSection>

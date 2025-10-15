@@ -12,6 +12,7 @@ import { fetchSkateParks } from '../services/skateParksService';
 import { lugarService } from '../services/lugarService';
 import { cepService } from '../services/cepService';
 import { usePistasPendentes } from '../hooks/usePistasPendentes';
+import { memoryOptimizer } from '../utils/memoryOptimizer';
 
 // Carregar Leaflet
 if (typeof window !== 'undefined' && !window.L) {
@@ -312,6 +313,7 @@ const Map = () => {
   const [spots, setSpots] = useState([]);
   const [lugares, setLugares] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [categorias, setCategorias] = useState([]);
   const [mapInstance, setMapInstance] = useState(null);
   const [showNotification, setShowNotification] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -332,13 +334,38 @@ const Map = () => {
     window.showMapNotification = showAlreadyHereMessage;
     return () => {
       delete window.showMapNotification;
+      memoryOptimizer.clearImageCache();
     };
   }, []);
 
   useEffect(() => {
     loadSkateParks();
     loadLugares();
+    loadCategorias();
     initializeMap();
+    
+    // Adicionar estilos personalizados para os pop-ups do mapa
+    if (!document.getElementById('map-popup-styles')) {
+      const style = document.createElement('style');
+      style.id = 'map-popup-styles';
+      style.textContent = `
+        .custom-popup .leaflet-popup-content-wrapper {
+          border-radius: 12px;
+          box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+          border: 1px solid #e2e8f0;
+        }
+        .custom-popup .leaflet-popup-content {
+          margin: 16px;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        .custom-popup .leaflet-popup-tip {
+          background: white;
+          border: 1px solid #e2e8f0;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+      `;
+      document.head.appendChild(style);
+    }
   }, []);
 
   const initializeMap = () => {
@@ -354,43 +381,67 @@ const Map = () => {
     }
   };
 
+  const loadCategorias = async () => {
+    try {
+      const data = await categoriaService.listar();
+      setCategorias(data);
+    } catch (error) {
+      console.error('Erro ao carregar categorias:', error);
+    }
+  };
+
   const loadLugares = async () => {
     try {
       const data = await lugarService.listar();
-      const lugaresComCoordenadas = await Promise.all(
-        data.map(async (lugar) => {
-          let lugarAtualizado = { ...lugar };
+      // Filtrar apenas pistas ativadas
+      const lugaresAtivos = data.filter(lugar => lugar.statusPista === 'ativada');
+      
+      const lugaresProcessados = await Promise.all(
+        lugaresAtivos.map(async (lugar) => {
+          let lugarAtualizado = { ...lugar, fotosCarregadas: false };
           
-          // Buscar coordenadas se necessário
-          if (!lugar.latitude || !lugar.longitude) {
+          // Se não tem rua/bairro mas tem CEP, buscar endereço
+          if ((!lugar.rua || !lugar.bairro) && lugar.cep) {
             try {
               const endereco = await cepService.buscarEnderecoPorCep(lugar.cep);
-              const coordenadas = await cepService.obterCoordenadas(endereco.endereco);
-              lugarAtualizado = {
-                ...lugarAtualizado,
-                latitude: coordenadas.latitude.toString(),
-                longitude: coordenadas.longitude.toString(),
-                endereco: endereco.endereco
-              };
+              lugarAtualizado.rua = endereco.logradouro;
+              lugarAtualizado.bairro = endereco.bairro;
+              
+              // Se não tem coordenadas, buscar também
+              if (!lugar.latitude || !lugar.longitude) {
+                const coordenadas = await cepService.obterCoordenadas(
+                  `${endereco.logradouro}, ${endereco.bairro}, ${endereco.localidade}, ${endereco.uf}`
+                );
+                lugarAtualizado.latitude = coordenadas.latitude.toString();
+                lugarAtualizado.longitude = coordenadas.longitude.toString();
+              }
             } catch (error) {
-              console.error('Erro ao obter coordenadas para:', lugar.nome, error);
+              console.error('Erro ao buscar endereço para:', lugar.nome, error);
             }
           }
-          
-          // Carregar apenas foto1 para exibir no card
-          try {
-            const foto1 = await lugarService.buscarFoto1(lugar.id);
-            if (foto1) {
-              lugarAtualizado.foto1Base64 = `data:image/jpeg;base64,${foto1}`;
-            }
-          } catch (error) {}
-          
-          lugarAtualizado.fotosCarregadas = false;
           
           return lugarAtualizado;
         })
       );
-      setLugares(lugaresComCoordenadas);
+      
+      setLugares(lugaresProcessados);
+      
+      // Carregar fotos de forma assíncrona
+      lugaresProcessados.forEach(async (lugar, index) => {
+        try {
+          const foto1 = await lugarService.buscarFoto1(lugar.id);
+          if (foto1) {
+            setLugares(prev => {
+              const updated = [...prev];
+              updated[index] = {
+                ...updated[index],
+                foto1Base64: `data:image/jpeg;base64,${foto1}`
+              };
+              return updated;
+            });
+          }
+        } catch (error) {}
+      });
     } catch (error) {
       console.error('Erro ao carregar lugares:', error);
     }
@@ -413,24 +464,18 @@ const Map = () => {
   };
 
   const handlePistaClick = async (pista) => {
-    // Carregar fotos se ainda não foram carregadas
-    if (!pista.fotosCarregadas) {
+    // Carregar fotos apenas quando necessário
+    if (!pista.fotosCarregadas && pista.id) {
       const fotos = [];
       
-      try {
-        const foto1 = await lugarService.buscarFoto1(pista.id);
-        if (foto1) fotos.push(`data:image/jpeg;base64,${foto1}`);
-      } catch (error) {}
+      const loadFoto = async (fotoNum) => {
+        try {
+          const foto = await lugarService[`buscarFoto${fotoNum}`](pista.id);
+          if (foto) fotos.push(`data:image/jpeg;base64,${foto}`);
+        } catch (error) {}
+      };
       
-      try {
-        const foto2 = await lugarService.buscarFoto2(pista.id);
-        if (foto2) fotos.push(`data:image/jpeg;base64,${foto2}`);
-      } catch (error) {}
-      
-      try {
-        const foto3 = await lugarService.buscarFoto3(pista.id);
-        if (foto3) fotos.push(`data:image/jpeg;base64,${foto3}`);
-      } catch (error) {}
+      await Promise.all([loadFoto(1), loadFoto(2), loadFoto(3)]);
       
       pista.fotos = fotos;
       pista.fotosCarregadas = true;
@@ -453,24 +498,52 @@ const Map = () => {
 
   const filteredLugares = lugares.filter(lugar => {
     const matchesSearch = lugar.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         lugar.descricao.toLowerCase().includes(searchTerm.toLowerCase());
+                         lugar.descricao.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (lugar.rua || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (lugar.bairro || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (lugar.cep || '').toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesType = typeFilter === 'todos' || lugar.tipo.toLowerCase() === typeFilter;
+    const matchesType = typeFilter === 'todos' || 
+                       (lugar.categoria?.nome && lugar.categoria.nome.toLowerCase() === typeFilter);
     return matchesSearch && matchesType;
   });
 
   // Adicionar marcadores no mapa quando lugares são carregados
   useEffect(() => {
     if (mapInstance && lugares.length > 0) {
+      // Limpar marcadores existentes
+      mapInstance.eachLayer(layer => {
+        if (layer instanceof window.L.Marker) {
+          mapInstance.removeLayer(layer);
+        }
+      });
+      
       lugares.forEach(lugar => {
         if (lugar.latitude && lugar.longitude) {
+          const enderecoCompleto = lugar.rua && lugar.bairro 
+            ? `${lugar.rua}${lugar.numero ? `, ${lugar.numero}` : ''} - ${lugar.bairro}`
+            : `CEP: ${lugar.cep || 'Endereço não disponível'}`;
+          
           const marker = window.L.marker([parseFloat(lugar.latitude), parseFloat(lugar.longitude)])
             .addTo(mapInstance)
-            .bindPopup(`<b>${lugar.nome}</b><br>${lugar.descricao}<br><small>${lugar.endereco || 'Endereço não disponível'}</small>`);
+            .bindPopup(`
+              <div style="min-width: 200px;">
+                <h3 style="margin: 0 0 8px 0; color: #1a237e; font-size: 16px;">${lugar.nome}</h3>
+                <p style="margin: 0 0 8px 0; color: #4a5568; font-size: 14px;">${lugar.descricao}</p>
+                <div style="margin-bottom: 8px;">
+                  <span style="background: #e0e7ff; color: #3730a3; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">${lugar.categoria?.nome || 'Categoria não informada'}</span>
+                </div>
+                <div style="margin-bottom: 8px;">
+                  <span style="color: #64748b; font-size: 12px;">👤 ${(lugar.usuario?.nome || 'Usuário não informado').replace(/0$/, '')}</span>
+                </div>
+                <small style="color: #64748b;">📍 ${enderecoCompleto}</small>
+              </div>
+            `, {
+              maxWidth: 300,
+              className: 'custom-popup'
+            });
           
-          marker.on('click', () => {
-            handlePistaClick(lugar);
-          });
+          marker.on('click', () => handlePistaClick(lugar));
         }
       });
     }
@@ -496,7 +569,10 @@ const Map = () => {
               <SearchInput
                 placeholder="Buscar pistas..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setSearchTerm(value);
+                }}
               />
             </SearchContainer>
             
@@ -512,7 +588,7 @@ const Map = () => {
                     active={typeFilter === type}
                     onClick={() => setTypeFilter(type)}
                   >
-                    {type === 'todos' ? 'Todos' : type}
+                    {type === 'todos' ? 'Todos' : type.charAt(0).toUpperCase() + type.slice(1)}
                   </FilterBadge>
                 ))}
               </FilterBadges>
@@ -564,12 +640,25 @@ const Map = () => {
                         <SpotDescription>{lugar.descricao}</SpotDescription>
                         <SpotLocation>
                           <FaMapMarkerAlt />
-                          <span>{lugar.endereco || lugar.localizacao || `${lugar.rua || ''}, ${lugar.bairro || ''}`.replace(/^,\s*|,\s*$/g, '') || lugar.cep || 'Localização não informada'}</span>
+                          <span>
+                            {lugar.rua && lugar.bairro 
+                              ? `${lugar.rua}${lugar.numero ? `, ${lugar.numero}` : ''} - ${lugar.bairro}`
+                              : lugar.endereco || lugar.localizacao || lugar.cep || 'Localização não informada'
+                            }
+                          </span>
                         </SpotLocation>
+                        <div style={{ marginBottom: '8px', fontSize: '12px' }}>
+                          <span style={{ background: '#e0e7ff', color: '#3730a3', padding: '2px 8px', borderRadius: '12px', fontWeight: '600', marginRight: '8px' }}>
+                            {lugar.categoria?.nome || 'Categoria não informada'}
+                          </span>
+                          <span style={{ color: '#64748b' }}>
+                            👤 {(lugar.usuario?.nome || 'Usuário não informado').replace(/0$/, '')}
+                          </span>
+                        </div>
                         <SpotStats>
                           <StatItem>
                             <span style={{ color: '#4a5568', fontSize: '12px' }}>
-                              {lugar.tipo} - R$ {lugar.valor}
+                              {lugar.tipo}{lugar.tipo === 'Privada' && lugar.valor > 0 ? ` - R$ ${lugar.valor}` : ''}
                             </span>
                           </StatItem>
                           <StatItem>

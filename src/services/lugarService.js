@@ -79,5 +79,41 @@ export const lugarService = {
     } catch (error) {
       return null;
     }
+  },
+
+  // Salvar foto1 em base64
+  salvarFoto1: async (id, fotoBase64) => {
+    try {
+      const response = await api.put(`/lugar/foto1/${id}`, fotoBase64, {
+        headers: { 'Content-Type': 'text/plain' }
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || 'Erro ao salvar foto 1';
+    }
+  },
+
+  // Salvar foto2 em base64
+  salvarFoto2: async (id, fotoBase64) => {
+    try {
+      const response = await api.put(`/lugar/foto2/${id}`, fotoBase64, {
+        headers: { 'Content-Type': 'text/plain' }
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || 'Erro ao salvar foto 2';
+    }
+  },
+
+  // Salvar foto3 em base64
+  salvarFoto3: async (id, fotoBase64) => {
+    try {
+      const response = await api.put(`/lugar/foto3/${id}`, fotoBase64, {
+        headers: { 'Content-Type': 'text/plain' }
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || 'Erro ao salvar foto 3';
+    }
   }
 };

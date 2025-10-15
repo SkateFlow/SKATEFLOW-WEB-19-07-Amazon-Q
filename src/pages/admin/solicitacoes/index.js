@@ -253,17 +253,11 @@ const Solicitacoes = () => {
           throw new Error(`Categoria '${categoriaNome}' não encontrada`);
         }
         
-        // Buscar usuário admin
-        let usuarioAdmin;
-        try {
-          const usuarios = await usuarioService.listar();
-          usuarioAdmin = usuarios.find(user => user.nivelAcesso === 'ADMIN') || usuarios[0];
-          console.log('Usuario admin encontrado:', usuarioAdmin);
-        } catch (error) {
-          // Se não conseguir buscar usuários, usar ID 1 como fallback
-          usuarioAdmin = { id: 1 };
-          console.log('Usando usuario fallback:', usuarioAdmin);
-        }
+        // Usar o usuário que fez a solicitação
+        const usuarioSolicitante = {
+          id: solicitacao.usuarioId || 1
+        };
+        console.log('Usuario que fez a solicitação:', usuarioSolicitante);
         
         const dadosLugar = {
           nome: solicitacao.nome,
@@ -276,7 +270,7 @@ const Solicitacoes = () => {
           valor: 0,
           statusPista: 'ativada',
           categoriaId: categoriaEncontrada.id,
-          usuarioId: usuarioAdmin.id,
+          usuarioId: usuarioSolicitante.id,
           foto1: solicitacao.fotos?.[0]?.replace(/^data:image\/[a-z]+;base64,/, '') || null,
           foto2: solicitacao.fotos?.[1]?.replace(/^data:image\/[a-z]+;base64,/, '') || null,
           foto3: solicitacao.fotos?.[2]?.replace(/^data:image\/[a-z]+;base64,/, '') || null

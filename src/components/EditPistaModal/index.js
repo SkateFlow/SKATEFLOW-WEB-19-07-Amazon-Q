@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FiX, FiUpload } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import { lugarService } from '../../services/lugarService';
+import { categoriaService } from '../../services/categoriaService';
 import {
   ModalOverlay,
   ModalContainer,
@@ -35,6 +36,8 @@ const EditPistaModal = ({ isOpen, onClose, pista, onSave }) => {
     latitude: '',
     longitude: '',
     publica: false,
+    valor: 0,
+    categoriaId: '',
     fotos: ['', '', '']
   });
   
@@ -42,6 +45,20 @@ const EditPistaModal = ({ isOpen, onClose, pista, onSave }) => {
   const [errors, setErrors] = useState({});
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [originalData, setOriginalData] = useState({});
+  const [categorias, setCategorias] = useState([]);
+
+  // Carregar categorias
+  useEffect(() => {
+    const loadCategorias = async () => {
+      try {
+        const categoriasData = await categoriaService.listar();
+        setCategorias(categoriasData);
+      } catch (error) {
+        console.error('Erro ao carregar categorias:', error);
+      }
+    };
+    loadCategorias();
+  }, []);
 
   // Update form data when pista changes
   useEffect(() => {
@@ -56,7 +73,9 @@ const EditPistaModal = ({ isOpen, onClose, pista, onSave }) => {
           numero: pista.numero || '',
           latitude: pista.latitude || '',
           longitude: pista.longitude || '',
-          publica: pista.publica || false,
+          publica: pista.tipo === 'Pública' || pista.publica || false,
+          valor: pista.valor || 0,
+          categoriaId: pista.categoria?.id || '',
           fotos: ['', '', '']
         };
         
@@ -135,7 +154,9 @@ const EditPistaModal = ({ isOpen, onClose, pista, onSave }) => {
           bairro
         }));
         
-        updateLocationInfo(rua, cidade, estado);
+        if (cidade && estado) {
+          setLocationInfo(`${cidade} - ${estado}`);
+        }
       } else {
         setLocationInfo('CEP não encontrado');
       }
@@ -162,13 +183,19 @@ const EditPistaModal = ({ isOpen, onClose, pista, onSave }) => {
     updateLocationInfo(value, cidade, estado);
   };
 
-  const handlePhotoChange = (index, value) => {
-    const newFotos = [...formData.fotos];
-    newFotos[index] = value;
-    setFormData(prev => ({
-      ...prev,
-      fotos: newFotos
-    }));
+  const handlePhotoChange = (index, file) => {
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const newFotos = [...formData.fotos];
+        newFotos[index] = e.target.result;
+        setFormData(prev => ({
+          ...prev,
+          fotos: newFotos
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const hasChanges = () => {
@@ -194,7 +221,7 @@ const EditPistaModal = ({ isOpen, onClose, pista, onSave }) => {
     setShowConfirmModal(false);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const fieldMessages = {
       nome: 'Por favor, insira o nome da pista',
       descricao: 'Por favor, insira uma descrição',
@@ -203,7 +230,8 @@ const EditPistaModal = ({ isOpen, onClose, pista, onSave }) => {
       bairro: 'Por favor, insira o bairro',
       numero: 'Por favor, insira o número do local',
       latitude: 'Por favor, insira a latitude',
-      longitude: 'Por favor, insira a longitude'
+      longitude: 'Por favor, insira a longitude',
+      categoriaId: 'Por favor, selecione uma categoria'
     };
     
     const newErrors = {};
@@ -221,11 +249,31 @@ const EditPistaModal = ({ isOpen, onClose, pista, onSave }) => {
         .filter(item => item && item.trim())
         .join(', ');
       
+      // Salvar dados da pista
       onSave({ 
         ...pista, 
-        ...formData, 
+        ...formData,
+        categoriaId: formData.categoriaId,
+        tipo: formData.publica ? 'Pública' : 'Particular',
         localizacao: localizacao || 'Endereço não informado'
       });
+      
+      // Salvar fotos se foram alteradas
+      if (pista.id && pista.status === 'backend') {
+        try {
+          for (let i = 0; i < 3; i++) {
+            if (formData.fotos[i] && formData.fotos[i] !== originalData.fotos[i] && formData.fotos[i].includes('data:image')) {
+              const base64Data = formData.fotos[i].split(',')[1];
+              if (i === 0) await lugarService.salvarFoto1(pista.id, base64Data);
+              if (i === 1) await lugarService.salvarFoto2(pista.id, base64Data);
+              if (i === 2) await lugarService.salvarFoto3(pista.id, base64Data);
+            }
+          }
+        } catch (error) {
+          console.error('Erro ao salvar fotos:', error);
+        }
+      }
+      
       onClose();
     }
   };
@@ -361,8 +409,8 @@ const EditPistaModal = ({ isOpen, onClose, pista, onSave }) => {
               <Input
                 type="text"
                 value={formData.rua}
-                readOnly
-                style={{ backgroundColor: '#f8fafc' }}
+                onChange={(e) => handleInputChange('rua', e.target.value)}
+                placeholder="Rua será preenchida automaticamente"
               />
               {locationInfo && (
                 <div style={{ 
@@ -395,8 +443,7 @@ const EditPistaModal = ({ isOpen, onClose, pista, onSave }) => {
                 type="text"
                 value={formData.bairro}
                 onChange={(e) => handleInputChange('bairro', e.target.value)}
-                readOnly
-                style={{ backgroundColor: '#f8fafc' }}
+                placeholder="Bairro será preenchido automaticamente"
               />
               <AnimatePresence>
                 {errors.bairro && (
@@ -444,6 +491,42 @@ const EditPistaModal = ({ isOpen, onClose, pista, onSave }) => {
               />
               <CheckboxLabel>Pista Pública</CheckboxLabel>
             </CheckboxGroup>
+
+            <FormGroup>
+              <Label>Categoria</Label>
+              <select
+                value={formData.categoriaId}
+                onChange={(e) => handleInputChange('categoriaId', e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '8px',
+                  fontSize: '14px'
+                }}
+              >
+                <option value="">Selecione uma categoria</option>
+                {categorias.map((categoria) => (
+                  <option key={categoria.id} value={categoria.id}>
+                    {categoria.nome}
+                  </option>
+                ))}
+              </select>
+            </FormGroup>
+
+            {!formData.publica && (
+              <FormGroup>
+                <Label>Preço (R$)</Label>
+                <Input
+                  type="number"
+                  value={formData.valor}
+                  onChange={(e) => handleInputChange('valor', parseFloat(e.target.value) || 0)}
+                  placeholder="0.00"
+                  min="0"
+                  step="0.01"
+                />
+              </FormGroup>
+            )}
 
             <FormGroup>
               <Label>Latitude</Label>

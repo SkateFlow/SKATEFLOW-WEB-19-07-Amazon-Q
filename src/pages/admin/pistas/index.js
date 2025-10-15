@@ -301,15 +301,29 @@ const Pistas = () => {
       
       const pistasFormatadas = await Promise.all(
         lugares.map(async (lugar) => {
-          const localizacao = await getLocationFromCep(lugar.cep);
+          let rua = lugar.rua || '';
+          let bairro = lugar.bairro || '';
+          
+          // Se não tem rua/bairro mas tem CEP, buscar automaticamente
+          if ((!rua || !bairro) && lugar.cep && lugar.cep.length === 8) {
+            try {
+              const response = await fetch(`https://viacep.com.br/ws/${lugar.cep}/json/`);
+              const data = await response.json();
+              if (!data.erro) {
+                rua = rua || data.logradouro || '';
+                bairro = bairro || data.bairro || '';
+              }
+            } catch (error) {
+              console.error('Erro ao buscar CEP:', error);
+            }
+          }
           
           return {
             id: lugar.id,
             nome: lugar.nome,
             descricao: lugar.descricao,
-            localizacao,
-            rua: lugar.rua,
-            bairro: lugar.bairro,
+            rua,
+            bairro,
             cep: lugar.cep,
             latitude: lugar.latitude,
             longitude: lugar.longitude,
@@ -317,6 +331,7 @@ const Pistas = () => {
             status: 'backend',
             tipo: lugar.tipo,
             valor: lugar.valor,
+            categoria: lugar.categoria,
             fotos: lugar.foto ? [`data:image/jpeg;base64,${lugar.foto}`] : []
           };
         })
@@ -384,8 +399,8 @@ const Pistas = () => {
         const { lugarService } = await import('../../../services/lugarService');
         await lugarService.atualizar(updatedPista.id, updatedPista);
         
-        // Recarregar lista do backend
-        await loadPistasBackend();
+        // Não recarregar automaticamente para preservar as imagens editadas
+        // O usuário pode usar o botão "Atualizar" se necessário
       } else {
         // Atualizar no localStorage
         const storageKey = updatedPista.status === 'aprovada' ? 'pistasAprovadas' : 'pistasRejeitadas';
@@ -406,12 +421,49 @@ const Pistas = () => {
     setPistas([...pistas, newPista]);
   };
 
-  const toggleStatus = (pistaId) => {
-    setPistas(pistas.map(pista => 
-      pista.id === pistaId 
-        ? { ...pista, active: !pista.active }
-        : pista
-    ));
+  const toggleStatus = async (pistaId) => {
+    const pista = pistas.find(p => p.id === pistaId);
+    if (!pista) return;
+    
+    try {
+      if (pista.status === 'backend') {
+        // Criar objeto lugar para atualizar
+        const lugarAtualizado = {
+          nome: pista.nome,
+          descricao: pista.descricao,
+          tipo: pista.tipo,
+          cep: pista.cep,
+          rua: pista.rua,
+          bairro: pista.bairro,
+          numero: pista.numero || '',
+          latitude: pista.latitude,
+          longitude: pista.longitude,
+          valor: pista.valor || 0,
+          statusPista: pista.active ? 'inativa' : 'ativada'
+        };
+        
+        const { lugarService } = await import('../../../services/lugarService');
+        await lugarService.atualizar(pista.id, lugarAtualizado);
+        
+        // Recarregar lista
+        await loadPistasBackend();
+      } else {
+        // Atualizar localStorage
+        const storageKey = pista.status === 'aprovada' ? 'pistasAprovadas' : 'pistasRejeitadas';
+        const pistasStorage = JSON.parse(localStorage.getItem(storageKey) || '[]');
+        const pistasAtualizadas = pistasStorage.map(p => 
+          p.id === pistaId ? { ...p, active: !p.active } : p
+        );
+        localStorage.setItem(storageKey, JSON.stringify(pistasAtualizadas));
+        
+        setPistas(pistas.map(p => 
+          p.id === pistaId ? { ...p, active: !p.active } : p
+        ));
+      }
+    } catch (error) {
+      console.error('Erro ao alterar status:', error);
+      alert('Erro ao alterar status da pista.');
+    }
   };
 
   const handleApprove = (pistaId) => {
@@ -502,7 +554,12 @@ const Pistas = () => {
                 <PistaInfo>
                   <InfoRow>
                     <InfoLabel>Localização:</InfoLabel>
-                    <span>{pista.localizacao || `${pista.rua || ''}, ${pista.bairro || ''}`.replace(/^,\s*|,\s*$/g, '') || 'Não informado'}</span>
+                    <span>
+                      {pista.rua && pista.bairro 
+                        ? `${pista.rua}, ${pista.bairro}${pista.cep ? ` - ${pista.cep}` : ''}` 
+                        : pista.localizacao || 'Não informado'
+                      }
+                    </span>
                   </InfoRow>
                   <InfoRow>
                     <InfoLabel>Descrição:</InfoLabel>

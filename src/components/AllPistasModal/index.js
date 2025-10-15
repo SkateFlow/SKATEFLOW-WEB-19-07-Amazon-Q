@@ -1,7 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import styled from 'styled-components';
 import { FiX, FiSearch, FiFilter, FiMapPin, FiStar, FiHeart } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
+import { categoriaService } from '../../services/categoriaService';
 
 const ModalOverlay = styled.div`
   position: fixed;
@@ -268,6 +269,22 @@ const EmptyText = styled.p`
 const AllPistasModal = ({ isOpen, onClose, pistas, lugares = [], onPistaClick }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState('todos');
+  const [categorias, setCategorias] = useState([]);
+
+  useEffect(() => {
+    if (isOpen) {
+      loadCategorias();
+    }
+  }, [isOpen]);
+
+  const loadCategorias = async () => {
+    try {
+      const data = await categoriaService.listar();
+      setCategorias(data);
+    } catch (error) {
+      console.error('Erro ao carregar categorias:', error);
+    }
+  };
 
   const spotTypes = ['todos', 'bowl', 'street', 'park'];
 
@@ -281,11 +298,15 @@ const AllPistasModal = ({ isOpen, onClose, pistas, lugares = [], onPistaClick })
       const matchesSearch = 
         (pista.nome || pista.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
         (pista.descricao || pista.description || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (pista.localizacao || pista.location || '').toLowerCase().includes(searchTerm.toLowerCase());
+        (pista.localizacao || pista.location || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (pista.rua || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (pista.bairro || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (pista.cep || '').toLowerCase().includes(searchTerm.toLowerCase());
       
       const matchesType = typeFilter === 'todos' || 
                          (pista.type === typeFilter) || 
-                         (pista.tipo && pista.tipo.toLowerCase() === typeFilter);
+                         (pista.tipo && pista.tipo.toLowerCase() === typeFilter) ||
+                         (pista.categoria?.nome && pista.categoria.nome.toLowerCase() === typeFilter);
       return matchesSearch && matchesType;
     });
   }, [todasPistas, searchTerm, typeFilter]);
@@ -341,7 +362,7 @@ const AllPistasModal = ({ isOpen, onClose, pistas, lugares = [], onPistaClick })
                         active={typeFilter === type}
                         onClick={() => setTypeFilter(type)}
                       >
-                        {type === 'todos' ? 'Todos' : type}
+                        {type === 'todos' ? 'Todos' : type.charAt(0).toUpperCase() + type.slice(1)}
                       </FilterBadge>
                     ))}
                   </FilterBadges>
@@ -383,9 +404,22 @@ const AllPistasModal = ({ isOpen, onClose, pistas, lugares = [], onPistaClick })
                       
                       <PistaLocation>
                         <FiMapPin />
-                        <span>{pista.localizacao || pista.location}</span>
+                        <span>
+                          {pista.rua && pista.bairro 
+                            ? `${pista.rua}${pista.numero ? `, ${pista.numero}` : ''} - ${pista.bairro}`
+                            : pista.localizacao || pista.location || 'Localização não informada'
+                          }
+                        </span>
                       </PistaLocation>
                       
+                      <div style={{ marginBottom: '8px', fontSize: '11px' }}>
+                        <span style={{ background: '#e0e7ff', color: '#3730a3', padding: '2px 6px', borderRadius: '8px', fontWeight: '600', marginRight: '6px' }}>
+                          {pista.categoria?.nome || 'Categoria'}
+                        </span>
+                        <span style={{ color: '#64748b' }}>
+                          👤 {pista.usuario?.nome || 'Usuário'}
+                        </span>
+                      </div>
                       <PistaStats>
                         {pista.tipo || pista.type ? (
                           <StatItem>

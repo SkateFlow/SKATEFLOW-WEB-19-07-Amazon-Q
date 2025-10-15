@@ -17,23 +17,5 @@ export const usuarioService = {
     } catch (error) {
       throw error.response?.data || 'Usuário não encontrado';
     }
-  },
-
-  login: async (email, senha) => {
-    try {
-      const response = await api.post('/usuario/login', { email, senha });
-      return response.data;
-    } catch (error) {
-      throw error.response?.data || 'Erro ao fazer login';
-    }
-  },
-
-  criar: async (usuario) => {
-    try {
-      const response = await api.post('/usuario/save', usuario);
-      return response.data;
-    } catch (error) {
-      throw error.response?.data || 'Erro ao criar usuário';
-    }
   }
 };
