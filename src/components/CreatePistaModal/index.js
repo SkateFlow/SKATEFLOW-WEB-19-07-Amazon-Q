@@ -54,6 +54,7 @@ const CreatePistaModal = ({ isOpen, onClose, onSave }) => {
   const [errors, setErrors] = useState({});
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [timeoutId, setTimeoutId] = useState(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -67,6 +68,14 @@ const CreatePistaModal = ({ isOpen, onClose, onSave }) => {
       setFormData(prev => ({ ...prev, usuarioId: user.id }));
     }
   }, [user]);
+
+  useEffect(() => {
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
+  }, [timeoutId]);
 
   const loadCategorias = async () => {
     try {
@@ -98,7 +107,7 @@ const CreatePistaModal = ({ isOpen, onClose, onSave }) => {
     return numbers.replace(/(\d{5})(\d{1,3})/, '$1-$2');
   };
 
-  const handleInputChange = memoryOptimizer.debounce((field, value) => {
+  const handleInputChange = (field, value) => {
     if (field === 'cep') {
       const formattedCep = formatCep(value);
       const numbersOnly = formattedCep.replace(/\D/g, '');
@@ -109,7 +118,7 @@ const CreatePistaModal = ({ isOpen, onClose, onSave }) => {
       }));
       
       if (numbersOnly.length === 8) {
-        fetchAddressByCep(numbersOnly);
+        debouncedFetchAddress(numbersOnly);
       }
     } else {
       setFormData(prev => ({
@@ -117,7 +126,7 @@ const CreatePistaModal = ({ isOpen, onClose, onSave }) => {
         [field]: value
       }));
     }
-  }, 300);
+  };
 
   const fetchCoordinates = async (address) => {
     try {
@@ -141,14 +150,15 @@ const CreatePistaModal = ({ isOpen, onClose, onSave }) => {
 
   const fetchAddressByCep = async (cep) => {
     try {
-      const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+      // Usar API alternativa que não tem problema de CORS
+      const response = await fetch(`https://brasilapi.com.br/api/cep/v1/${cep}`);
       const data = await response.json();
       
-      if (!data.erro) {
-        const rua = data.logradouro || '';
-        const bairro = data.bairro || '';
-        const cidade = data.localidade || '';
-        const estado = data.uf || '';
+      if (data && !data.error) {
+        const rua = data.street || '';
+        const bairro = data.neighborhood || '';
+        const cidade = data.city || '';
+        const estado = data.state || '';
         
         setFormData(prev => ({
           ...prev,
@@ -177,6 +187,16 @@ const CreatePistaModal = ({ isOpen, onClose, onSave }) => {
     } else {
       setLocationInfo('');
     }
+  };
+
+  const debouncedFetchAddress = (cep) => {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+    const newTimeoutId = setTimeout(() => {
+      fetchAddressByCep(cep);
+    }, 500);
+    setTimeoutId(newTimeoutId);
   };
 
   const handlePhotoChange = async (index, file) => {
@@ -301,9 +321,10 @@ const CreatePistaModal = ({ isOpen, onClose, onSave }) => {
   };
 
   return (
-    <AnimatePresence mode="wait">
+    <AnimatePresence>
       {isOpen && (
         <ModalOverlay 
+          key="create-pista-modal" 
           as={motion.div}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -583,9 +604,10 @@ const CreatePistaModal = ({ isOpen, onClose, onSave }) => {
             </ModalContent>
           </ModalContainer>
           
-          <AnimatePresence mode="wait">
+          <AnimatePresence>
             {showConfirmModal && (
               <ModalOverlay 
+                key="confirm-modal" 
                 style={{ zIndex: 1001 }}
                 as={motion.div}
                 initial={{ opacity: 0 }}

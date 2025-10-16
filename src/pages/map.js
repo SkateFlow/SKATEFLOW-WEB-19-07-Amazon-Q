@@ -12,6 +12,7 @@ import { fetchSkateParks } from '../services/skateParksService';
 import { lugarService } from '../services/lugarService';
 import { cepService } from '../services/cepService';
 import { avaliacaoService } from '../services/avaliacaoService';
+import { categoriaService } from '../services/categoriaService';
 import { usePistasPendentes } from '../hooks/usePistasPendentes';
 import { memoryOptimizer } from '../utils/memoryOptimizer';
 

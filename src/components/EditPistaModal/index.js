@@ -47,6 +47,7 @@ const EditPistaModal = ({ isOpen, onClose, pista, onSave }) => {
   const [originalData, setOriginalData] = useState({});
   const [categorias, setCategorias] = useState([]);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Carregar categorias
   useEffect(() => {
@@ -75,8 +76,9 @@ const EditPistaModal = ({ isOpen, onClose, pista, onSave }) => {
 
   // Update form data when pista changes
   useEffect(() => {
-    if (pista) {
+    if (pista && isOpen) {
       const loadPistaData = async () => {
+        setIsLoading(true);
         let pistaData = pista;
         
         // Se a pista tem ID e vem do backend, buscar dados atualizados
@@ -109,17 +111,23 @@ const EditPistaModal = ({ isOpen, onClose, pista, onSave }) => {
           try {
             const foto1 = await lugarService.buscarFoto1(pistaData.id);
             if (foto1) data.fotos[0] = `data:image/jpeg;base64,${foto1}`;
-          } catch (error) {}
+          } catch (error) {
+            console.log('Foto 1 não encontrada');
+          }
           
           try {
             const foto2 = await lugarService.buscarFoto2(pistaData.id);
             if (foto2) data.fotos[1] = `data:image/jpeg;base64,${foto2}`;
-          } catch (error) {}
+          } catch (error) {
+            console.log('Foto 2 não encontrada');
+          }
           
           try {
             const foto3 = await lugarService.buscarFoto3(pistaData.id);
             if (foto3) data.fotos[2] = `data:image/jpeg;base64,${foto3}`;
-          } catch (error) {}
+          } catch (error) {
+            console.log('Foto 3 não encontrada');
+          }
         }
         
         setFormData(data);
@@ -129,11 +137,13 @@ const EditPistaModal = ({ isOpen, onClose, pista, onSave }) => {
         if (pistaData.cep && pistaData.cep.length === 8) {
           fetchAddressByCep(pistaData.cep);
         }
+        
+        setIsLoading(false);
       };
       
       loadPistaData();
     }
-  }, [pista]);
+  }, [pista, isOpen]);
 
   const formatCep = (value) => {
     const cleanCep = value.replace(/\D/g, '');
@@ -350,7 +360,35 @@ const EditPistaModal = ({ isOpen, onClose, pista, onSave }) => {
           </CloseButton>
         </ModalHeader>
 
-        <ModalContent>
+        <ModalContent style={{ minHeight: '750px' }}>
+          {isLoading ? (
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              height: '100%',
+              color: '#64748b'
+            }}>
+              <div style={{
+                width: '40px',
+                height: '40px',
+                border: '3px solid #e2e8f0',
+                borderTop: '3px solid #667eea',
+                borderRadius: '50%',
+                animation: 'spin 1s linear infinite',
+                marginBottom: '16px'
+              }} />
+              <p style={{ textAlign: 'center', fontSize: '16px', fontWeight: '500' }}>Carregando dados da pista...</p>
+              <style>{`
+                @keyframes spin {
+                  0% { transform: rotate(0deg); }
+                  100% { transform: rotate(360deg); }
+                }
+              `}</style>
+            </div>
+          ) : (
+            <>
           <PhotoSection>
             {[0, 1, 2].map((index) => (
               <PhotoUpload key={index}>
@@ -711,6 +749,8 @@ const EditPistaModal = ({ isOpen, onClose, pista, onSave }) => {
             <CancelButton onClick={handleClose}>Cancelar</CancelButton>
             <SaveButton onClick={handleSave}>Salvar Alterações</SaveButton>
           </ButtonGroup>
+            </>
+          )}
         </ModalContent>
           </ModalContainer>
           
