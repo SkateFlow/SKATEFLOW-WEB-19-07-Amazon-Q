@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FiX, FiUpload } from 'react-icons/fi';
+import { FiX, FiUpload, FiChevronDown } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import { lugarService } from '../../services/lugarService';
 import { categoriaService } from '../../services/categoriaService';
@@ -17,9 +17,9 @@ import {
   Label,
   Input,
   TextArea,
-  CheckboxGroup,
-  Checkbox,
-  CheckboxLabel,
+  SwitchGroup,
+  SwitchLabel,
+  Switch,
   ButtonGroup,
   SaveButton,
   CancelButton
@@ -46,6 +46,7 @@ const EditPistaModal = ({ isOpen, onClose, pista, onSave }) => {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [originalData, setOriginalData] = useState({});
   const [categorias, setCategorias] = useState([]);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   // Carregar categorias
   useEffect(() => {
@@ -60,39 +61,63 @@ const EditPistaModal = ({ isOpen, onClose, pista, onSave }) => {
     loadCategorias();
   }, []);
 
+  // Fechar dropdown ao clicar fora
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (isDropdownOpen && !event.target.closest('[data-dropdown]')) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isDropdownOpen]);
+
   // Update form data when pista changes
   useEffect(() => {
     if (pista) {
       const loadPistaData = async () => {
+        let pistaData = pista;
+        
+        // Se a pista tem ID e vem do backend, buscar dados atualizados
+        if (pista.id && pista.status === 'backend') {
+          try {
+            pistaData = await lugarService.buscarPorId(pista.id);
+          } catch (error) {
+            console.error('Erro ao buscar dados da pista:', error);
+            pistaData = pista; // Usar dados originais em caso de erro
+          }
+        }
+        
         const data = {
-          nome: pista.nome || '',
-          descricao: pista.descricao || '',
-          cep: pista.cep || '',
-          rua: pista.rua || '',
-          bairro: pista.bairro || '',
-          numero: pista.numero || '',
-          latitude: pista.latitude || '',
-          longitude: pista.longitude || '',
-          publica: pista.tipo === 'Pública' || pista.publica || false,
-          valor: pista.valor || 0,
-          categoriaId: pista.categoria?.id || '',
+          nome: pistaData.nome || '',
+          descricao: pistaData.descricao || '',
+          cep: pistaData.cep || '',
+          rua: pistaData.rua || '',
+          bairro: pistaData.bairro || '',
+          numero: pistaData.numero || '',
+          latitude: pistaData.latitude || '',
+          longitude: pistaData.longitude || '',
+          publica: pistaData.tipo === 'Particular' || pistaData.tipo === 'particular',
+          valor: pistaData.valor || 0,
+          categoriaId: pistaData.categoria?.id || '',
           fotos: ['', '', '']
         };
         
         // Carregar fotos do sistema
-        if (pista.id) {
+        if (pistaData.id) {
           try {
-            const foto1 = await lugarService.buscarFoto1(pista.id);
+            const foto1 = await lugarService.buscarFoto1(pistaData.id);
             if (foto1) data.fotos[0] = `data:image/jpeg;base64,${foto1}`;
           } catch (error) {}
           
           try {
-            const foto2 = await lugarService.buscarFoto2(pista.id);
+            const foto2 = await lugarService.buscarFoto2(pistaData.id);
             if (foto2) data.fotos[1] = `data:image/jpeg;base64,${foto2}`;
           } catch (error) {}
           
           try {
-            const foto3 = await lugarService.buscarFoto3(pista.id);
+            const foto3 = await lugarService.buscarFoto3(pistaData.id);
             if (foto3) data.fotos[2] = `data:image/jpeg;base64,${foto3}`;
           } catch (error) {}
         }
@@ -101,8 +126,8 @@ const EditPistaModal = ({ isOpen, onClose, pista, onSave }) => {
         setOriginalData(data);
         
         // Buscar endereço automaticamente se CEP existir
-        if (pista.cep && pista.cep.length === 8) {
-          fetchAddressByCep(pista.cep);
+        if (pistaData.cep && pistaData.cep.length === 8) {
+          fetchAddressByCep(pistaData.cep);
         }
       };
       
@@ -245,22 +270,30 @@ const EditPistaModal = ({ isOpen, onClose, pista, onSave }) => {
     setErrors(newErrors);
     
     if (Object.keys(newErrors).length === 0) {
-      const localizacao = [formData.rua, formData.bairro, formData.numero]
-        .filter(item => item && item.trim())
-        .join(', ');
-      
-      // Salvar dados da pista
-      onSave({ 
-        ...pista, 
-        ...formData,
-        categoriaId: formData.categoriaId,
-        tipo: formData.publica ? 'Pública' : 'Particular',
-        localizacao: localizacao || 'Endereço não informado'
-      });
-      
-      // Salvar fotos se foram alteradas
-      if (pista.id && pista.status === 'backend') {
-        try {
+      try {
+        const localizacao = [formData.rua, formData.bairro, formData.numero]
+          .filter(item => item && item.trim())
+          .join(', ');
+        
+        // Atualizar pista no backend se for do backend
+        if (pista.id && pista.status === 'backend') {
+          const pistaAtualizada = {
+            nome: formData.nome,
+            descricao: formData.descricao,
+            cep: formData.cep,
+            rua: formData.rua,
+            bairro: formData.bairro,
+            numero: formData.numero,
+            latitude: formData.latitude,
+            longitude: formData.longitude,
+            tipo: formData.publica ? 'Particular' : 'Pública',
+            valor: formData.publica ? formData.valor : 0,
+            categoriaId: formData.categoriaId
+          };
+          
+          await lugarService.atualizar(pista.id, pistaAtualizada);
+          
+          // Salvar fotos se foram alteradas
           for (let i = 0; i < 3; i++) {
             if (formData.fotos[i] && formData.fotos[i] !== originalData.fotos[i] && formData.fotos[i].includes('data:image')) {
               const base64Data = formData.fotos[i].split(',')[1];
@@ -269,12 +302,22 @@ const EditPistaModal = ({ isOpen, onClose, pista, onSave }) => {
               if (i === 2) await lugarService.salvarFoto3(pista.id, base64Data);
             }
           }
-        } catch (error) {
-          console.error('Erro ao salvar fotos:', error);
         }
+        
+        // Chamar callback para atualizar lista
+        onSave({ 
+          ...pista, 
+          ...formData,
+          categoriaId: formData.categoriaId,
+          tipo: formData.publica ? 'Particular' : 'Pública',
+          localizacao: localizacao || 'Endereço não informado'
+        });
+        
+        onClose();
+      } catch (error) {
+        console.error('Erro ao salvar pista:', error);
+        alert('Erro ao salvar pista. Tente novamente.');
       }
-      
-      onClose();
     }
   };
 
@@ -294,7 +337,10 @@ const EditPistaModal = ({ isOpen, onClose, pista, onSave }) => {
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: 0.2, layout: { duration: 0.3 } }}
+            layout
+            layoutRoot
+            style={{ transformOrigin: 'top center' }}
             onClick={(e) => e.stopPropagation()}
           >
         <ModalHeader>
@@ -483,50 +529,136 @@ const EditPistaModal = ({ isOpen, onClose, pista, onSave }) => {
               </AnimatePresence>
             </FormGroup>
 
-            <CheckboxGroup>
-              <Checkbox
-                type="checkbox"
+            <SwitchGroup>
+              <SwitchLabel>Pista Privada</SwitchLabel>
+              <Switch 
                 checked={formData.publica}
-                onChange={(e) => handleInputChange('publica', e.target.checked)}
+                onClick={() => handleInputChange('publica', !formData.publica)}
               />
-              <CheckboxLabel>Pista Pública</CheckboxLabel>
-            </CheckboxGroup>
+            </SwitchGroup>
 
-            <FormGroup>
+            <AnimatePresence>
+              {formData.publica && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.3 }}
+                  style={{ gridColumn: 'span 1', overflow: 'hidden' }}
+                >
+                  <FormGroup>
+                    <Label>Preço (R$)</Label>
+                    <Input
+                      type="number"
+                      value={formData.valor}
+                      onChange={(e) => handleInputChange('valor', parseFloat(e.target.value) || 0)}
+                      placeholder="0.00"
+                      min="0"
+                      step="0.01"
+                    />
+                  </FormGroup>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <FormGroup span={2}>
               <Label>Categoria</Label>
-              <select
-                value={formData.categoriaId}
-                onChange={(e) => handleInputChange('categoriaId', e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  border: '1px solid #d1d5db',
-                  borderRadius: '8px',
-                  fontSize: '14px'
-                }}
-              >
-                <option value="">Selecione uma categoria</option>
-                {categorias.map((categoria) => (
-                  <option key={categoria.id} value={categoria.id}>
-                    {categoria.nome}
-                  </option>
-                ))}
-              </select>
+              <div style={{ position: 'relative', width: '50%' }} data-dropdown>
+                <button
+                  type="button"
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px',
+                    border: '2px solid #e2e8f0',
+                    borderRadius: '8px',
+                    fontSize: '16px',
+                    background: 'white',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    transition: 'all 0.3s ease'
+                  }}
+                >
+                  <span style={{ color: formData.categoriaId ? '#1a237e' : '#94a3b8' }}>
+                    {formData.categoriaId 
+                      ? categorias.find(c => c.id === formData.categoriaId)?.nome || 'Selecione uma categoria'
+                      : 'Selecione uma categoria'
+                    }
+                  </span>
+                  <FiChevronDown 
+                    style={{ 
+                      transform: isDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                      transition: 'transform 0.2s ease'
+                    }} 
+                  />
+                </button>
+                
+                <AnimatePresence>
+                  {isDropdownOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.2 }}
+                      style={{
+                        position: 'absolute',
+                        top: '100%',
+                        left: 0,
+                        right: 0,
+                        background: 'white',
+                        border: '1px solid #e2e8f0',
+                        borderRadius: '8px',
+                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                        zIndex: 1000,
+                        marginTop: '4px',
+                        overflow: 'hidden'
+                      }}
+                    >
+
+                      {categorias.map((categoria) => (
+                        <div
+                          key={categoria.id}
+                          onClick={() => {
+                            handleInputChange('categoriaId', categoria.id);
+                            setIsDropdownOpen(false);
+                          }}
+                          style={{
+                            padding: '12px 16px',
+                            cursor: 'pointer',
+                            fontSize: '14px',
+                            color: '#4a5568',
+                            fontWeight: '500',
+                            transition: 'background 0.2s ease',
+                            background: formData.categoriaId === categoria.id ? '#f7fafc' : 'white'
+                          }}
+                          onMouseEnter={(e) => e.target.style.background = '#f7fafc'}
+                          onMouseLeave={(e) => e.target.style.background = formData.categoriaId === categoria.id ? '#f7fafc' : 'white'}
+                        >
+                          {categoria.nome}
+                        </div>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+              <AnimatePresence>
+                {errors.categoriaId && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                    style={{ color: '#dc2626', fontSize: '12px', marginTop: '4px' }}
+                  >
+                    {errors.categoriaId}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </FormGroup>
 
-            {!formData.publica && (
-              <FormGroup>
-                <Label>Preço (R$)</Label>
-                <Input
-                  type="number"
-                  value={formData.valor}
-                  onChange={(e) => handleInputChange('valor', parseFloat(e.target.value) || 0)}
-                  placeholder="0.00"
-                  min="0"
-                  step="0.01"
-                />
-              </FormGroup>
-            )}
+
 
             <FormGroup>
               <Label>Latitude</Label>

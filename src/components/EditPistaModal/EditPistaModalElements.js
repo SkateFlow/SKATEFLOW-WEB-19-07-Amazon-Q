@@ -174,25 +174,42 @@ export const TextArea = styled.textarea`
   }
 `;
 
-export const CheckboxGroup = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
+export const SwitchGroup = styled.div`
   grid-column: span 2;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 0;
 `;
 
-export const Checkbox = styled.input`
-  width: 20px;
-  height: 20px;
-  accent-color: #667eea;
-  cursor: pointer;
-`;
-
-export const CheckboxLabel = styled.label`
+export const SwitchLabel = styled.label`
   color: #1a237e;
-  font-size: 16px;
-  font-weight: 500;
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
+`;
+
+export const Switch = styled.div`
+  position: relative;
+  width: 50px;
+  height: 24px;
+  background: ${props => props.checked ? '#667eea' : '#cbd5e0'};
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: ${props => props.checked ? '28px' : '2px'};
+    width: 20px;
+    height: 20px;
+    background: white;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
 `;
 
 export const ButtonGroup = styled.div`

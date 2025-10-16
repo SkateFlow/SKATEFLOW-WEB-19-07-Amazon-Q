@@ -103,11 +103,17 @@ const Subtitle = styled.p`
   margin: 0;
 `;
 
+const ListContainer = styled.div`
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 24px;
+  margin-top: 24px;
+`;
+
 const PistaGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 24px;
-  margin-top: 24px;
 `;
 
 const PistaCard = styled.div`
@@ -153,6 +159,12 @@ const InfoRow = styled.div`
   margin-bottom: 8px;
   color: #64748b;
   font-size: 14px;
+  
+  span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 `;
 
 const InfoLabel = styled.span`
@@ -256,6 +268,11 @@ const Pistas = () => {
 
   const truncateDescription = (text) => {
     if (text.length <= 25) return text;
+    return text.substring(0, 25) + '...';
+  };
+
+  const truncateLocation = (text) => {
+    if (!text || text.length <= 25) return text;
     return text.substring(0, 25) + '...';
   };
   const [pistasBase, setPistasBase] = useState([]);
@@ -395,12 +412,8 @@ const Pistas = () => {
   const handleSavePista = async (updatedPista) => {
     try {
       if (updatedPista.status === 'backend') {
-        // Atualizar no backend
-        const { lugarService } = await import('../../../services/lugarService');
-        await lugarService.atualizar(updatedPista.id, updatedPista);
-        
-        // Não recarregar automaticamente para preservar as imagens editadas
-        // O usuário pode usar o botão "Atualizar" se necessário
+        // Recarregar lista do backend após salvar
+        await loadPistasBackend();
       } else {
         // Atualizar no localStorage
         const storageKey = updatedPista.status === 'aprovada' ? 'pistasAprovadas' : 'pistasRejeitadas';
@@ -417,8 +430,9 @@ const Pistas = () => {
     }
   };
 
-  const handleCreatePista = (newPista) => {
-    setPistas([...pistas, newPista]);
+  const handleCreatePista = async (newPista) => {
+    // Recarregar lista do backend após criar nova pista
+    await loadPistasBackend();
   };
 
   const toggleStatus = async (pistaId) => {
@@ -516,93 +530,96 @@ const Pistas = () => {
         
 
 
-        {loading ? (
-          <EmptyState>
-            <EmptyIcon>⏳</EmptyIcon>
-            <EmptyText>Atualizando lista de pistas...</EmptyText>
-            <EmptySubtext>Carregando dados do sistema</EmptySubtext>
-          </EmptyState>
-        ) : filteredPistas.length === 0 ? (
-          <EmptyState>
-            <EmptyIcon>🛹</EmptyIcon>
-            <EmptyText>{searchTerm ? 'Nenhuma pista encontrada' : 'Nenhuma pista cadastrada'}</EmptyText>
-            <EmptySubtext>{searchTerm ? 'Tente pesquisar com outros termos' : 'As pistas aprovadas aparecerão aqui'}</EmptySubtext>
-          </EmptyState>
-        ) : (
-          <PistaGrid>
-            {filteredPistas.map((pista) => (
-              <PistaCard key={pista.id}>
-                <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
-                  <StatusBadge active={pista.active}>
-                    {pista.active ? 'Ativa' : 'Inativa'}
-                  </StatusBadge>
-                  <StatusBadge 
-                    style={{
-                      background: pista.status === 'backend' ? '#e0f2fe' :
-                                 pista.status === 'aprovada' ? '#dcfce7' : '#fee2e2',
-                      color: pista.status === 'backend' ? '#0277bd' :
-                             pista.status === 'aprovada' ? '#166534' : '#dc2626'
-                    }}
-                  >
-                    {pista.status === 'backend' ? 'Aprovada' :
-                     pista.status === 'aprovada' ? 'Aprovada' : 'Rejeitada'}
-                  </StatusBadge>
-                </div>
-                
-                <PistaTitle>{pista.nome}</PistaTitle>
-                
-                <PistaInfo>
-                  <InfoRow>
-                    <InfoLabel>Localização:</InfoLabel>
-                    <span>
-                      {pista.rua && pista.bairro 
-                        ? `${pista.rua}, ${pista.bairro}${pista.cep ? ` - ${pista.cep}` : ''}` 
-                        : pista.localizacao || 'Não informado'
-                      }
-                    </span>
-                  </InfoRow>
-                  <InfoRow>
-                    <InfoLabel>Descrição:</InfoLabel>
-                    <span>{truncateDescription(pista.descricao)}</span>
-                  </InfoRow>
-                  <div style={{ display: 'flex', gap: '16px', marginTop: '8px' }}>
-                    {pista.tipo && (
-                      <div style={{ fontSize: '12px', color: '#64748b' }}>
-                        <strong>Tipo: </strong>{pista.tipo}
-                      </div>
-                    )}
-                    {pista.valor > 0 && (
-                      <div style={{ fontSize: '12px', color: '#64748b' }}>
-                        <strong>Valor: </strong>R$ {pista.valor}
-                      </div>
-                    )}
+        <ListContainer>
+          {loading ? (
+            <EmptyState>
+              <EmptyIcon>⏳</EmptyIcon>
+              <EmptyText>Carregando pistas...</EmptyText>
+              <EmptySubtext>Carregando dados do sistema</EmptySubtext>
+            </EmptyState>
+          ) : filteredPistas.length === 0 ? (
+            <EmptyState>
+              <EmptyIcon>🛹</EmptyIcon>
+              <EmptyText>{searchTerm ? 'Nenhuma pista encontrada' : 'Nenhuma pista cadastrada'}</EmptyText>
+              <EmptySubtext>{searchTerm ? 'Tente pesquisar com outros termos' : 'As pistas aprovadas aparecerão aqui'}</EmptySubtext>
+            </EmptyState>
+          ) : (
+            <PistaGrid>
+              {filteredPistas.map((pista) => (
+                <PistaCard key={pista.id}>
+                  <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+                    <StatusBadge active={pista.active}>
+                      {pista.active ? 'Ativa' : 'Inativa'}
+                    </StatusBadge>
+                    <StatusBadge 
+                      style={{
+                        background: pista.status === 'backend' ? '#e0f2fe' :
+                                   pista.status === 'aprovada' ? '#dcfce7' : '#fee2e2',
+                        color: pista.status === 'backend' ? '#0277bd' :
+                               pista.status === 'aprovada' ? '#166534' : '#dc2626'
+                      }}
+                    >
+                      {pista.status === 'backend' ? 'Aprovada' :
+                       pista.status === 'aprovada' ? 'Aprovada' : 'Rejeitada'}
+                    </StatusBadge>
                   </div>
-                </PistaInfo>
+                  
+                  <PistaTitle>{pista.nome}</PistaTitle>
+                  
+                  <PistaInfo>
+                    <InfoRow>
+                      <InfoLabel>Localização:</InfoLabel>
+                      <span>
+                        {truncateLocation(
+                          pista.rua && pista.bairro 
+                            ? `${pista.rua}, ${pista.bairro}${pista.cep ? ` - ${pista.cep}` : ''}` 
+                            : pista.localizacao || 'Não informado'
+                        )}
+                      </span>
+                    </InfoRow>
+                    <InfoRow>
+                      <InfoLabel>Descrição:</InfoLabel>
+                      <span>{truncateDescription(pista.descricao)}</span>
+                    </InfoRow>
+                    <div style={{ display: 'flex', gap: '16px', marginTop: '8px' }}>
+                      {pista.tipo && (
+                        <div style={{ fontSize: '12px', color: '#64748b' }}>
+                          <strong>Tipo: </strong>{pista.tipo}
+                        </div>
+                      )}
+                      {pista.tipo === 'Particular' && pista.valor > 0 && (
+                        <div style={{ fontSize: '12px', color: '#64748b' }}>
+                          <strong>Valor: </strong>R$ {pista.valor}
+                        </div>
+                      )}
+                    </div>
+                  </PistaInfo>
 
-                <ActionButtons>
-                  <ActionButton className="edit" onClick={() => handleEdit(pista.id)}>
-                    <FiEdit size={16} />
-                    Editar
-                  </ActionButton>
-                  
-                  <ActionButton 
-                    className="status" 
-                    active={pista.active}
-                    onClick={() => toggleStatus(pista.id)}
-                  >
-                    {pista.active ? <FiEyeOff size={16} /> : <FiEye size={16} />}
-                    {pista.active ? 'Ocultar' : 'Publicar'}
-                  </ActionButton>
-                  
-                  <ActionButton className="delete" onClick={() => handleDelete(pista.id)}>
-                    <FiTrash size={16} />
-                    Excluir
-                  </ActionButton>
-                </ActionButtons>
-              </PistaCard>
-            ))}
-          </PistaGrid>
-        )}
+                  <ActionButtons>
+                    <ActionButton className="edit" onClick={() => handleEdit(pista.id)}>
+                      <FiEdit size={16} />
+                      Editar
+                    </ActionButton>
+                    
+                    <ActionButton 
+                      className="status" 
+                      active={pista.active}
+                      onClick={() => toggleStatus(pista.id)}
+                    >
+                      {pista.active ? <FiEyeOff size={16} /> : <FiEye size={16} />}
+                      {pista.active ? 'Ocultar' : 'Publicar'}
+                    </ActionButton>
+                    
+                    <ActionButton className="delete" onClick={() => handleDelete(pista.id)}>
+                      <FiTrash size={16} />
+                      Excluir
+                    </ActionButton>
+                  </ActionButtons>
+                </PistaCard>
+              ))}
+            </PistaGrid>
+          )}
+        </ListContainer>
       </ContentContainer>
       
       <EditPistaModal
