@@ -363,17 +363,25 @@ const EventsPage = () => {
             
             try {
               const [foto1, foto2, foto3] = await Promise.all([
-                eventoService.buscarFoto1(evento.id),
-                eventoService.buscarFoto2(evento.id),
-                eventoService.buscarFoto3(evento.id)
+                eventoService.buscarFoto1(evento.id).catch(() => null),
+                eventoService.buscarFoto2(evento.id).catch(() => null),
+                eventoService.buscarFoto3(evento.id).catch(() => null)
               ]);
               
               if (foto1) foto1Base64 = `data:image/jpeg;base64,${foto1}`;
               if (foto2) foto2Base64 = `data:image/jpeg;base64,${foto2}`;
               if (foto3) foto3Base64 = `data:image/jpeg;base64,${foto3}`;
+              
+              console.log(`Fotos carregadas para evento ${evento.id}:`, {
+                foto1: !!foto1Base64,
+                foto2: !!foto2Base64,
+                foto3: !!foto3Base64
+              });
             } catch (error) {
-              // Ignora erro de foto
+              console.error(`Erro ao carregar fotos do evento ${evento.id}:`, error);
             }
+            
+            const fotosEvento = [foto1Base64, foto2Base64, foto3Base64].filter(foto => foto);
             
             return {
               ...evento,
@@ -382,13 +390,14 @@ const EventsPage = () => {
               dataEvento: evento.dataInicio ? new Date(evento.dataInicio).toLocaleDateString('pt-BR') : 'Data não informada',
               horaEvento: evento.dataInicio ? new Date(evento.dataInicio).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '18:00',
               localEvento: evento.lugar_id?.nome || 'Local não informado',
-              imagemEvento: foto1Base64,
-              fotosEvento: [foto1Base64, foto2Base64, foto3Base64].filter(foto => foto),
+              imagemEvento: foto1Base64 || 'https://via.placeholder.com/400x280?text=Sem+Imagem',
+              fotosEvento: fotosEvento.length > 0 ? fotosEvento : ['https://via.placeholder.com/400x280?text=Sem+Imagem'],
               criadoPor: evento.usuario_id?.nome || 'Usuário não informado',
               statusEvento: evento.statusEvento
             };
           })
         );
+        console.log('Eventos processados:', eventosProcessados);
         setEvents(eventosProcessados);
       }
     } catch (error) {

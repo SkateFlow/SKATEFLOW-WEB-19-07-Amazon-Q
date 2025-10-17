@@ -17,7 +17,7 @@ export const Nav = styled.nav`
     position: fixed;
     top: 0;
     width: 100%;
-    z-index: 10;
+    z-index: 10000;
     transition: background 1.2s ease;
 `
 

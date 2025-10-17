@@ -234,6 +234,18 @@ const InfoRow = styled.div`
   justify-content: center;
   gap: 8px;
   color: #1f2937;
+  
+  &.clickable {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 8px;
+    border-radius: 6px;
+    
+    &:hover {
+      background: #f3f4f6;
+      color: #1a237e;
+    }
+  }
 `;
 
 const InfoIcon = styled.div`
@@ -284,6 +296,8 @@ const WebsiteButton = styled.button`
 const EventCarousel = ({ images = [] }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const validImages = images.length > 0 ? images : ['https://via.placeholder.com/400x280?text=Sem+Imagem'];
+  
+  console.log('Carrossel recebeu imagens:', validImages);
 
   const goToPrevious = () => {
     setCurrentIndex(prevIndex => 
@@ -346,9 +360,18 @@ const EventCarousel = ({ images = [] }) => {
 
 const EventPopup = ({ event, onClose }) => {
   const [isClosing, setIsClosing] = useState(false);
-  const images = event.fotosEvento && event.fotosEvento.length > 0 
-    ? event.fotosEvento 
-    : (event.imagemEvento ? [event.imagemEvento] : ['https://via.placeholder.com/400x280?text=Sem+Imagem']);
+  
+  // Garantir que sempre temos imagens para exibir
+  let images = [];
+  if (event.fotosEvento && event.fotosEvento.length > 0) {
+    images = event.fotosEvento;
+  } else if (event.imagemEvento && event.imagemEvento !== 'https://via.placeholder.com/400x280?text=Sem+Imagem') {
+    images = [event.imagemEvento];
+  } else {
+    images = ['https://via.placeholder.com/400x280?text=Sem+Imagem'];
+  }
+  
+  console.log('Imagens do evento no popup:', images);
   
   const handleClose = () => {
     setIsClosing(true);
@@ -370,7 +393,17 @@ const EventPopup = ({ event, onClose }) => {
           <EventDescription>{event.descricao}</EventDescription>
           
           <div style={{ display: 'grid', gap: '12px' }}>
-            <InfoRow>
+            <InfoRow 
+              className="clickable"
+              onClick={() => {
+                if (event.lugar_id?.id) {
+                  window.location.href = `/map?pistaId=${event.lugar_id.id}`;
+                } else {
+                  window.location.href = '/map';
+                }
+              }}
+              title="Clique para ver a pista"
+            >
               <InfoIcon><FaMapMarkerAlt size={16} /></InfoIcon>
               <InfoText>{event.localEvento}</InfoText>
             </InfoRow>

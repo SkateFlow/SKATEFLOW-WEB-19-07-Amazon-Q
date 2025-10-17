@@ -536,6 +536,24 @@ const Map = () => {
           
           const marker = window.L.marker([parseFloat(lugar.latitude), parseFloat(lugar.longitude)])
             .addTo(mapInstance)
+            .bindTooltip(`
+              <div style="min-width: 200px;">
+                <h3 style="margin: 0 0 8px 0; color: #1a237e; font-size: 16px;">${lugar.nome}</h3>
+                <p style="margin: 0 0 8px 0; color: #4a5568; font-size: 14px;">${lugar.descricao}</p>
+                <div style="margin-bottom: 8px;">
+                  <span style="background: #e0e7ff; color: #3730a3; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">${lugar.categoria?.nome || 'Categoria não informada'}</span>
+                </div>
+                <div style="margin-bottom: 8px;">
+                  <span style="color: #64748b; font-size: 12px;">👤 ${(lugar.usuario?.nome || 'Usuário não informado').replace(/0$/, '')}</span>
+                </div>
+                <small style="color: #64748b;">📍 ${enderecoCompleto}</small>
+              </div>
+            `, {
+              permanent: false,
+              direction: 'top',
+              offset: [0, -10],
+              className: 'custom-popup'
+            })
             .bindPopup(`
               <div style="min-width: 200px;">
                 <h3 style="margin: 0 0 8px 0; color: #1a237e; font-size: 16px;">${lugar.nome}</h3>

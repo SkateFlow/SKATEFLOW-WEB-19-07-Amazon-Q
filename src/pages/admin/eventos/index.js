@@ -243,6 +243,19 @@ const Eventos = () => {
       // Buscar dados completos do evento
       const eventoCompleto = await eventoService.buscarPorId(eventId);
       
+      // Carregar fotos
+      const [foto1, foto2, foto3] = await Promise.all([
+        eventoService.buscarFoto1(eventId).catch(() => null),
+        eventoService.buscarFoto2(eventId).catch(() => null),
+        eventoService.buscarFoto3(eventId).catch(() => null)
+      ]);
+      
+      const fotos = [
+        foto1 ? `data:image/jpeg;base64,${foto1}` : '',
+        foto2 ? `data:image/jpeg;base64,${foto2}` : '',
+        foto3 ? `data:image/jpeg;base64,${foto3}` : ''
+      ];
+      
       // Formatar dados para o modal
       const eventoFormatado = {
         id: eventoCompleto.id,
@@ -250,7 +263,10 @@ const Eventos = () => {
         descricao: eventoCompleto.info,
         dataInicio: eventoCompleto.dataInicio,
         dataFim: eventoCompleto.dataFim,
-        ativo: eventoCompleto.statusEvento === 'ativado'
+        ativo: eventoCompleto.statusEvento === 'ativado',
+        fotos: fotos,
+        publicadoPor: eventoCompleto.usuario_id?.nome || 'Usuário não informado',
+        dataCadastro: eventoCompleto.dataCadastro ? new Date(eventoCompleto.dataCadastro).toLocaleDateString('pt-BR') : new Date().toLocaleDateString('pt-BR')
       };
       
       setSelectedEvent(eventoFormatado);
@@ -275,6 +291,20 @@ const Eventos = () => {
       };
       
       await eventoService.atualizar(updatedEvent.id, eventoData);
+      
+      // Salvar fotos se foram alteradas
+      if (updatedEvent.fotos) {
+        for (let i = 0; i < updatedEvent.fotos.length; i++) {
+          if (updatedEvent.fotos[i] && updatedEvent.fotos[i].startsWith('data:image/')) {
+            const fotoBase64 = updatedEvent.fotos[i].split(',')[1];
+            try {
+              await eventoService[`salvarFoto${i + 1}`](updatedEvent.id, fotoBase64);
+            } catch (error) {
+              console.error(`Erro ao salvar foto ${i + 1}:`, error);
+            }
+          }
+        }
+      }
       
       // Atualizar lista local
       setEvents(events.map(event => 

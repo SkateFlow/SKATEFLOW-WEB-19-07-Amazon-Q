@@ -284,10 +284,13 @@ const EditEventModal = ({ isOpen, onClose, event, onSave }) => {
                     color: '#64748b'
                   }}>
                     <div style={{ marginBottom: '8px' }}>
-                      <strong>Data de cadastro:</strong> {event?.dataCadastro || new Date().toLocaleDateString()}
+                      <strong>Data de cadastro:</strong> {event?.dataCadastro || new Date().toLocaleDateString('pt-BR')}
+                    </div>
+                    <div style={{ marginBottom: '8px' }}>
+                      <strong>Evento publicado por:</strong> {event?.publicadoPor || 'Usuário não informado'}
                     </div>
                     <div>
-                      <strong>Evento publicado por:</strong> {event?.publicadoPor || 'Admin'}
+                      <strong>Status atual:</strong> {event?.ativo ? 'Ativo' : 'Inativo'}
                     </div>
                   </div>
                 )}
