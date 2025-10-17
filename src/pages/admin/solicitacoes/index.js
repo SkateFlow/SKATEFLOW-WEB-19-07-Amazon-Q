@@ -6,6 +6,7 @@ import SidebarAdmin from '../../../components/SidebarAdmin';
 import SearchBar from '../../../components/SearchBar';
 import ConfirmModal from '../../../components/ConfirmModal';
 import SolicitacaoPistDetalsModal from '../../../components/SolicitacaoPistDetalsModal';
+import SolicitacaoEventoDetailsModal from '../../../components/SolicitacaoEventoDetailsModal';
 import { usePistasPendentes } from '../../../hooks/usePistasPendentes';
 
 const AdminContainer = styled.div`
@@ -280,10 +281,33 @@ const Solicitacoes = () => {
         await lugarService.criar(dadosLugar);
         removerPistaPendente(solicitacao.id);
       } else {
+        // Aprovar evento
+        const { eventoService } = await import('../../../services/eventService');
+        
+        const eventoData = {
+          nome: solicitacao.nome,
+          info: solicitacao.info,
+          dataInicio: solicitacao.dataInicio,
+          dataFim: solicitacao.dataFim,
+          statusEvento: 'ativado',
+          usuario_id: { id: solicitacao.usuario_id?.id || 1 },
+          lugar_id: { id: solicitacao.lugar_id?.id },
+          foto1: solicitacao.fotos?.[0]?.replace(/^data:image\/[a-z]+;base64,/, '') || null,
+          foto2: solicitacao.fotos?.[1]?.replace(/^data:image\/[a-z]+;base64,/, '') || null,
+          foto3: solicitacao.fotos?.[2]?.replace(/^data:image\/[a-z]+;base64,/, '') || null
+        };
+        
+        console.log('Dados do evento para aprovação:', eventoData);
+        await eventoService.criar(eventoData);
+        
         const eventosAtualizados = eventosPendentes.filter(e => e.id !== solicitacao.id);
         localStorage.setItem('eventosPendentes', JSON.stringify(eventosAtualizados));
         setEventosPendentes(eventosAtualizados);
       }
+      // Atualizar listas locais
+      const todasAtualizadas = todasSolicitacoes.filter(s => s.id !== solicitacao.id);
+      setTodasSolicitacoes(todasAtualizadas);
+      
       setShowDetailsModal(false);
       setShowMessage('Aprovação concluída');
       setTimeout(() => setShowMessage(''), 2500);
@@ -304,6 +328,11 @@ const Solicitacoes = () => {
       localStorage.setItem('eventosPendentes', JSON.stringify(eventosAtualizados));
       setEventosPendentes(eventosAtualizados);
     }
+    
+    // Atualizar lista local
+    const todasAtualizadas = todasSolicitacoes.filter(s => s.id !== solicitacao.id);
+    setTodasSolicitacoes(todasAtualizadas);
+    
     setShowDetailsModal(false);
   };
 
@@ -369,7 +398,7 @@ const Solicitacoes = () => {
         </SearchContainer>
         
         <div style={{ display: 'flex', gap: '8px', marginBottom: '30px' }}>
-          {['todas', 'pistas', 'eventos'].map(tipo => (
+          {['todas', 'pista', 'evento'].map(tipo => (
             <button
               key={tipo}
               onClick={() => setFilterStatus(tipo)}
@@ -386,7 +415,7 @@ const Solicitacoes = () => {
                 whiteSpace: 'nowrap'
               }}
             >
-              {tipo === 'todas' ? 'Todas' : tipo.charAt(0).toUpperCase() + tipo.slice(1)}
+              {tipo === 'todas' ? 'Todas' : tipo === 'pista' ? 'Pistas' : 'Eventos'}
             </button>
           ))}
         </div>
@@ -449,13 +478,23 @@ const Solicitacoes = () => {
           </SolicitacaoGrid>
         )}
         
-        <SolicitacaoPistDetalsModal 
-          isOpen={showDetailsModal}
-          onClose={() => setShowDetailsModal(false)}
-          solicitacao={selectedSolicitacao}
-          onApprove={handleApprove}
-          onReject={handleReject}
-        />
+        {selectedSolicitacao?.tipo === 'pista' ? (
+          <SolicitacaoPistDetalsModal 
+            isOpen={showDetailsModal}
+            onClose={() => setShowDetailsModal(false)}
+            solicitacao={selectedSolicitacao}
+            onApprove={handleApprove}
+            onReject={handleReject}
+          />
+        ) : (
+          <SolicitacaoEventoDetailsModal 
+            isOpen={showDetailsModal}
+            onClose={() => setShowDetailsModal(false)}
+            solicitacao={selectedSolicitacao}
+            onApprove={handleApprove}
+            onReject={handleReject}
+          />
+        )}
       </ContentContainer>
     </AdminContainer>
   );

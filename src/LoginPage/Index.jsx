@@ -89,7 +89,7 @@ const Login = () => {
         }
 
         const usuario = await usuarioService.login(email, password);
-        login(usuario);
+        await login(usuario);
         navigate('/');
       }
     } catch (error) {

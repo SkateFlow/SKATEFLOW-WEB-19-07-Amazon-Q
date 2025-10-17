@@ -373,6 +373,20 @@ const Perfil = () => {
         nome: user.nome || '',
         email: user.email || ''
       }));
+      
+      // Carregar foto do usuário
+      if (user.id) {
+        usuarioService.buscarFoto(user.id)
+          .then(fotoBase64 => {
+            if (fotoBase64) {
+              setFormData(prev => ({
+                ...prev,
+                foto: `data:image/jpeg;base64,${fotoBase64}`
+              }));
+            }
+          })
+          .catch(() => {});
+      }
     }
   }, [user]);
 
@@ -427,15 +441,17 @@ const Perfil = () => {
         isAdmin: user.nivelAcesso === 'ADMIN',
         isActive: user.statusUsuario === 'ATIVO'
       };
-      
-      if (formData.foto !== null) {
-        updateData.foto = formData.foto;
-      }
 
       await usuarioService.atualizar(user.id, updateData);
 
       if (formData.novaSenha) {
         await usuarioService.alterarSenha(user.id, { senha: formData.novaSenha });
+      }
+
+      // Salvar foto se foi alterada
+      if (formData.foto && formData.foto !== user.foto) {
+        const fotoBase64 = formData.foto.split(',')[1]; // Remove o prefixo data:image/...
+        await usuarioService.salvarFoto(user.id, fotoBase64);
       }
 
       const updatedUser = { ...user, nome: formData.nome, foto: formData.foto };

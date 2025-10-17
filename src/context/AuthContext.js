@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { usuarioService } from '../services/usuarioService';
 
 const AuthContext = createContext();
 
@@ -20,8 +21,7 @@ export const AuthProvider = ({ children }) => {
     if (savedUser) {
       try {
         const userData = JSON.parse(savedUser);
-        setUser(userData);
-        setIsAuthenticated(true);
+        loadUserPhoto(userData);
       } catch (error) {
         console.error('Erro ao carregar dados do usuário:', error);
         localStorage.removeItem('skateflow_user');
@@ -30,10 +30,31 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
-  const login = (userData) => {
-    setUser(userData);
-    setIsAuthenticated(true);
-    localStorage.setItem('skateflow_user', JSON.stringify(userData));
+  const loadUserPhoto = async (userData) => {
+    // Se já tem foto, não carrega novamente
+    if (userData.foto) {
+      setUser(userData);
+      setIsAuthenticated(true);
+      return;
+    }
+    
+    try {
+      const fotoBase64 = await usuarioService.buscarFoto(userData.id);
+      const userWithPhoto = {
+        ...userData,
+        foto: fotoBase64 ? `data:image/jpeg;base64,${fotoBase64}` : null
+      };
+      setUser(userWithPhoto);
+      setIsAuthenticated(true);
+      localStorage.setItem('skateflow_user', JSON.stringify(userWithPhoto));
+    } catch (error) {
+      setUser(userData);
+      setIsAuthenticated(true);
+    }
+  };
+
+  const login = async (userData) => {
+    await loadUserPhoto(userData);
   };
 
   const logout = (reason = null) => {

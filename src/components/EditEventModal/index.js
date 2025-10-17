@@ -30,13 +30,8 @@ const EditEventModal = ({ isOpen, onClose, event, onSave }) => {
     descricao: '',
     dataInicio: '',
     dataFim: '',
-    cep: '',
-    rua: '',
-    bairro: '',
-    numero: '',
     ativo: true,
-    fotos: ['', '', ''],
-
+    fotos: ['', '', '']
   });
   
   const [locationInfo, setLocationInfo] = useState('');
@@ -51,13 +46,8 @@ const EditEventModal = ({ isOpen, onClose, event, onSave }) => {
         descricao: event.descricao || '',
         dataInicio: event.dataInicio || '',
         dataFim: event.dataFim || '',
-        cep: event.cep || '',
-        rua: event.rua || '',
-        bairro: event.bairro || '',
-        numero: event.numero || '',
         ativo: event.ativo !== undefined ? event.ativo : true,
-        fotos: event.fotos || ['', '', ''],
-
+        fotos: event.fotos || ['', '', '']
       };
       setFormData(data);
       setOriginalData(data);
@@ -157,9 +147,7 @@ const EditEventModal = ({ isOpen, onClose, event, onSave }) => {
       nomeEvento: 'Por favor, insira o nome do evento',
       descricao: 'Por favor, insira uma descrição',
       dataInicio: 'Por favor, insira a data de início',
-      dataFim: 'Por favor, insira a data de fim',
-      cep: 'Por favor, insira o CEP',
-      numero: 'Por favor, insira o número do local'
+      dataFim: 'Por favor, insira a data de fim'
     };
     
     const newErrors = {};
@@ -350,82 +338,7 @@ const EditEventModal = ({ isOpen, onClose, event, onSave }) => {
                   </AnimatePresence>
                 </FormGroup>
 
-                <FormGroup>
-                  <Label>CEP</Label>
-                  <Input
-                    type="text"
-                    value={formData.cep}
-                    onChange={(e) => handleInputChange('cep', e.target.value)}
-                    placeholder="00000-000"
-                    maxLength={8}
-                  />
-                  <AnimatePresence>
-                    {errors.cep && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        transition={{ duration: 0.2 }}
-                        style={{ color: '#dc2626', fontSize: '12px', marginTop: '4px' }}
-                      >
-                        {errors.cep}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </FormGroup>
 
-                <FormGroup>
-                  <Label>Rua</Label>
-                  <Input
-                    type="text"
-                    value={formData.rua}
-                    readOnly
-                    style={{ backgroundColor: '#f8fafc' }}
-                  />
-                  {locationInfo && (
-                    <div style={{ 
-                      fontSize: '12px', 
-                      color: '#3b82f6', 
-                      marginTop: '4px',
-                      fontWeight: '500'
-                    }}>
-                      📍 {locationInfo}
-                    </div>
-                  )}
-                </FormGroup>
-
-                <FormGroup>
-                  <Label>Bairro</Label>
-                  <Input
-                    type="text"
-                    value={formData.bairro}
-                    readOnly
-                    style={{ backgroundColor: '#f8fafc' }}
-                  />
-                </FormGroup>
-
-                <FormGroup>
-                  <Label>Número do Local</Label>
-                  <Input
-                    type="text"
-                    value={formData.numero}
-                    onChange={(e) => handleInputChange('numero', e.target.value)}
-                    placeholder="Número"
-                  />
-                  <AnimatePresence>
-                    {errors.numero && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        transition={{ duration: 0.2 }}
-                        style={{ color: '#dc2626', fontSize: '12px', marginTop: '4px' }}
-                      >
-                        {errors.numero}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </FormGroup>
 
                 {window.location.pathname.includes('/admin') && (
                   <SwitchGroup>

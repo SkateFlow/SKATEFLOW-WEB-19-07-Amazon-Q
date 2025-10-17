@@ -406,7 +406,7 @@ const Usuarios = () => {
         nome: usuario.nome,
         email: usuario.email,
         isAdmin: usuario.nivelAcesso === 'ADMIN',
-        foto: usuario.foto,
+        foto: null, // Carregar sob demanda
         isActive: usuario.statusUsuario === 'ATIVO',
         dataCadastro: usuario.dataCadastro
       }));
@@ -421,6 +421,21 @@ const Usuarios = () => {
     }
   };
 
+  const carregarFotoUsuario = async (userId) => {
+    try {
+      const foto = await usuarioService.buscarFoto(userId);
+      if (foto) {
+        setUsers(prev => prev.map(user => 
+          user.id === userId 
+            ? { ...user, foto: `data:image/jpeg;base64,${foto}` }
+            : user
+        ));
+      }
+    } catch (error) {
+      // Ignora erro de foto
+    }
+  };
+
   useEffect(() => {
     carregarUsuarios();
   }, []);
@@ -432,6 +447,14 @@ const Usuarios = () => {
   };
 
   const renderAvatar = (user) => {
+    // Carregar foto sob demanda quando o avatar for renderizado
+    if (!user.foto && !user.fotoCarregada) {
+      carregarFotoUsuario(user.id);
+      setUsers(prev => prev.map(u => 
+        u.id === user.id ? { ...u, fotoCarregada: true } : u
+      ));
+    }
+    
     if (user.foto) {
       return <AvatarImage src={user.foto} alt={user.nome} />;
     }

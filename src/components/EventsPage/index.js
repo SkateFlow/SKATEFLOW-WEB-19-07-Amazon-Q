@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { FaSearch, FaPlus } from 'react-icons/fa';
 import { getEvents } from '../../services/eventService';
+import { eventoService } from '../../services/eventService';
 import EventPopup from '../EventPopupDescriptopn';
 import CreateEventModal from '../CreateEventModal';
 import Navbar from '../Navbar';
@@ -350,7 +351,45 @@ const EventsPage = () => {
       const data = await getEvents();
       console.log('Eventos carregados:', data);
       if (data && data.length > 0) {
-        setEvents(data);
+        // Filtrar apenas eventos ativos
+        const eventosAtivos = data.filter(evento => evento.statusEvento === 'ativado');
+        
+        // Processar eventos para carregar fotos
+        const eventosProcessados = await Promise.all(
+          eventosAtivos.map(async (evento) => {
+            let foto1Base64 = null;
+            let foto2Base64 = null;
+            let foto3Base64 = null;
+            
+            try {
+              const [foto1, foto2, foto3] = await Promise.all([
+                eventoService.buscarFoto1(evento.id),
+                eventoService.buscarFoto2(evento.id),
+                eventoService.buscarFoto3(evento.id)
+              ]);
+              
+              if (foto1) foto1Base64 = `data:image/jpeg;base64,${foto1}`;
+              if (foto2) foto2Base64 = `data:image/jpeg;base64,${foto2}`;
+              if (foto3) foto3Base64 = `data:image/jpeg;base64,${foto3}`;
+            } catch (error) {
+              // Ignora erro de foto
+            }
+            
+            return {
+              ...evento,
+              nomeEvento: evento.nome,
+              descricao: evento.info,
+              dataEvento: evento.dataInicio ? new Date(evento.dataInicio).toLocaleDateString('pt-BR') : 'Data não informada',
+              horaEvento: evento.dataInicio ? new Date(evento.dataInicio).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '18:00',
+              localEvento: evento.lugar_id?.nome || 'Local não informado',
+              imagemEvento: foto1Base64,
+              fotosEvento: [foto1Base64, foto2Base64, foto3Base64].filter(foto => foto),
+              criadoPor: evento.usuario_id?.nome || 'Usuário não informado',
+              statusEvento: evento.statusEvento
+            };
+          })
+        );
+        setEvents(eventosProcessados);
       }
     } catch (error) {
       console.error('Erro ao carregar eventos:', error);
@@ -392,8 +431,9 @@ const EventsPage = () => {
   };
 
   const handleSaveEvent = (eventData) => {
-    console.log('Solicitando evento:', eventData);
-    // Aqui você pode integrar com a API para solicitar o evento
+    console.log('Evento criado:', eventData);
+    // Recarregar eventos após criar
+    fetchEvents();
     setShowCreateModal(false);
   };
 

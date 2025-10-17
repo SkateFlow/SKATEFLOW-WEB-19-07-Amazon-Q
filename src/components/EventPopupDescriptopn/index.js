@@ -38,7 +38,9 @@ const PopupContent = styled.div`
   background: #ffffff;
   border-radius: 16px;
   padding: 0;
-  max-width: 448px;
+  max-width: 600px;
+  width: 90vw;
+  max-height: 90vh;
   position: relative;
   box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
   overflow: hidden;
@@ -82,12 +84,14 @@ const PopupBody = styled.div`
   display: flex;
   flex-direction: column;
   gap: 16px;
+  max-height: calc(90vh - 48px);
+  overflow-y: auto;
 `;
 
 const CarouselContainer = styled.div`
   position: relative;
   width: 100%;
-  height: 192px;
+  height: 280px;
   overflow: hidden;
   border-radius: 12px;
   background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
@@ -215,8 +219,13 @@ const EventTitle = styled.h2`
 const EventDescription = styled.p`
   color: #6b7280;
   margin: 0;
-  line-height: 1.5;
-  text-align: center;
+  line-height: 1.6;
+  text-align: left;
+  font-size: 15px;
+  padding: 16px;
+  background: #f8fafc;
+  border-radius: 8px;
+  border-left: 4px solid #667eea;
 `;
 
 const InfoRow = styled.div`
@@ -337,7 +346,9 @@ const EventCarousel = ({ images = [] }) => {
 
 const EventPopup = ({ event, onClose }) => {
   const [isClosing, setIsClosing] = useState(false);
-  const images = event.imagemEvento ? [event.imagemEvento] : ['https://via.placeholder.com/400x280?text=Sem+Imagem'];
+  const images = event.fotosEvento && event.fotosEvento.length > 0 
+    ? event.fotosEvento 
+    : (event.imagemEvento ? [event.imagemEvento] : ['https://via.placeholder.com/400x280?text=Sem+Imagem']);
   
   const handleClose = () => {
     setIsClosing(true);
@@ -358,21 +369,37 @@ const EventPopup = ({ event, onClose }) => {
           
           <EventDescription>{event.descricao}</EventDescription>
           
-          <InfoRow>
-            <InfoIcon><FaMapMarkerAlt size={16} /></InfoIcon>
-            <InfoText>{event.localEvento}</InfoText>
-          </InfoRow>
-          
-          <DateTimeRow>
-            <DateTimeItem>
-              <InfoIcon><FaCalendarAlt size={16} /></InfoIcon>
-              <InfoText>{event.dataEvento}</InfoText>
-            </DateTimeItem>
-            <DateTimeItem>
-              <InfoIcon><FaClock size={16} /></InfoIcon>
-              <InfoText>18:00</InfoText>
-            </DateTimeItem>
-          </DateTimeRow>
+          <div style={{ display: 'grid', gap: '12px' }}>
+            <InfoRow>
+              <InfoIcon><FaMapMarkerAlt size={16} /></InfoIcon>
+              <InfoText>{event.localEvento}</InfoText>
+            </InfoRow>
+            
+            <DateTimeRow>
+              <DateTimeItem>
+                <InfoIcon><FaCalendarAlt size={16} /></InfoIcon>
+                <InfoText>{event.dataEvento}</InfoText>
+              </DateTimeItem>
+              <DateTimeItem>
+                <InfoIcon><FaClock size={16} /></InfoIcon>
+                <InfoText>{event.horaEvento || '18:00'}</InfoText>
+              </DateTimeItem>
+            </DateTimeRow>
+            
+            {event.criadoPor && (
+              <InfoRow>
+                <InfoIcon>👤</InfoIcon>
+                <InfoText>Criado por: {event.criadoPor}</InfoText>
+              </InfoRow>
+            )}
+            
+            {event.statusEvento && (
+              <InfoRow>
+                <InfoIcon>📊</InfoIcon>
+                <InfoText>Status: {event.statusEvento === 'ativado' ? 'Ativo' : event.statusEvento}</InfoText>
+              </InfoRow>
+            )}
+          </div>
           
           <WebsiteButton onClick={() => event.website && window.open(event.website, '_blank')}>
             <span>ir ao site</span>

@@ -54,6 +54,26 @@ export const usuarioService = {
     }
   },
 
+  buscarFoto: async (id) => {
+    try {
+      const response = await api.get(`/usuario/foto/${id}`);
+      return response.data;
+    } catch (error) {
+      return null;
+    }
+  },
+
+  salvarFoto: async (id, fotoBase64) => {
+    try {
+      const response = await api.put(`/usuario/foto/${id}`, fotoBase64, {
+        headers: { 'Content-Type': 'text/plain' }
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || 'Erro ao salvar foto';
+    }
+  },
+
   alterarSenha: async (id, senhaData) => {
     try {
       const response = await api.put(`/usuario/alterarSenha/${id}`, senhaData);

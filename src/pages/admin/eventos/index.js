@@ -184,44 +184,37 @@ const Eventos = () => {
   const [eventToDelete, setEventToDelete] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
-  const [events, setEvents] = useState([
-    {
-      id: 1,
-      nomeEvento: 'Campeonato de Street',
-      dataEvento: '2024-02-15',
-      localEvento: 'Praça da Sé',
-      descricao: 'Competição de street skating',
-      dataInicio: '2024-02-15T10:00',
-      dataFim: '2024-02-15T18:00',
-      cep: '01001000',
-      rua: 'Praça da Sé',
-      bairro: 'Sé',
-      numero: 's/n',
-      ativo: true,
-      fotos: ['', '', ''],
-      dataCadastro: '10/01/2024',
-      publicadoPor: 'Admin',
-      active: true
-    },
-    {
-      id: 2,
-      nomeEvento: 'Workshop de Manobras',
-      dataEvento: '2024-02-20',
-      localEvento: 'Skate Park Central',
-      descricao: 'Aulas para iniciantes',
-      dataInicio: '2024-02-20T14:00',
-      dataFim: '2024-02-20T17:00',
-      cep: '01305100',
-      rua: 'Rua Augusta',
-      bairro: 'Centro',
-      numero: '1000',
-      ativo: false,
-      fotos: ['', '', ''],
-      dataCadastro: '12/01/2024',
-      publicadoPor: 'Admin',
-      active: false
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  React.useEffect(() => {
+    loadEventos();
+  }, []);
+
+  const loadEventos = async () => {
+    try {
+      setLoading(true);
+      const { eventoService } = await import('../../../services/eventService');
+      const data = await eventoService.listar();
+      
+      const eventosFormatados = data.map(evento => ({
+        id: evento.id,
+        nomeEvento: evento.nome,
+        dataEvento: evento.dataInicio ? new Date(evento.dataInicio).toLocaleDateString('pt-BR') : 'Não informado',
+        localEvento: evento.lugar_id?.nome || 'Local não informado',
+        descricao: evento.info,
+        dataInicio: evento.dataInicio,
+        dataFim: evento.dataFim,
+        active: evento.statusEvento === 'ativado'
+      }));
+      
+      setEvents(eventosFormatados);
+    } catch (error) {
+      console.error('Erro ao carregar eventos:', error);
+    } finally {
+      setLoading(false);
     }
-  ]);
+  };
 
   const handleDelete = (eventId) => {
     const event = events.find(e => e.id === eventId);
@@ -229,30 +222,101 @@ const Eventos = () => {
     setShowConfirmModal(true);
   };
 
-  const confirmDelete = () => {
-    setEvents(events.filter(event => event.id !== eventToDelete.id));
-    setShowConfirmModal(false);
-    setEventToDelete(null);
+  const confirmDelete = async () => {
+    try {
+      const { eventoService } = await import('../../../services/eventService');
+      await eventoService.deletar(eventToDelete.id);
+      
+      setEvents(events.filter(event => event.id !== eventToDelete.id));
+      setShowConfirmModal(false);
+      setEventToDelete(null);
+    } catch (error) {
+      console.error('Erro ao deletar evento:', error);
+      alert('Erro ao deletar evento');
+    }
   };
 
-  const handleEdit = (eventId) => {
-    const event = events.find(e => e.id === eventId);
-    setSelectedEvent(event);
-    setShowEditModal(true);
+  const handleEdit = async (eventId) => {
+    try {
+      const { eventoService } = await import('../../../services/eventService');
+      
+      // Buscar dados completos do evento
+      const eventoCompleto = await eventoService.buscarPorId(eventId);
+      
+      // Formatar dados para o modal
+      const eventoFormatado = {
+        id: eventoCompleto.id,
+        nomeEvento: eventoCompleto.nome,
+        descricao: eventoCompleto.info,
+        dataInicio: eventoCompleto.dataInicio,
+        dataFim: eventoCompleto.dataFim,
+        ativo: eventoCompleto.statusEvento === 'ativado'
+      };
+      
+      setSelectedEvent(eventoFormatado);
+      setShowEditModal(true);
+    } catch (error) {
+      console.error('Erro ao carregar evento:', error);
+      alert('Erro ao carregar dados do evento');
+    }
   };
 
-  const handleSaveEvent = (updatedEvent) => {
-    setEvents(events.map(event => 
-      event.id === updatedEvent.id ? updatedEvent : event
-    ));
+  const handleSaveEvent = async (updatedEvent) => {
+    try {
+      const { eventoService } = await import('../../../services/eventService');
+      
+      // Preparar dados para o backend
+      const eventoData = {
+        nome: updatedEvent.nomeEvento,
+        info: updatedEvent.descricao,
+        dataInicio: updatedEvent.dataInicio,
+        dataFim: updatedEvent.dataFim,
+        statusEvento: updatedEvent.ativo ? 'ativado' : 'inativo'
+      };
+      
+      await eventoService.atualizar(updatedEvent.id, eventoData);
+      
+      // Atualizar lista local
+      setEvents(events.map(event => 
+        event.id === updatedEvent.id ? {
+          ...event,
+          nomeEvento: updatedEvent.nomeEvento,
+          descricao: updatedEvent.descricao,
+          dataInicio: updatedEvent.dataInicio,
+          dataFim: updatedEvent.dataFim,
+          active: updatedEvent.ativo
+        } : event
+      ));
+      
+      alert('Evento atualizado com sucesso!');
+    } catch (error) {
+      console.error('Erro ao atualizar evento:', error);
+      alert('Erro ao atualizar evento');
+    }
   };
 
-  const toggleStatus = (eventId) => {
-    setEvents(events.map(event => 
-      event.id === eventId 
-        ? { ...event, active: !event.active }
-        : event
-    ));
+  const toggleStatus = async (eventId) => {
+    try {
+      const event = events.find(e => e.id === eventId);
+      const { eventoService } = await import('../../../services/eventService');
+      
+      // Buscar dados completos do evento
+      const eventoCompleto = await eventoService.buscarPorId(eventId);
+      
+      await eventoService.atualizar(eventId, {
+        ...eventoCompleto,
+        statusEvento: event.active ? 'inativo' : 'ativado'
+      });
+      
+      setEvents(events.map(event => 
+        event.id === eventId 
+          ? { ...event, active: !event.active }
+          : event
+      ));
+    } catch (error) {
+      console.error('Erro ao alterar status:', error);
+      alert('Erro ao alterar status do evento');
+    }
   };
 
   const filteredEvents = useMemo(() => {

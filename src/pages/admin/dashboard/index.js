@@ -2,6 +2,8 @@ import React from 'react';
 import styled from 'styled-components';
 import { FiCalendar, FiMapPin, FiTrendingUp } from 'react-icons/fi';
 import SidebarAdmin from '../../../components/SidebarAdmin';
+import { eventoService } from '../../../services/eventService';
+import { lugarService } from '../../../services/lugarService';
 
 
 const AdminContainer = styled.div`
@@ -134,7 +136,40 @@ const WelcomeText = styled.p`
 `;
 
 const Dashboard = () => {
+  const [stats, setStats] = React.useState({
+    eventosAtivos: 0,
+    pistasAtivas: 0
+  });
+  const [loading, setLoading] = React.useState(true);
 
+  React.useEffect(() => {
+    loadStats();
+  }, []);
+
+  const loadStats = async () => {
+    try {
+      setLoading(true);
+      
+      // Carregar eventos e pistas em paralelo
+      const [eventos, lugares] = await Promise.all([
+        eventoService.listar(),
+        lugarService.listar()
+      ]);
+      
+      const eventosAtivos = eventos.filter(evento => evento.statusEvento === 'ativado').length;
+      const pistasAtivas = lugares.filter(lugar => lugar.statusPista === 'ativada').length;
+      
+      setStats({
+        eventosAtivos,
+        pistasAtivas
+      });
+    } catch (error) {
+      console.error('Erro ao carregar estatísticas:', error);
+      setStats({ eventosAtivos: 0, pistasAtivas: 0 });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <AdminContainer>
@@ -149,7 +184,7 @@ const Dashboard = () => {
           <StatCard color="linear-gradient(90deg, #667eea 0%, #764ba2 100%)">
             <StatHeader>
               <div>
-                <StatValue>2</StatValue>
+                <StatValue>{loading ? '...' : stats.eventosAtivos}</StatValue>
                 <StatLabel>Eventos Ativos</StatLabel>
               </div>
               <StatIcon bgColor="rgba(102, 126, 234, 0.1)" color="#667eea">
@@ -161,7 +196,7 @@ const Dashboard = () => {
           <StatCard color="linear-gradient(90deg, #10b981 0%, #059669 100%)">
             <StatHeader>
               <div>
-                <StatValue>2</StatValue>
+                <StatValue>{loading ? '...' : stats.pistasAtivas}</StatValue>
                 <StatLabel>Pistas Ativas</StatLabel>
               </div>
               <StatIcon bgColor="rgba(16, 185, 129, 0.1)" color="#10b981">
