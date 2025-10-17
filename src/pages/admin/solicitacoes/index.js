@@ -441,12 +441,17 @@ const Solicitacoes = () => {
                     {solicitacao.tipo === 'pista' ? '🛹 Pista' : '🎆 Evento'}
                   </StatusBadge>
                   <SolicitacaoTitle style={{ marginBottom: '4px' }}>{solicitacao.nome}</SolicitacaoTitle>
-                  <div style={{ color: '#64748b', fontSize: '14px' }}>
+                  <div style={{ color: '#64748b', fontSize: '14px', marginBottom: '4px' }}>
                     {solicitacao.tipo === 'pista' 
                       ? (solicitacao.localizacao || `${solicitacao.rua || ''}, ${solicitacao.bairro || ''}`.replace(/^,\s*|,\s*$/g, '') || 'Não informado')
                       : (solicitacao.dataEvento ? new Date(solicitacao.dataEvento).toLocaleDateString('pt-BR') : 'Não informado')
                     }
                   </div>
+                  {solicitacao.tipo === 'pista' && solicitacao.categoria && (
+                    <div style={{ fontSize: '12px', color: '#667eea', fontWeight: '500' }}>
+                      🛹 {solicitacao.categoria}
+                    </div>
+                  )}
                 </div>
                 <CardActions>
                   <ActionButton 

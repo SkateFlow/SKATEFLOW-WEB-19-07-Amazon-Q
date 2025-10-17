@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { FiUser, FiCalendar, FiMapPin, FiEye, FiEyeOff, FiCamera, FiArrowLeft } from 'react-icons/fi';
+import { FiUser, FiCalendar, FiMapPin, FiEye, FiEyeOff, FiCamera, FiArrowLeft, FiEdit, FiTrash, FiToggleLeft, FiToggleRight } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
 import { usuarioService } from '../../services/usuarioService';
+import { eventoService } from '../../services/eventService';
+import { lugarService } from '../../services/lugarService';
 
 const Container = styled.div`
   background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
@@ -346,6 +348,114 @@ const SuccessMessage = styled.div`
   font-size: 14px;
 `;
 
+const ItemGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+`;
+
+const ItemCard = styled.div`
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+  
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+  }
+`;
+
+const ItemTitle = styled.h4`
+  color: #1a237e;
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 8px;
+`;
+
+const ItemDescription = styled.p`
+  color: #64748b;
+  font-size: 14px;
+  margin: 0 0 16px;
+  line-height: 1.4;
+`;
+
+const ItemMeta = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+`;
+
+const StatusBadge = styled.span`
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  background: ${props => props.active ? '#dcfce7' : '#fef3c7'};
+  color: ${props => props.active ? '#166534' : '#92400e'};
+`;
+
+const ItemActions = styled.div`
+  display: flex;
+  gap: 8px;
+`;
+
+const ActionButton = styled.button`
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  
+  &.edit {
+    background: #e0f2fe;
+    color: #0277bd;
+    
+    &:hover {
+      background: #b3e5fc;
+    }
+  }
+  
+  &.delete {
+    background: #fee2e2;
+    color: #dc2626;
+    
+    &:hover {
+      background: #fecaca;
+    }
+  }
+  
+  &.toggle {
+    background: #f3f4f6;
+    color: #4b5563;
+    
+    &:hover {
+      background: #e5e7eb;
+    }
+  }
+`;
+
+const EmptyState = styled.div`
+  text-align: center;
+  padding: 60px 20px;
+  color: #64748b;
+`;
+
+const EmptyIcon = styled.div`
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+`;
+
 const Perfil = () => {
   const { user, login } = useAuth();
   const [activeTab, setActiveTab] = useState('perfil');
@@ -365,6 +475,11 @@ const Perfil = () => {
   const [success, setSuccess] = useState('');
   const [showNotification, setShowNotification] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
+  const [userEventos, setUserEventos] = useState([]);
+  const [userPistas, setUserPistas] = useState([]);
+  const [loadingItems, setLoadingItems] = useState(false);
+  const [editingItem, setEditingItem] = useState(null);
+  const [editForm, setEditForm] = useState({});
 
   useEffect(() => {
     if (user) {
@@ -389,6 +504,184 @@ const Perfil = () => {
       }
     }
   }, [user]);
+
+  useEffect(() => {
+    if (activeTab === 'eventos' && user?.id) {
+      loadUserEventos();
+    } else if (activeTab === 'pistas' && user?.id) {
+      loadUserPistas();
+    }
+  }, [activeTab, user]);
+
+  const loadUserEventos = async () => {
+    setLoadingItems(true);
+    try {
+      const eventos = await eventoService.listar();
+      const userEventos = eventos.filter(evento => 
+        evento.usuario_id?.id === user.id || evento.usuario_id === user.id
+      );
+      setUserEventos(userEventos);
+    } catch (error) {
+      console.error('Erro ao carregar eventos:', error);
+    } finally {
+      setLoadingItems(false);
+    }
+  };
+
+  const loadUserPistas = async () => {
+    setLoadingItems(true);
+    try {
+      const pistas = await lugarService.listar();
+      console.log('Todas as pistas:', pistas);
+      console.log('User ID atual:', user.id);
+      
+      const userPistas = pistas.filter(pista => {
+        const isOwner = pista.usuario?.id === user.id || 
+                       pista.usuarioId === user.id ||
+                       pista.usuario_id?.id === user.id;
+        
+        console.log(`Pista ${pista.nome}:`, {
+          pistaUsuarioId: pista.usuario?.id,
+          pistaUsuarioIdDirect: pista.usuarioId,
+          pistaUsuario_id: pista.usuario_id?.id,
+          userIdAtual: user.id,
+          isOwner
+        });
+        
+        return isOwner;
+      });
+      
+      console.log('Pistas filtradas para o usuário:', userPistas);
+      setUserPistas(userPistas);
+    } catch (error) {
+      console.error('Erro ao carregar pistas:', error);
+    } finally {
+      setLoadingItems(false);
+    }
+  };
+
+  const handleToggleEventoStatus = async (eventoId, currentStatus) => {
+    try {
+      const evento = userEventos.find(e => e.id === eventoId);
+      if (!evento || (evento.usuario_id?.id !== user.id && evento.usuario_id !== user.id)) {
+        alert('Você só pode alterar eventos que você criou');
+        return;
+      }
+      const newStatus = currentStatus === 'ativado' ? 'inativo' : 'ativado';
+      const eventoData = {
+        ...evento,
+        statusEvento: newStatus
+      };
+      await eventoService.atualizar(eventoId, eventoData);
+      loadUserEventos();
+    } catch (error) {
+      console.error('Erro ao alterar status do evento:', error);
+      alert('Erro ao alterar status do evento');
+    }
+  };
+
+  const handleTogglePistaStatus = async (pistaId, currentStatus) => {
+    try {
+      const pista = userPistas.find(p => p.id === pistaId);
+      if (!pista || (pista.usuario?.id !== user.id && pista.usuarioId !== user.id)) {
+        alert('Você só pode alterar pistas que você criou');
+        return;
+      }
+      const newStatus = currentStatus === 'ativada' ? 'inativa' : 'ativada';
+      const pistaData = {
+        ...pista,
+        statusPista: newStatus
+      };
+      await lugarService.atualizar(pistaId, pistaData);
+      loadUserPistas();
+    } catch (error) {
+      console.error('Erro ao alterar status da pista:', error);
+      alert('Erro ao alterar status da pista');
+    }
+  };
+
+  const handleDeleteEvento = async (eventoId) => {
+    const evento = userEventos.find(e => e.id === eventoId);
+    if (!evento || (evento.usuario_id?.id !== user.id && evento.usuario_id !== user.id)) {
+      alert('Você só pode excluir eventos que você criou');
+      return;
+    }
+    if (window.confirm('Tem certeza que deseja excluir este evento?')) {
+      try {
+        await eventoService.deletar(eventoId);
+        loadUserEventos();
+      } catch (error) {
+        console.error('Erro ao excluir evento:', error);
+      }
+    }
+  };
+
+  const handleDeletePista = async (pistaId) => {
+    const pista = userPistas.find(p => p.id === pistaId);
+    if (!pista || (pista.usuario?.id !== user.id && pista.usuarioId !== user.id)) {
+      alert('Você só pode excluir pistas que você criou');
+      return;
+    }
+    if (window.confirm('Tem certeza que deseja excluir esta pista?')) {
+      try {
+        await lugarService.deletar(pistaId);
+        loadUserPistas();
+      } catch (error) {
+        console.error('Erro ao excluir pista:', error);
+      }
+    }
+  };
+
+  const handleEditItem = (item, type) => {
+    setEditingItem({ ...item, type });
+    if (type === 'evento') {
+      setEditForm({
+        nome: item.nome || '',
+        info: item.info || '',
+        dataInicio: item.dataInicio ? item.dataInicio.slice(0, 16) : '',
+        dataFim: item.dataFim ? item.dataFim.slice(0, 16) : ''
+      });
+    } else {
+      setEditForm({
+        nome: item.nome || '',
+        descricao: item.descricao || '',
+        cep: item.cep || '',
+        numero: item.numero || '',
+        valor: item.valor || 0
+      });
+    }
+  };
+
+  const handleSaveEdit = async () => {
+    try {
+      if (editingItem.type === 'evento') {
+        const eventoData = {
+          ...editingItem,
+          nome: editForm.nome,
+          info: editForm.info,
+          dataInicio: editForm.dataInicio,
+          dataFim: editForm.dataFim
+        };
+        await eventoService.atualizar(editingItem.id, eventoData);
+        loadUserEventos();
+      } else {
+        const pistaData = {
+          ...editingItem,
+          nome: editForm.nome,
+          descricao: editForm.descricao,
+          cep: editForm.cep,
+          numero: editForm.numero,
+          valor: parseFloat(editForm.valor) || 0
+        };
+        await lugarService.atualizar(editingItem.id, pistaData);
+        loadUserPistas();
+      }
+      setEditingItem(null);
+    } catch (error) {
+      console.error('Erro ao salvar:', error);
+      alert('Erro ao salvar alterações');
+    }
+  };
 
   const getAvatarColor = (name) => {
     const colors = ['#667eea', '#f093fb', '#4facfe', '#43e97b', '#fa709a'];
@@ -616,9 +909,57 @@ const Perfil = () => {
         return (
           <Card>
             <h3 style={{ color: '#1a237e', marginBottom: '24px' }}>Meus Eventos</h3>
-            <p style={{ color: '#64748b', textAlign: 'center', padding: '40px' }}>
-              Funcionalidade em desenvolvimento
-            </p>
+            {loadingItems ? (
+              <p style={{ color: '#64748b', textAlign: 'center', padding: '40px' }}>
+                Carregando eventos...
+              </p>
+            ) : userEventos.length === 0 ? (
+              <EmptyState>
+                <EmptyIcon>📅</EmptyIcon>
+                <p style={{ fontSize: '18px', marginBottom: '8px', color: '#475569' }}>Nenhum evento encontrado</p>
+                <p style={{ fontSize: '14px', margin: '0' }}>Você ainda não criou nenhum evento</p>
+              </EmptyState>
+            ) : (
+              <ItemGrid>
+                {userEventos.map(evento => (
+                  <ItemCard key={evento.id}>
+                    <ItemTitle>{evento.nome}</ItemTitle>
+                    <ItemDescription>{evento.info}</ItemDescription>
+                    <ItemMeta>
+                      <StatusBadge active={evento.statusEvento === 'ativado'}>
+                        {evento.statusEvento === 'ativado' ? 'Ativo' : 'Inativo'}
+                      </StatusBadge>
+                      <span style={{ fontSize: '12px', color: '#64748b' }}>
+                        {evento.dataInicio ? new Date(evento.dataInicio).toLocaleDateString('pt-BR') : 'Data não informada'}
+                      </span>
+                    </ItemMeta>
+                    <ItemActions>
+                      <ActionButton 
+                        className="edit"
+                        onClick={() => handleEditItem(evento, 'evento')}
+                      >
+                        <FiEdit />
+                        Editar
+                      </ActionButton>
+                      <ActionButton 
+                        className="toggle"
+                        onClick={() => handleToggleEventoStatus(evento.id, evento.statusEvento)}
+                      >
+                        {evento.statusEvento === 'ativado' ? <FiToggleRight /> : <FiToggleLeft />}
+                        {evento.statusEvento === 'ativado' ? 'Desativar' : 'Ativar'}
+                      </ActionButton>
+                      <ActionButton 
+                        className="delete"
+                        onClick={() => handleDeleteEvento(evento.id)}
+                      >
+                        <FiTrash />
+                        Excluir
+                      </ActionButton>
+                    </ItemActions>
+                  </ItemCard>
+                ))}
+              </ItemGrid>
+            )}
           </Card>
         );
 
@@ -626,9 +967,60 @@ const Perfil = () => {
         return (
           <Card>
             <h3 style={{ color: '#1a237e', marginBottom: '24px' }}>Minhas Pistas</h3>
-            <p style={{ color: '#64748b', textAlign: 'center', padding: '40px' }}>
-              Funcionalidade em desenvolvimento
-            </p>
+            {loadingItems ? (
+              <p style={{ color: '#64748b', textAlign: 'center', padding: '40px' }}>
+                Carregando pistas...
+              </p>
+            ) : userPistas.length === 0 ? (
+              <EmptyState>
+                <EmptyIcon>🛹</EmptyIcon>
+                <p style={{ fontSize: '18px', marginBottom: '8px', color: '#475569' }}>Nenhuma pista encontrada</p>
+                <p style={{ fontSize: '14px', margin: '0' }}>Você ainda não adicionou nenhuma pista</p>
+              </EmptyState>
+            ) : (
+              <ItemGrid>
+                {userPistas.map(pista => (
+                  <ItemCard key={pista.id}>
+                    <ItemTitle>{pista.nome}</ItemTitle>
+                    <ItemDescription>{pista.descricao}</ItemDescription>
+                    <ItemMeta>
+                      <StatusBadge active={pista.statusPista === 'ativada'}>
+                        {pista.statusPista === 'ativada' ? 'Ativa' : 'Inativa'}
+                      </StatusBadge>
+                      <span style={{ fontSize: '12px', color: '#64748b' }}>
+                        {pista.categoria?.nome || 'Categoria não informada'}
+                      </span>
+                    </ItemMeta>
+                    <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '16px' }}>
+                      📍 {pista.rua && pista.bairro ? `${pista.rua}, ${pista.bairro}` : pista.cep || 'Endereço não informado'}
+                    </div>
+                    <ItemActions>
+                      <ActionButton 
+                        className="edit"
+                        onClick={() => handleEditItem(pista, 'pista')}
+                      >
+                        <FiEdit />
+                        Editar
+                      </ActionButton>
+                      <ActionButton 
+                        className="toggle"
+                        onClick={() => handleTogglePistaStatus(pista.id, pista.statusPista)}
+                      >
+                        {pista.statusPista === 'ativada' ? <FiToggleRight /> : <FiToggleLeft />}
+                        {pista.statusPista === 'ativada' ? 'Desativar' : 'Ativar'}
+                      </ActionButton>
+                      <ActionButton 
+                        className="delete"
+                        onClick={() => handleDeletePista(pista.id)}
+                      >
+                        <FiTrash />
+                        Excluir
+                      </ActionButton>
+                    </ItemActions>
+                  </ItemCard>
+                ))}
+              </ItemGrid>
+            )}
           </Card>
         );
 
@@ -697,6 +1089,67 @@ const Perfil = () => {
 
         {renderContent()}
       </Content>
+      {editingItem && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0, 0, 0, 0.8)', display: 'flex',
+          justifyContent: 'center', alignItems: 'center', zIndex: 10000
+        }}>
+          <div style={{
+            background: 'white', borderRadius: '16px', padding: '32px',
+            width: '90%', maxWidth: '500px', maxHeight: '80vh', overflow: 'auto'
+          }}>
+            <h3 style={{ color: '#1a237e', marginBottom: '24px' }}>
+              Editar {editingItem.type === 'evento' ? 'Evento' : 'Pista'}
+            </h3>
+            
+            {editingItem.type === 'evento' ? (
+              <>
+                <FormGroup style={{ marginBottom: '16px' }}>
+                  <Label>Nome</Label>
+                  <Input value={editForm.nome} onChange={(e) => setEditForm(prev => ({ ...prev, nome: e.target.value }))} />
+                </FormGroup>
+                <FormGroup style={{ marginBottom: '16px' }}>
+                  <Label>Descrição</Label>
+                  <Input value={editForm.info} onChange={(e) => setEditForm(prev => ({ ...prev, info: e.target.value }))} />
+                </FormGroup>
+                <FormGroup style={{ marginBottom: '16px' }}>
+                  <Label>Data Início</Label>
+                  <Input type="datetime-local" value={editForm.dataInicio} onChange={(e) => setEditForm(prev => ({ ...prev, dataInicio: e.target.value }))} />
+                </FormGroup>
+                <FormGroup style={{ marginBottom: '16px' }}>
+                  <Label>Data Fim</Label>
+                  <Input type="datetime-local" value={editForm.dataFim} onChange={(e) => setEditForm(prev => ({ ...prev, dataFim: e.target.value }))} />
+                </FormGroup>
+              </>
+            ) : (
+              <>
+                <FormGroup style={{ marginBottom: '16px' }}>
+                  <Label>Nome</Label>
+                  <Input value={editForm.nome} onChange={(e) => setEditForm(prev => ({ ...prev, nome: e.target.value }))} />
+                </FormGroup>
+                <FormGroup style={{ marginBottom: '16px' }}>
+                  <Label>Descrição</Label>
+                  <Input value={editForm.descricao} onChange={(e) => setEditForm(prev => ({ ...prev, descricao: e.target.value }))} />
+                </FormGroup>
+                <FormGroup style={{ marginBottom: '16px' }}>
+                  <Label>CEP</Label>
+                  <Input value={editForm.cep} onChange={(e) => setEditForm(prev => ({ ...prev, cep: e.target.value }))} />
+                </FormGroup>
+                <FormGroup style={{ marginBottom: '16px' }}>
+                  <Label>Número</Label>
+                  <Input value={editForm.numero} onChange={(e) => setEditForm(prev => ({ ...prev, numero: e.target.value }))} />
+                </FormGroup>
+              </>
+            )}
+            
+            <ButtonGroup>
+              <Button onClick={() => setEditingItem(null)}>Cancelar</Button>
+              <Button primary onClick={handleSaveEdit}>Salvar</Button>
+            </ButtonGroup>
+          </div>
+        </div>
+      )}
     </Container>
   );
 };

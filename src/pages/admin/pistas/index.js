@@ -329,6 +329,20 @@ const Pistas = () => {
               if (!data.erro) {
                 rua = rua || data.logradouro || '';
                 bairro = bairro || data.bairro || '';
+                
+                // Atualizar no backend se encontrou dados
+                if ((rua !== lugar.rua || bairro !== lugar.bairro) && (rua || bairro)) {
+                  try {
+                    const { lugarService } = await import('../../../services/lugarService');
+                    await lugarService.atualizar(lugar.id, {
+                      ...lugar,
+                      rua: rua || lugar.rua,
+                      bairro: bairro || lugar.bairro
+                    });
+                  } catch (error) {
+                    console.error('Erro ao atualizar endereço:', error);
+                  }
+                }
               }
             } catch (error) {
               console.error('Erro ao buscar CEP:', error);
@@ -342,6 +356,7 @@ const Pistas = () => {
             rua,
             bairro,
             cep: lugar.cep,
+            numero: lugar.numero,
             latitude: lugar.latitude,
             longitude: lugar.longitude,
             active: lugar.statusPista === 'ativada',

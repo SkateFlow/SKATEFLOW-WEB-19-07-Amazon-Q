@@ -302,6 +302,8 @@ const CreatePistaModal = ({ isOpen, onClose, onSave }) => {
           .filter(item => item && item.trim())
           .join(', ');
         
+        const categoriaEscolhida = categorias.find(cat => cat.id === formData.categoriaId);
+        
         const newPista = {
           ...formData,
           id: Date.now(),
@@ -309,7 +311,8 @@ const CreatePistaModal = ({ isOpen, onClose, onSave }) => {
           active: false,
           status: 'pendente',
           dataSolicitacao: new Date().toISOString(),
-          fotos: processedImages
+          fotos: processedImages,
+          categoria: categoriaEscolhida?.nome || 'street'
         };
         
         onSave(newPista);
