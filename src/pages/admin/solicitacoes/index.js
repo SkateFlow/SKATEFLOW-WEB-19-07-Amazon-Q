@@ -5,8 +5,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import SidebarAdmin from '../../../components/SidebarAdmin';
 import SearchBar from '../../../components/SearchBar';
 import ConfirmModal from '../../../components/ConfirmModal';
-import SolicitacaoPistDetalsModal from '../../../components/SolicitacaoPistDetalsModal';
-import SolicitacaoEventoDetailsModal from '../../../components/SolicitacaoEventoDetailsModal';
 import { usePistasPendentes } from '../../../hooks/usePistasPendentes';
 import { solicitacaoPistaService } from '../../../services/solicitacaoPistaService';
 
@@ -53,24 +51,23 @@ const Subtitle = styled.p`
 const SolicitacaoGrid = styled.div`
   display: grid;
   grid-template-columns: 1fr;
-  gap: 16px;
-  margin-top: 24px;
+  gap: 48px;
+  margin-top: 32px;
 `;
 
 const SolicitacaoCard = styled.div`
-  background: white;
+  background: #fff;
   border-radius: 12px;
-  padding: 16px 20px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  padding: 64px 56px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
   border: 1px solid #e2e8f0;
   transition: all 0.3s ease;
   position: relative;
-  overflow: hidden;
   display: flex;
-  align-items: center;
-  gap: 16px;
-  height: 100px;
-
+  flex-direction: column;
+  gap: 28px;
+  min-height: 420px; /* 🔥 altura bem maior */
+  
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
@@ -89,19 +86,28 @@ const SolicitacaoCard = styled.div`
 
 const CardContent = styled.div`
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
 `;
 
 const CardActions = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 16px;
+  flex-shrink: 0;
 `;
 
 const SolicitacaoTitle = styled.h3`
   color: #1a237e;
-  font-size: 18px;
+  font-size: 22px;
   font-weight: 600;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  line-height: 1.4;
 `;
 
 const SolicitacaoInfo = styled.div`
@@ -113,7 +119,8 @@ const InfoRow = styled.div`
   align-items: center;
   margin-bottom: 8px;
   color: #64748b;
-  font-size: 14px;
+  font-size: 16px;
+  line-height: 1.4;
 `;
 
 const InfoLabel = styled.span`
@@ -125,9 +132,9 @@ const InfoLabel = styled.span`
 const StatusBadge = styled.span`
   display: inline-flex;
   align-items: center;
-  padding: 4px 12px;
+  padding: 6px 14px;
   border-radius: 20px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
   background: #fef3c7;
   color: #92400e;
@@ -138,10 +145,10 @@ const ActionButton = styled.button`
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 16px;
+  padding: 12px 20px;
   border: none;
   border-radius: 8px;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -193,9 +200,7 @@ const Solicitacoes = () => {
   const [filterStatus, setFilterStatus] = useState('todas');
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [solicitacaoToDelete, setSolicitacaoToDelete] = useState(null);
-  const [showDetailsModal, setShowDetailsModal] = useState(false);
-  const [selectedSolicitacao, setSelectedSolicitacao] = useState(null);
-  const [aprovandoPista, setAprovandoPista] = useState(null);
+    const [aprovandoPista, setAprovandoPista] = useState(null);
   const [showMessage, setShowMessage] = useState('');
   const { pistasPendentes, removerPistaPendente } = usePistasPendentes();
   const [todasSolicitacoes, setTodasSolicitacoes] = useState([]);
@@ -234,11 +239,7 @@ const Solicitacoes = () => {
     return text.substring(0, 25) + '...';
   };
 
-  const handleCardClick = (solicitacao) => {
-    setSelectedSolicitacao(solicitacao);
-    setShowDetailsModal(true);
-  };
-
+  
   const handleApprove = async (solicitacao) => {
     if (aprovandoPista === solicitacao.id) {
       setShowMessage('Aprovação em andamento...');
@@ -263,7 +264,6 @@ const Solicitacoes = () => {
       }));
       setTodasSolicitacoes(solicitacoesFormatadas);
       
-      setShowDetailsModal(false);
       setShowMessage('Aprovação concluída');
       setTimeout(() => setShowMessage(''), 2500);
     } catch (error) {
@@ -292,8 +292,7 @@ const Solicitacoes = () => {
       }));
       setTodasSolicitacoes(solicitacoesFormatadas);
       
-      setShowDetailsModal(false);
-    } catch (error) {
+      } catch (error) {
       console.error('Erro ao rejeitar solicitação:', error);
       setShowMessage(`Erro ao rejeitar solicitação: ${error.message}`);
       setTimeout(() => setShowMessage(''), 3000);
@@ -394,7 +393,7 @@ const Solicitacoes = () => {
           <SolicitacaoGrid>
             {filteredSolicitacoes.map((solicitacao) => (
               <SolicitacaoCard key={`${solicitacao.tipo}-${solicitacao.id}`}>
-                <div onClick={() => handleCardClick(solicitacao)} style={{ flex: 1, cursor: 'pointer' }}>
+                <CardContent>
                   <StatusBadge 
                     style={{
                       background: solicitacao.tipo === 'pista' ? '#e0f2fe' : '#f3e8ff',
@@ -405,7 +404,7 @@ const Solicitacoes = () => {
                     {solicitacao.tipo === 'pista' ? '🛹 Pista' : '🎆 Evento'}
                   </StatusBadge>
                   <SolicitacaoTitle style={{ marginBottom: '4px' }}>{solicitacao.nome}</SolicitacaoTitle>
-                  <div style={{ color: '#64748b', fontSize: '14px', marginBottom: '4px' }}>
+                  <div style={{ color: '#64748b', fontSize: '16px', marginBottom: '6px' }}>
                     {solicitacao.tipo === 'pista' 
                       ? (solicitacao.localizacao || `${solicitacao.rua || ''}, ${solicitacao.bairro || ''}`.replace(/^,\s*|,\s*$/g, '') || 'Não informado')
                       : (solicitacao.dataEvento ? new Date(solicitacao.dataEvento).toLocaleDateString('pt-BR') : 'Não informado')
@@ -416,7 +415,7 @@ const Solicitacoes = () => {
                       🛹 {solicitacao.categoria}
                     </div>
                   )}
-                </div>
+                </CardContent>
                 <CardActions>
                   <ActionButton 
                     className="approve"
@@ -447,24 +446,7 @@ const Solicitacoes = () => {
           </SolicitacaoGrid>
         )}
         
-        {selectedSolicitacao?.tipo === 'pista' ? (
-          <SolicitacaoPistDetalsModal 
-            isOpen={showDetailsModal}
-            onClose={() => setShowDetailsModal(false)}
-            solicitacao={selectedSolicitacao}
-            onApprove={handleApprove}
-            onReject={AhandleReject}
-          />
-        ) : (
-          <SolicitacaoEventoDetailsModal 
-            isOpen={showDetailsModal}
-            onClose={() => setShowDetailsModal(false)}
-            solicitacao={selectedSolicitacao}
-            onApprove={handleApprove}
-            onReject={handleReject}
-          />
-        )}
-      </ContentContainer>
+              </ContentContainer>
     </AdminContainer>
   );
 };
