@@ -1,10 +1,20 @@
 import api from '../utils/api';
 
 export const lugarService = {
-  // Buscar todas as pistas
+  // Buscar pistas ativadas (para usuários)
   listar: async () => {
     try {
       const response = await api.get('/lugar/listar');
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || 'Erro ao buscar pistas';
+    }
+  },
+
+  // Buscar todas as pistas (para admin)
+  listarTodas: async () => {
+    try {
+      const response = await api.get('/lugar/admin/todas');
       return response.data;
     } catch (error) {
       throw error.response?.data || 'Erro ao buscar pistas';
@@ -21,7 +31,17 @@ export const lugarService = {
     }
   },
 
-  // Criar nova pista
+  // Solicitar nova pista
+  solicitar: async (lugar) => {
+    try {
+      const response = await api.post('/lugar/solicitar', lugar);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || 'Erro ao solicitar pista';
+    }
+  },
+
+  // Criar nova pista (admin)
   criar: async (lugar) => {
     try {
       const response = await api.post('/lugar/save', lugar);
