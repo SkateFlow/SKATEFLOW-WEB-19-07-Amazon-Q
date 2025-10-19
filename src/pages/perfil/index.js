@@ -5,10 +5,15 @@ import { useAuth } from '../../context/AuthContext';
 import { usuarioService } from '../../services/usuarioService';
 import { eventoService } from '../../services/eventService';
 import { lugarService } from '../../services/lugarService';
+import ConfirmModal from '../../components/ConfirmModal';
 import { useNavigate } from 'react-router-dom';
 
 const Container = styled.div`
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  background: 
+    radial-gradient(circle at 20% 80%, #d0e6ffff 0%, transparent 25%),
+    radial-gradient(circle at 80% 20%, #c4e0ffff 0%, transparent 25%),
+    radial-gradient(circle at 40% 40%, #ffffff 0%, transparent 25%),
+    #f8fafc;
   min-height: 100vh;
   display: flex;
 `;
@@ -136,16 +141,7 @@ const Card = styled.div`
   border: 1px solid #e2e8f0;
   position: relative;
   overflow: hidden;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, #667eea 0%, #1a237e 100%);
-  }
+  z-index: 1;
 `;
 
 const FormGrid = styled.div`
@@ -491,6 +487,7 @@ const Perfil = () => {
   const [loadingItems, setLoadingItems] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [editForm, setEditForm] = useState({});
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, type: '', item: null });
 
   useEffect(() => {
     if (user) {
@@ -611,36 +608,30 @@ const Perfil = () => {
     }
   };
 
-  const handleDeleteEvento = async (eventoId) => {
+  const handleDeleteEvento = (eventoId) => {
     const evento = userEventos.find(e => e.id === eventoId);
     if (!evento || (evento.usuario_id?.id !== user.id && evento.usuario_id !== user.id)) {
       alert('Você só pode excluir eventos que você criou');
       return;
     }
-    if (window.confirm('Tem certeza que deseja excluir este evento?')) {
-      try {
-        await eventoService.deletar(eventoId);
-        loadUserEventos();
-      } catch (error) {
-        console.error('Erro ao excluir evento:', error);
-      }
-    }
+    setConfirmModal({
+      isOpen: true,
+      type: 'evento',
+      item: evento
+    });
   };
 
-  const handleDeletePista = async (pistaId) => {
+  const handleDeletePista = (pistaId) => {
     const pista = userPistas.find(p => p.id === pistaId);
     if (!pista || (pista.usuario?.id !== user.id && pista.usuarioId !== user.id)) {
       alert('Você só pode excluir pistas que você criou');
       return;
     }
-    if (window.confirm('Tem certeza que deseja excluir esta pista?')) {
-      try {
-        await lugarService.deletar(pistaId);
-        loadUserPistas();
-      } catch (error) {
-        console.error('Erro ao excluir pista:', error);
-      }
-    }
+    setConfirmModal({
+      isOpen: true,
+      type: 'pista',
+      item: pista
+    });
   };
 
   const handleEditItem = (item, type) => {
@@ -691,6 +682,21 @@ const Perfil = () => {
     } catch (error) {
       console.error('Erro ao salvar:', error);
       alert('Erro ao salvar alterações');
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    try {
+      if (confirmModal.type === 'evento') {
+        await eventoService.deletar(confirmModal.item.id);
+        loadUserEventos();
+      } else {
+        await lugarService.deletar(confirmModal.item.id);
+        loadUserPistas();
+      }
+      setConfirmModal({ isOpen: false, type: '', item: null });
+    } catch (error) {
+      console.error('Erro ao excluir:', error);
     }
   };
 
@@ -812,7 +818,7 @@ const Perfil = () => {
                   </Button>
                 </div>
 
-                <PhotoSection>
+                <PhotoSection style={{ marginTop: '24px' }}>
                   <PhotoPreview bgColor={getAvatarColor(formData.nome)}>
                     {formData.foto ? (
                       <ProfileImage src={formData.foto} alt="Perfil" />
@@ -1018,9 +1024,31 @@ const Perfil = () => {
           <Card>
             <h3 style={{ color: '#1a237e', marginBottom: '24px' }}>Meus Eventos</h3>
             {loadingItems ? (
-              <p style={{ color: '#64748b', textAlign: 'center', padding: '40px' }}>
-                Carregando eventos...
-              </p>
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                height: '200px',
+                color: '#64748b'
+              }}>
+                <div style={{
+                  width: '40px',
+                  height: '40px',
+                  border: '3px solid #e2e8f0',
+                  borderTop: '3px solid #667eea',
+                  borderRadius: '50%',
+                  animation: 'spin 1s linear infinite',
+                  marginBottom: '16px'
+                }} />
+                <p style={{ textAlign: 'center', fontSize: '16px', fontWeight: '500', margin: '0' }}>Carregando eventos...</p>
+                <style>{`
+                  @keyframes spin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                  }
+                `}</style>
+              </div>
             ) : userEventos.length === 0 ? (
               <EmptyState>
                 <EmptyIcon>📅</EmptyIcon>
@@ -1076,9 +1104,31 @@ const Perfil = () => {
           <Card>
             <h3 style={{ color: '#1a237e', marginBottom: '24px' }}>Minhas Pistas</h3>
             {loadingItems ? (
-              <p style={{ color: '#64748b', textAlign: 'center', padding: '40px' }}>
-                Carregando pistas...
-              </p>
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                height: '200px',
+                color: '#64748b'
+              }}>
+                <div style={{
+                  width: '40px',
+                  height: '40px',
+                  border: '3px solid #e2e8f0',
+                  borderTop: '3px solid #667eea',
+                  borderRadius: '50%',
+                  animation: 'spin 1s linear infinite',
+                  marginBottom: '16px'
+                }} />
+                <p style={{ textAlign: 'center', fontSize: '16px', fontWeight: '500', margin: '0' }}>Carregando pistas...</p>
+                <style>{`
+                  @keyframes spin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                  }
+                `}</style>
+              </div>
             ) : userPistas.length === 0 ? (
               <EmptyState>
                 <EmptyIcon>🛹</EmptyIcon>
@@ -1263,6 +1313,14 @@ const Perfil = () => {
           </div>
         </div>
       )}
+      
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal({ isOpen: false, type: '', item: null })}
+        onConfirm={handleConfirmDelete}
+        title={`Excluir ${confirmModal.type === 'evento' ? 'Evento' : 'Pista'}`}
+        message={`Tem certeza que deseja excluir ${confirmModal.type === 'evento' ? 'o evento' : 'a pista'} "${confirmModal.item?.nome}"? Esta ação não pode ser desfeita.`}
+      />
     </Container>
   );
 };
