@@ -9,7 +9,11 @@ import { usuarioService } from '../../../services/usuarioService';
 import { organizadorService } from '../../../services/organizadorService';
 
 const AdminContainer = styled.div`
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  background: 
+    radial-gradient(circle at 20% 80%, #d0e6ffff 0%, transparent 25%),
+    radial-gradient(circle at 80% 20%, #c4e0ffff 0%, transparent 25%),
+    radial-gradient(circle at 40% 40%, #ffffff 0%, transparent 25%),
+    #f8fafc;
   min-height: 100vh;
 `;
 
@@ -68,20 +72,10 @@ const Subtitle = styled.p`
 const TableContainer = styled.div`
   background: white;
   border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
   border: 1px solid #e2e8f0;
   overflow: hidden;
   position: relative;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, #667eea 0%, #1a237e 100%);
-  }
 `;
 
 const Table = styled.table`

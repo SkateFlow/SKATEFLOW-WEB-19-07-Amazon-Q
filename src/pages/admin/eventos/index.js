@@ -7,7 +7,11 @@ import ConfirmModal from '../../../components/ConfirmModal';
 import EditEventModal from '../../../components/EditEventModal';
 
 const AdminContainer = styled.div`
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  background: 
+    radial-gradient(circle at 20% 80%, #d0e6ffff 0%, transparent 25%),
+    radial-gradient(circle at 80% 20%, #c4e0ffff 0%, transparent 25%),
+    radial-gradient(circle at 40% 40%, #ffffff 0%, transparent 25%),
+    #f8fafc;
   min-height: 100vh;
 `;
 

@@ -197,17 +197,22 @@ const Navbar = ({ toggle, scrollNav: forceScrollNav }) => {
                                 >
                                     <ProfileButton 
                                         $scrollNav={finalScrollNav}
+                                        $hasPhoto={!!user?.foto}
                                         onMouseEnter={(e) => {
-                                            const icons = e.currentTarget.querySelectorAll('svg');
-                                            icons.forEach(icon => {
-                                                icon.style.color = finalScrollNav ? '#fff' : '#000';
-                                            });
+                                            if (!user?.foto) {
+                                                const icons = e.currentTarget.querySelectorAll('svg');
+                                                icons.forEach(icon => {
+                                                    icon.style.color = finalScrollNav ? '#fff' : '#000';
+                                                });
+                                            }
                                         }}
                                         onMouseLeave={(e) => {
-                                            const icons = e.currentTarget.querySelectorAll('svg');
-                                            icons.forEach(icon => {
-                                                icon.style.color = finalScrollNav ? '#000' : '#fff';
-                                            });
+                                            if (!user?.foto) {
+                                                const icons = e.currentTarget.querySelectorAll('svg');
+                                                icons.forEach(icon => {
+                                                    icon.style.color = finalScrollNav ? '#000' : '#fff';
+                                                });
+                                            }
                                         }}
                                     >
                                         {user?.foto ? (
@@ -215,24 +220,33 @@ const Navbar = ({ toggle, scrollNav: forceScrollNav }) => {
                                                 src={user.foto} 
                                                 alt={user.nome || 'Perfil'} 
                                                 style={{ 
-                                                    width: '32px', 
-                                                    height: '32px', 
+                                                    width: '40px', 
+                                                    height: '40px', 
                                                     borderRadius: '50%', 
                                                     objectFit: 'cover',
-                                                    border: `2px solid ${finalScrollNav ? '#000' : '#fff'}`,
+                                                    cursor: 'pointer',
+                                                    border: '2px solid transparent',
                                                     transition: 'border-color 0.3s ease'
-                                                }} 
+                                                }}
+                                                onMouseEnter={(e) => {
+                                                    e.target.style.borderColor = finalScrollNav ? '#000' : '#fff';
+                                                }}
+                                                onMouseLeave={(e) => {
+                                                    e.target.style.borderColor = 'transparent';
+                                                }}
                                             />
                                         ) : (
-                                            <FaUser style={{ color: finalScrollNav ? '#000' : '#fff', transition: 'color 0.3s ease' }} />
+                                            <>
+                                                <FaUser style={{ color: finalScrollNav ? '#000' : '#fff', transition: 'color 0.3s ease' }} />
+                                                <motion.span
+                                                    animate={showDropdown ? "open" : "closed"}
+                                                    variants={chevronVariants}
+                                                    style={{ marginLeft: '8px', display: 'flex', alignItems: 'center' }}
+                                                >
+                                                    <FaChevronDown style={{ fontSize: '12px', color: finalScrollNav ? '#000' : '#fff', transition: 'color 0.3s ease' }} />
+                                                </motion.span>
+                                            </>
                                         )}
-                                        <motion.span
-                                            animate={showDropdown ? "open" : "closed"}
-                                            variants={chevronVariants}
-                                            style={{ marginLeft: '8px', display: 'flex', alignItems: 'center' }}
-                                        >
-                                            <FaChevronDown style={{ fontSize: '12px', color: finalScrollNav ? '#000' : '#fff', transition: 'color 0.3s ease' }} />
-                                        </motion.span>
                                     </ProfileButton>
                                     <AnimatePresence>
                                         {showDropdown && (

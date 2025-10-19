@@ -176,14 +176,14 @@ export const ProfileContainer = styled.div`
 `;
 
 export const ProfileButton = styled.button`
-    border-radius: 50px;
+    border-radius: ${({$hasPhoto}) => ($hasPhoto ? '50%' : '50px')};
     background: transparent;
     white-space: nowrap;
-    padding: 10px 22px;
+    padding: ${({$hasPhoto}) => ($hasPhoto ? '2px' : '10px 22px')};
     color: ${({$scrollNav}) => ($scrollNav ? '#000' : '#fff')};
     font-size: 16px;
     outline: none;
-    border: ${({$scrollNav}) => ($scrollNav ? '1px solid #000' : '1px solid #fff')};
+    border: ${({$scrollNav, $hasPhoto}) => ($hasPhoto ? 'none' : ($scrollNav ? '1px solid #000' : '1px solid #fff'))};
     cursor: pointer;
     transition: all 0.3s ease;
     font-weight: bold;
@@ -191,8 +191,8 @@ export const ProfileButton = styled.button`
     align-items: center;
 
     &:hover {
-        background: ${({$scrollNav}) => ($scrollNav ? '#000' : '#fff')};
-        color: ${({$scrollNav}) => ($scrollNav ? '#fff' : '#000')};
+        background: ${({$scrollNav, $hasPhoto}) => ($hasPhoto ? 'transparent' : ($scrollNav ? '#000' : '#fff'))};
+        color: ${({$scrollNav, $hasPhoto}) => ($hasPhoto ? 'inherit' : ($scrollNav ? '#fff' : '#000'))};
     }
 `;
 
