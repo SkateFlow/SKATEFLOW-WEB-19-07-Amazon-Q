@@ -8,6 +8,8 @@ import CreateEventModal from '../CreateEventModal';
 import Navbar from '../Navbar';
 import Sidebar from '../Sidebar';
 import placeholderImage from '../../assets/images/ph.svg';
+import { useAuth } from '../../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 // Estilização do container principal da página de eventos
 const EventsContainer = styled.div`
@@ -333,6 +335,8 @@ const EventsPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showAllEvents, setShowAllEvents] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const { isAuthenticated, user } = useAuth();
+  const navigate = useNavigate();
 
   
   const [events, setEvents] = useState([]);
@@ -436,7 +440,12 @@ const EventsPage = () => {
   };
 
   const handleCreateEvent = () => {
-    setShowCreateModal(true);
+    if (isAuthenticated) {
+      setShowCreateModal(true);
+    } else {
+      localStorage.setItem('login_message', 'Você precisa estar logado para cadastrar um evento.');
+      navigate('/login');
+    }
   };
 
   const handleSaveEvent = (eventData) => {
@@ -467,7 +476,7 @@ const EventsPage = () => {
           </SearchContainer>
           <CreateEventButton onClick={handleCreateEvent}>
             <FaPlus />
-            Cadastrar Evento
+            {user?.isOrganizador ? 'Criar Evento' : 'Solicitar Evento'}
           </CreateEventButton>
         </SearchAndButtonContainer>
         <SectionLabel>Recentes</SectionLabel>

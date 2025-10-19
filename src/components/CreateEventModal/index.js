@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { FiX, FiCamera, FiMapPin, FiCalendar, FiClock } from 'react-icons/fi';
 import { lugarService } from '../../services/lugarService';
 import { eventoService } from '../../services/eventService';
+import { useAuth } from '../../context/AuthContext';
 
 const ModalOverlay = styled.div`
   position: fixed;
@@ -223,6 +224,7 @@ const Button = styled.button`
 `;
 
 const CreateEventModal = ({ isOpen, onClose, onSave }) => {
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     nome: '',
     info: '',
@@ -280,12 +282,11 @@ const CreateEventModal = ({ isOpen, onClose, onSave }) => {
       const userData = JSON.parse(savedUser);
       
       const eventoData = {
-        id: Date.now(),
         nome: formData.nome,
         info: formData.info,
         dataInicio: new Date(formData.dataInicio).toISOString(),
         dataFim: new Date(formData.dataFim).toISOString(),
-        statusEvento: 'pendente',
+        statusEvento: user?.isOrganizador ? 'ativado' : 'pendente',
         usuario_id: { id: userData.id },
         lugar_id: { id: parseInt(formData.lugarId) },
         fotos: formData.fotos.filter(foto => foto),
@@ -293,13 +294,20 @@ const CreateEventModal = ({ isOpen, onClose, onSave }) => {
         criadoPor: userData.nome
       };
 
-      // Sempre adiciona à lista de pendentes para aprovação
-      const eventosPendentes = JSON.parse(localStorage.getItem('eventosPendentes') || '[]');
-      eventosPendentes.push(eventoData);
-      localStorage.setItem('eventosPendentes', JSON.stringify(eventosPendentes));
+      if (user?.isOrganizador) {
+        // Organizador: cria evento diretamente ativo
+        await eventoService.criar(eventoData);
+        alert('Evento criado com sucesso!');
+      } else {
+        // Usuário comum: adiciona à lista de pendentes
+        const eventoComId = { ...eventoData, id: Date.now() };
+        const eventosPendentes = JSON.parse(localStorage.getItem('eventosPendentes') || '[]');
+        eventosPendentes.push(eventoComId);
+        localStorage.setItem('eventosPendentes', JSON.stringify(eventosPendentes));
+        alert('Solicitação de evento enviada para aprovação!');
+      }
 
       onSave(eventoData);
-      alert('Solicitação de evento enviada para aprovação!');
       onClose();
       
       // Reset form

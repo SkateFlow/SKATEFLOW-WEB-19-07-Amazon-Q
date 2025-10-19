@@ -6,6 +6,7 @@ import SearchBar from '../../../components/SearchBar';
 import EditUserModal from '../../../components/EditUserModal';
 import ConfirmModal from '../../../components/ConfirmModal';
 import { usuarioService } from '../../../services/usuarioService';
+import { organizadorService } from '../../../services/organizadorService';
 
 const AdminContainer = styled.div`
   background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
@@ -400,12 +401,19 @@ const Usuarios = () => {
   const carregarUsuarios = async () => {
     try {
       setLoading(true);
-      const usuariosData = await usuarioService.listar();
+      const [usuariosData, organizadoresData] = await Promise.all([
+        usuarioService.listar(),
+        organizadorService.listar().catch(() => [])
+      ]);
+      
+      const organizadoresIds = organizadoresData.map(org => org.usuario_id?.id).filter(Boolean);
+      
       const usuariosFormatados = usuariosData.map(usuario => ({
         id: usuario.id,
         nome: usuario.nome,
         email: usuario.email,
         isAdmin: usuario.nivelAcesso === 'ADMIN',
+        isOrganizador: organizadoresIds.includes(usuario.id),
         foto: null, // Carregar sob demanda
         isActive: usuario.statusUsuario === 'ATIVO',
         dataCadastro: usuario.dataCadastro
@@ -628,7 +636,7 @@ const Usuarios = () => {
                   <TableHeader>Nome</TableHeader>
                   <TableHeader>Email</TableHeader>
                   <TableHeader>Data Cadastro</TableHeader>
-                  <TableHeader>Administrador</TableHeader>
+                  <TableHeader>Nível de Acesso</TableHeader>
                   <TableHeader>Status</TableHeader>
                   <TableHeader>Ações</TableHeader>
                 </tr>
@@ -646,7 +654,7 @@ const Usuarios = () => {
                     </TableCell>
                     <TableCell>
                       <AdminBadge isAdmin={user.isAdmin}>
-                        {user.isAdmin ? 'Admin' : 'Usuário'}
+                        {user.isAdmin ? 'Admin' : user.isOrganizador ? 'Organizador' : 'Usuário'}
                       </AdminBadge>
                     </TableCell>
                     <TableCell>

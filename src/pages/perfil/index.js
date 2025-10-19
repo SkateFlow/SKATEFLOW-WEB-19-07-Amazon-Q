@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { usuarioService } from '../../services/usuarioService';
 import { eventoService } from '../../services/eventService';
 import { lugarService } from '../../services/lugarService';
+import { useNavigate } from 'react-router-dom';
 
 const Container = styled.div`
   background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
@@ -458,6 +459,15 @@ const EmptyIcon = styled.div`
 
 const Perfil = () => {
   const { user, login } = useAuth();
+  const navigate = useNavigate();
+  
+  // Redirecionar organizadores para sua área específica
+  useEffect(() => {
+    if (user?.isOrganizador) {
+      navigate('/organizador/perfil');
+      return;
+    }
+  }, [user, navigate]);
   const [activeTab, setActiveTab] = useState('perfil');
   const [formData, setFormData] = useState({
     nome: '',
@@ -475,6 +485,7 @@ const Perfil = () => {
   const [success, setSuccess] = useState('');
   const [showNotification, setShowNotification] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [userEventos, setUserEventos] = useState([]);
   const [userPistas, setUserPistas] = useState([]);
   const [loadingItems, setLoadingItems] = useState(false);
@@ -764,6 +775,7 @@ const Perfil = () => {
           setShowNotification(false);
           setIsExiting(false);
           setSuccess('');
+          setIsEditing(false); // Voltar para modo visualização após salvar
         }, 300);
       }, 3000);
 
@@ -789,7 +801,93 @@ const Perfil = () => {
       case 'perfil':
         return (
           <Card>
-            <form onSubmit={handleSubmit}>
+            {!isEditing ? (
+              // Visualização das informações
+              <>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+                  <h3 style={{ color: '#1a237e', margin: 0 }}>Informações do Perfil</h3>
+                  <Button primary onClick={() => setIsEditing(true)}>
+                    <FiEdit style={{ marginRight: '8px' }} />
+                    Editar Perfil
+                  </Button>
+                </div>
+
+                <PhotoSection>
+                  <PhotoPreview bgColor={getAvatarColor(formData.nome)}>
+                    {formData.foto ? (
+                      <ProfileImage src={formData.foto} alt="Perfil" />
+                    ) : (
+                      formData.nome?.charAt(0)?.toUpperCase() || <FiUser />
+                    )}
+                  </PhotoPreview>
+                  <div>
+                    <h3 style={{ margin: '0 0 8px', color: '#1a237e' }}>Foto de Perfil</h3>
+                    <p style={{ margin: '0', color: '#64748b', fontSize: '14px' }}>
+                      {formData.foto ? 'Foto personalizada' : 'Usando inicial do nome'}
+                    </p>
+                  </div>
+                </PhotoSection>
+
+                <FormGrid>
+                  <FormGroup>
+                    <Label>Nome</Label>
+                    <Input
+                      type="text"
+                      value={formData.nome}
+                      disabled
+                      style={{ background: '#f8fafc' }}
+                    />
+                  </FormGroup>
+
+                  <FormGroup>
+                    <Label>Email</Label>
+                    <Input
+                      type="email"
+                      value={formData.email}
+                      disabled
+                      style={{ background: '#f8fafc' }}
+                    />
+                  </FormGroup>
+
+                  <FormGroup>
+                    <Label>Nível de Acesso</Label>
+                    <Input
+                      type="text"
+                      value={user?.nivelAcesso || 'USUARIO'}
+                      disabled
+                      style={{ background: '#f8fafc' }}
+                    />
+                  </FormGroup>
+
+                  <FormGroup>
+                    <Label>Status da Conta</Label>
+                    <Input
+                      type="text"
+                      value={user?.statusUsuario || 'ATIVO'}
+                      disabled
+                      style={{ background: '#f8fafc' }}
+                    />
+                  </FormGroup>
+                </FormGrid>
+              </>
+            ) : (
+              // Formulário de edição
+              <form onSubmit={handleSubmit}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+                  <h3 style={{ color: '#1a237e', margin: 0 }}>Editar Perfil</h3>
+                  <Button onClick={() => {
+                    setIsEditing(false);
+                    setFormData(prev => ({
+                      ...prev,
+                      novaSenha: '',
+                      confirmarSenha: ''
+                    }));
+                    setError('');
+                    setSuccess('');
+                  }}>
+                    Cancelar
+                  </Button>
+                </div>
 
               <PhotoSection>
                 <PhotoPreview bgColor={getAvatarColor(formData.nome)}>
@@ -888,20 +986,30 @@ const Perfil = () => {
                 </FormGroup>
               </FormGrid>
 
-              <ButtonGroup>
-                {(success || error) && showNotification && (
-                  <InlineNotification success={!!success} isExiting={isExiting}>
-                    {success || error}
-                  </InlineNotification>
-                )}
-                <Button type="button" onClick={() => window.history.back()}>
-                  Cancelar
-                </Button>
-                <Button type="submit" primary disabled={loading}>
-                  {loading ? 'Salvando...' : 'Salvar Alterações'}
-                </Button>
-              </ButtonGroup>
-            </form>
+                <ButtonGroup>
+                  {(success || error) && showNotification && (
+                    <InlineNotification success={!!success} isExiting={isExiting}>
+                      {success || error}
+                    </InlineNotification>
+                  )}
+                  <Button type="button" onClick={() => {
+                    setIsEditing(false);
+                    setFormData(prev => ({
+                      ...prev,
+                      novaSenha: '',
+                      confirmarSenha: ''
+                    }));
+                    setError('');
+                    setSuccess('');
+                  }}>
+                    Cancelar
+                  </Button>
+                  <Button type="submit" primary disabled={loading}>
+                    {loading ? 'Salvando...' : 'Salvar Alterações'}
+                  </Button>
+                </ButtonGroup>
+              </form>
+            )}
           </Card>
         );
 
@@ -1028,6 +1136,11 @@ const Perfil = () => {
         return null;
     }
   };
+
+  // Não renderizar nada se for organizador (será redirecionado)
+  if (user?.isOrganizador) {
+    return null;
+  }
 
   return (
     <Container>

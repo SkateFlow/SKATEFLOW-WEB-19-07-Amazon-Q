@@ -246,8 +246,8 @@ const Navbar = ({ toggle, scrollNav: forceScrollNav }) => {
                                                 <motion.div variants={itemVariants}>
                                                     <ProfileEmail>{user.nome}</ProfileEmail>
                                                 </motion.div>
-                                                <AdminLink to="/perfil" variants={itemVariants}>
-                                                    Meu Perfil
+                                                <AdminLink to={user?.isOrganizador ? "/organizador/perfil" : "/perfil"} variants={itemVariants}>
+                                                    {user?.isOrganizador ? "Area do Organizador" : "Meu Perfil"}
                                                 </AdminLink>
                                                 {user?.nivelAcesso === 'ADMIN' && (
                                                     <AdminLink to="/admin" variants={itemVariants}>

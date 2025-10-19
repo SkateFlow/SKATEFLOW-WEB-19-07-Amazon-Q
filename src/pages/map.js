@@ -15,6 +15,8 @@ import { avaliacaoService } from '../services/avaliacaoService';
 import { categoriaService } from '../services/categoriaService';
 import { usePistasPendentes } from '../hooks/usePistasPendentes';
 import { memoryOptimizer } from '../utils/memoryOptimizer';
+import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 // Carregar Leaflet
 if (typeof window !== 'undefined' && !window.L) {
@@ -311,6 +313,8 @@ const Map = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState('todos');
   const { adicionarPistaPendente } = usePistasPendentes();
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
 
   const [spots, setSpots] = useState([]);
   const [lugares, setLugares] = useState([]);
@@ -810,7 +814,14 @@ const Map = () => {
         zIndex: 1000 
       }}>
         <AddButton 
-          onClick={() => setIsCreateModalOpen(true)}
+          onClick={() => {
+            if (isAuthenticated) {
+              setIsCreateModalOpen(true);
+            } else {
+              localStorage.setItem('login_message', 'Você precisa estar logado para solicitar uma pista.');
+              navigate('/login');
+            }
+          }}
           style={{
             padding: '12px 20px',
             fontSize: '14px',

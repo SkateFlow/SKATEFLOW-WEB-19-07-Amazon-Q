@@ -432,6 +432,7 @@ const CreatePistaModal = ({ isOpen, onClose, onSave }) => {
 
                 <FormGroup span={2}>
                   <Label>Categoria da Pista</Label>
+
                   <div style={{ display: 'flex', gap: '16px', marginTop: '8px', flexWrap: 'wrap' }}>
                     {categorias.map(categoria => (
                       <label key={categoria.id} style={{ 

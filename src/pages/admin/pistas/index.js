@@ -112,7 +112,7 @@ const ListContainer = styled.div`
 
 const PistaGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
   gap: 24px;
 `;
 
@@ -289,9 +289,9 @@ const Pistas = () => {
       ...pistasAprovadas,
       ...pistasRejeitadas
     ];
-    
+    console.log('DEBUG: Total pistas combinadas:', todasPistas.length, todasPistas);
     setPistas(todasPistas);
-  }, [pistasPendentes, pistasBackend]);
+  }, [pistasBackend]);
 
   const getLocationFromCep = async (cep) => {
     if (!cep || cep.length !== 8) return 'Não informado';
@@ -313,8 +313,11 @@ const Pistas = () => {
   const loadPistasBackend = async () => {
     try {
       setLoading(true);
+      console.log('=== INICIANDO CARREGAMENTO DE PISTAS ===');
       const { lugarService } = await import('../../../services/lugarService');
       const lugares = await lugarService.listar();
+      console.log('DEBUG: Lugares do backend:', lugares.length, lugares);
+
       
       const pistasFormatadas = await Promise.all(
         lugares.map(async (lugar) => {
@@ -349,6 +352,10 @@ const Pistas = () => {
             }
           }
           
+          const localizacao = rua && bairro 
+            ? `${rua}${lugar.numero ? `, ${lugar.numero}` : ''} - ${bairro}`
+            : lugar.cep || 'Não informado';
+            
           return {
             id: lugar.id,
             nome: lugar.nome,
@@ -359,16 +366,19 @@ const Pistas = () => {
             numero: lugar.numero,
             latitude: lugar.latitude,
             longitude: lugar.longitude,
+            localizacao,
             active: lugar.statusPista === 'ativada',
             status: 'backend',
             tipo: lugar.tipo,
             valor: lugar.valor,
             categoria: lugar.categoria,
-            fotos: lugar.foto ? [`data:image/jpeg;base64,${lugar.foto}`] : []
+            fotos: [] // Não carregar fotos na listagem para evitar memory leak
           };
         })
       );
       
+
+      console.log('DEBUG: Pistas formatadas:', pistasFormatadas);
       setPistasBackend(pistasFormatadas);
     } catch (error) {
       console.error('Erro ao carregar pistas do backend:', error);
@@ -504,17 +514,19 @@ const Pistas = () => {
   };
 
   const filteredPistas = useMemo(() => {
-    return pistas.filter(pista => {
+    const filtered = pistas.filter(pista => {
       const matchesSearch = pista.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        pista.localizacao.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        pista.rua.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        pista.bairro.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (pista.localizacao || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (pista.rua || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (pista.bairro || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
         pista.descricao.toLowerCase().includes(searchTerm.toLowerCase());
       
       const matchesStatus = filterStatus === 'todas' || pista.status === filterStatus;
       
       return matchesSearch && matchesStatus;
     });
+    console.log('DEBUG: Pistas filtradas:', filtered.length, 'de', pistas.length);
+    return filtered;
   }, [pistas, searchTerm, filterStatus]);
 
   return (

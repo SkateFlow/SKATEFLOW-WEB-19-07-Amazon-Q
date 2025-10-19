@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { usuarioService } from '../services/usuarioService';
+import { organizadorService } from '../services/organizadorService';
 
 const AuthContext = createContext();
 
@@ -39,10 +40,17 @@ export const AuthProvider = ({ children }) => {
     }
     
     try {
-      const fotoBase64 = await usuarioService.buscarFoto(userData.id);
+      const [fotoBase64, organizadores] = await Promise.all([
+        usuarioService.buscarFoto(userData.id).catch(() => null),
+        organizadorService.listar().catch(() => [])
+      ]);
+      
+      const isOrganizador = organizadores.some(org => org.usuario_id?.id === userData.id);
+      
       const userWithPhoto = {
         ...userData,
-        foto: fotoBase64 ? `data:image/jpeg;base64,${fotoBase64}` : null
+        foto: fotoBase64 ? `data:image/jpeg;base64,${fotoBase64}` : null,
+        isOrganizador
       };
       setUser(userWithPhoto);
       setIsAuthenticated(true);

@@ -15,6 +15,8 @@ const Login = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [accountDeletedMessage, setAccountDeletedMessage] = useState('');
+  const [loginMessage, setLoginMessage] = useState('');
+  const [showLoginNotification, setShowLoginNotification] = useState(false);
   const [isRegister, setIsRegister] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -27,6 +29,17 @@ const Login = () => {
       setAccountDeletedMessage(logoutReason);
       localStorage.removeItem('logout_reason');
     }
+    
+    const loginMsg = localStorage.getItem('login_message');
+    if (loginMsg) {
+      setLoginMessage(loginMsg);
+      setShowLoginNotification(true);
+      localStorage.removeItem('login_message');
+      setTimeout(() => {
+        setShowLoginNotification(false);
+        setLoginMessage('');
+      }, 4000);
+    }
   }, []);
 
   const handleSubmit = async (e) => {
@@ -35,6 +48,7 @@ const Login = () => {
     setErrorMessage('');
     setSuccessMessage('');
     setAccountDeletedMessage('');
+    setLoginMessage('');
 
     try {
       if (isRegister) {
@@ -210,6 +224,8 @@ const Login = () => {
               </div>
             )}
 
+
+
             <FormButton type="submit" disabled={loading} className="submit-button">
               {loading ? 'Carregando...' : (isRegister ? 'Cadastrar' : 'Entrar')}
             </FormButton>
@@ -221,11 +237,39 @@ const Login = () => {
               >
                 {isRegister ? 'Já tem conta? Entrar' : 'Não tem conta? Cadastrar'}
               </BackButton>
-              <Link to="/" className="back-button" style={{ color: '#666', textDecoration: 'none', fontSize: '14px' }}>Voltar ao início</Link>
+              {isRegister && (
+                <Link to="/cadastro-organizador" className="toggle-button" style={{ color: '#666' }}>Quer ser Organizador?</Link>
+              )}
+              {!isRegister && (
+                <Link to="/forgot-password" className="toggle-button">Esqueceu a senha?</Link>
+              )}
+              <Link to="/" className="toggle-button" style={{ color: '#666' }}>Voltar ao início</Link>
             </div>
           </Form>
         </FormContent>
       </FormWrap>
+      
+      <div style={{
+        position: 'fixed',
+        top: '84px',
+        left: '50%',
+        transform: `translateX(-50%) translateY(${showLoginNotification ? '0' : '-100%'})`,
+        background: '#11406dff',
+        color: 'white',
+        padding: '16px 32px',
+        fontSize: '14px',
+        fontWeight: '500',
+        zIndex: 1000,
+        borderRadius: '12px',
+        boxShadow: '0 6px 20px rgba(0, 0, 0, 0.2)',
+        display: 'inline-block',
+        width: 'auto',
+        minWidth: 'fit-content',
+        opacity: showLoginNotification ? 1 : 0,
+        transition: 'all 0.3s ease'
+      }}>
+        {loginMessage}
+      </div>
     </Container>
 
   );

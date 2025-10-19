@@ -26,10 +26,12 @@ export const FormWrap = styled.div`
     justify-content: center;
     align-items: center;
     padding: 20px;
+    padding-top: 160px;
 
     @media screen and (max-width: 400px) {
         height: 80%;
         padding: 10px;
+        padding-top: 140px;
     }
 `
 
