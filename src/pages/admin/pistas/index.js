@@ -319,7 +319,7 @@ const Pistas = () => {
       setLoading(true);
       console.log('=== INICIANDO CARREGAMENTO DE PISTAS ===');
       const { lugarService } = await import('../../../services/lugarService');
-      const lugares = await lugarService.listar();
+      const lugares = await lugarService.listarTodas();
       console.log('DEBUG: Lugares do backend:', lugares.length, lugares);
 
       

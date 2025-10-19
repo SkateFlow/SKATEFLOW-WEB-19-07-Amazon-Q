@@ -304,6 +304,37 @@ const CreatePistaModal = ({ isOpen, onClose, onSave }) => {
         
         const categoriaEscolhida = categorias.find(cat => cat.id === formData.categoriaId);
         
+        // Enviar solicitação para o backend
+        const solicitarPista = async () => {
+          try {
+            const dadosSolicitacao = {
+              nome: formData.nome,
+              descricao: formData.descricao,
+              tipo: formData.publica ? 'Pública' : 'Particular',
+              cep: formData.cep,
+              rua: formData.rua,
+              bairro: formData.bairro,
+              numero: formData.numero,
+              latitude: formData.latitude,
+              longitude: formData.longitude,
+              categoriaId: formData.categoriaId,
+              usuarioId: formData.usuarioId,
+              valor: formData.valor || 0,
+              foto1: processedImages[0]?.replace(/^data:image\/[a-z]+;base64,/, '') || null,
+              foto2: processedImages[1]?.replace(/^data:image\/[a-z]+;base64,/, '') || null,
+              foto3: processedImages[2]?.replace(/^data:image\/[a-z]+;base64,/, '') || null
+            };
+            
+            await lugarService.solicitar(dadosSolicitacao);
+            console.log('Solicitação enviada com sucesso!');
+          } catch (error) {
+            console.error('Erro ao enviar solicitação:', error);
+          }
+        };
+        
+        solicitarPista();
+        
+        // Manter comportamento local para compatibilidade
         const newPista = {
           ...formData,
           id: Date.now(),
