@@ -205,46 +205,28 @@ const Solicitacoes = () => {
   React.useEffect(() => {
     const carregarSolicitacoes = async () => {
       try {
-        // Carregar solicitações do backend
+        console.log('Carregando solicitações do backend...');
         const solicitacoesBackend = await solicitacaoPistaService.listarPendentes();
-        setSolicitacoesPistaBackend(solicitacoesBackend);
+        console.log('Solicitações encontradas:', solicitacoesBackend);
         
-        // Carregar eventos do localStorage
-        const eventosStorage = JSON.parse(localStorage.getItem('eventosPendentes') || '[]');
-        setEventosPendentes(eventosStorage);
+        const solicitacoesFormatadas = solicitacoesBackend.map(s => ({ 
+          ...s, 
+          tipo: 'pista', 
+          origem: 'backend',
+          categoria: s.categoria?.nome || 'street',
+          localizacao: `${s.rua || ''}, ${s.bairro || ''}`.replace(/^,\s*|,\s*$/g, '') || 'Não informado',
+          publica: s.tipo === 'Pública'
+        }));
         
-        // Combinar todas as solicitações
-        const todas = [
-          ...pistasPendentes.map(p => ({ ...p, tipo: 'pista', origem: 'localStorage' })),
-          ...solicitacoesBackend.map(s => ({ 
-            ...s, 
-            tipo: 'pista', 
-            origem: 'backend',
-            categoria: s.categoria?.nome || 'street',
-            localizacao: `${s.rua || ''}, ${s.bairro || ''}`.replace(/^,\s*|,\s*$/g, '') || 'Não informado',
-            publica: s.tipo === 'Pública'
-          })),
-          ...eventosStorage.map(e => ({ ...e, tipo: 'evento', origem: 'localStorage' }))
-        ];
-        
-        setTodasSolicitacoes(todas);
+        setTodasSolicitacoes(solicitacoesFormatadas);
       } catch (error) {
         console.error('Erro ao carregar solicitações:', error);
-        // Fallback para localStorage apenas
-        const eventosStorage = JSON.parse(localStorage.getItem('eventosPendentes') || '[]');
-        setEventosPendentes(eventosStorage);
-        
-        const todas = [
-          ...pistasPendentes.map(p => ({ ...p, tipo: 'pista', origem: 'localStorage' })),
-          ...eventosStorage.map(e => ({ ...e, tipo: 'evento', origem: 'localStorage' }))
-        ];
-        
-        setTodasSolicitacoes(todas);
+        setTodasSolicitacoes([]);
       }
     };
     
     carregarSolicitacoes();
-  }, [pistasPendentes]);
+  }, []);
 
   const truncateDescription = (text) => {
     if (!text) return 'Sem descrição';
@@ -266,103 +248,20 @@ const Solicitacoes = () => {
     
     setAprovandoPista(solicitacao.id);
     try {
-      if (solicitacao.tipo === 'pista') {
-        if (solicitacao.origem === 'backend') {
-          // Aprovar solicitação do backend
-          await solicitacaoPistaService.aprovar(solicitacao.id);
-          
-          // Recarregar solicitações do backend
-          const solicitacoesAtualizadas = await solicitacaoPistaService.listarPendentes();
-          setSolicitacoesPistaBackend(solicitacoesAtualizadas);
-          
-          // Atualizar lista combinada
-          const todas = [
-            ...pistasPendentes.map(p => ({ ...p, tipo: 'pista', origem: 'localStorage' })),
-            ...solicitacoesAtualizadas.map(s => ({ 
-              ...s, 
-              tipo: 'pista', 
-              origem: 'backend',
-              categoria: s.categoria?.nome || 'street',
-              localizacao: `${s.rua || ''}, ${s.bairro || ''}`.replace(/^,\s*|,\s*$/g, '') || 'Não informado',
-              publica: s.tipo === 'Pública'
-            })),
-            ...eventosPendentes.map(e => ({ ...e, tipo: 'evento', origem: 'localStorage' }))
-          ];
-          setTodasSolicitacoes(todas);
-        } else {
-          // Lógica antiga para localStorage
-          const { lugarService } = await import('../../../services/lugarService');
-          const { categoriaService } = await import('../../../services/categoriaService');
-          const { usuarioService } = await import('../../../services/usuarioService');
-          
-          // Buscar todas as categorias
-          const categorias = await categoriaService.listar();
-          console.log('Categorias encontradas:', categorias);
-          
-          // Encontrar a categoria pelo nome
-          const categoriaNome = solicitacao.categoria || 'street';
-          const categoriaEncontrada = categorias.find(cat => 
-            cat.nome.toLowerCase() === categoriaNome.toLowerCase()
-          );
-          
-          console.log('Categoria procurada:', categoriaNome);
-          console.log('Categoria encontrada:', categoriaEncontrada);
-          
-          if (!categoriaEncontrada) {
-            throw new Error(`Categoria '${categoriaNome}' não encontrada`);
-          }
-          
-          // Usar o usuário que fez a solicitação
-          const usuarioSolicitante = {
-            id: solicitacao.usuarioId || 1
-          };
-          console.log('Usuario que fez a solicitação:', usuarioSolicitante);
-          
-          const dadosLugar = {
-            nome: solicitacao.nome,
-            descricao: solicitacao.descricao,
-            cep: solicitacao.cep,
-            numero: solicitacao.numero,
-            latitude: solicitacao.latitude,
-            longitude: solicitacao.longitude,
-            tipo: solicitacao.publica === false ? 'Particular' : 'Pública',
-            valor: 0,
-            statusPista: 'ativada',
-            categoriaId: categoriaEncontrada.id,
-            usuarioId: usuarioSolicitante.id,
-            foto1: solicitacao.fotos?.[0]?.replace(/^data:image\/[a-z]+;base64,/, '') || null,
-            foto2: solicitacao.fotos?.[1]?.replace(/^data:image\/[a-z]+;base64,/, '') || null,
-            foto3: solicitacao.fotos?.[2]?.replace(/^data:image\/[a-z]+;base64,/, '') || null
-          };
-          
-          console.log('Dados que serão enviados:', dadosLugar);
-          await lugarService.criar(dadosLugar);
-          removerPistaPendente(solicitacao.id);
-        }
-      } else {
-        // Aprovar evento
-        const { eventoService } = await import('../../../services/eventService');
-        
-        const eventoData = {
-          nome: solicitacao.nome,
-          info: solicitacao.info,
-          dataInicio: solicitacao.dataInicio,
-          dataFim: solicitacao.dataFim,
-          statusEvento: 'ativado',
-          usuario_id: { id: solicitacao.usuario_id?.id || 1 },
-          lugar_id: { id: solicitacao.lugar_id?.id },
-          foto1: solicitacao.fotos?.[0]?.replace(/^data:image\/[a-z]+;base64,/, '') || null,
-          foto2: solicitacao.fotos?.[1]?.replace(/^data:image\/[a-z]+;base64,/, '') || null,
-          foto3: solicitacao.fotos?.[2]?.replace(/^data:image\/[a-z]+;base64,/, '') || null
-        };
-        
-        console.log('Dados do evento para aprovação:', eventoData);
-        await eventoService.criar(eventoData);
-        
-        const eventosAtualizados = eventosPendentes.filter(e => e.id !== solicitacao.id);
-        localStorage.setItem('eventosPendentes', JSON.stringify(eventosAtualizados));
-        setEventosPendentes(eventosAtualizados);
-      }
+      console.log('Aprovando solicitação:', solicitacao.id);
+      await solicitacaoPistaService.aprovar(solicitacao.id);
+      
+      // Recarregar solicitações
+      const solicitacoesAtualizadas = await solicitacaoPistaService.listarPendentes();
+      const solicitacoesFormatadas = solicitacoesAtualizadas.map(s => ({ 
+        ...s, 
+        tipo: 'pista', 
+        origem: 'backend',
+        categoria: s.categoria?.nome || 'street',
+        localizacao: `${s.rua || ''}, ${s.bairro || ''}`.replace(/^,\s*|,\s*$/g, '') || 'Não informado',
+        publica: s.tipo === 'Pública'
+      }));
+      setTodasSolicitacoes(solicitacoesFormatadas);
       
       setShowDetailsModal(false);
       setShowMessage('Aprovação concluída');
@@ -378,37 +277,20 @@ const Solicitacoes = () => {
 
   const handleReject = async (solicitacao) => {
     try {
-      if (solicitacao.tipo === 'pista') {
-        if (solicitacao.origem === 'backend') {
-          // Rejeitar solicitação do backend
-          await solicitacaoPistaService.rejeitar(solicitacao.id);
-          
-          // Recarregar solicitações do backend
-          const solicitacoesAtualizadas = await solicitacaoPistaService.listarPendentes();
-          setSolicitacoesPistaBackend(solicitacoesAtualizadas);
-          
-          // Atualizar lista combinada
-          const todas = [
-            ...pistasPendentes.map(p => ({ ...p, tipo: 'pista', origem: 'localStorage' })),
-            ...solicitacoesAtualizadas.map(s => ({ 
-              ...s, 
-              tipo: 'pista', 
-              origem: 'backend',
-              categoria: s.categoria?.nome || 'street',
-              localizacao: `${s.rua || ''}, ${s.bairro || ''}`.replace(/^,\s*|,\s*$/g, '') || 'Não informado',
-              publica: s.tipo === 'Pública'
-            })),
-            ...eventosPendentes.map(e => ({ ...e, tipo: 'evento', origem: 'localStorage' }))
-          ];
-          setTodasSolicitacoes(todas);
-        } else {
-          removerPistaPendente(solicitacao.id);
-        }
-      } else {
-        const eventosAtualizados = eventosPendentes.filter(e => e.id !== solicitacao.id);
-        localStorage.setItem('eventosPendentes', JSON.stringify(eventosAtualizados));
-        setEventosPendentes(eventosAtualizados);
-      }
+      console.log('Rejeitando solicitação:', solicitacao.id);
+      await solicitacaoPistaService.rejeitar(solicitacao.id);
+      
+      // Recarregar solicitações
+      const solicitacoesAtualizadas = await solicitacaoPistaService.listarPendentes();
+      const solicitacoesFormatadas = solicitacoesAtualizadas.map(s => ({ 
+        ...s, 
+        tipo: 'pista', 
+        origem: 'backend',
+        categoria: s.categoria?.nome || 'street',
+        localizacao: `${s.rua || ''}, ${s.bairro || ''}`.replace(/^,\s*|,\s*$/g, '') || 'Não informado',
+        publica: s.tipo === 'Pública'
+      }));
+      setTodasSolicitacoes(solicitacoesFormatadas);
       
       setShowDetailsModal(false);
     } catch (error) {
@@ -571,7 +453,7 @@ const Solicitacoes = () => {
             onClose={() => setShowDetailsModal(false)}
             solicitacao={selectedSolicitacao}
             onApprove={handleApprove}
-            onReject={handleReject}
+            onReject={AhandleReject}
           />
         ) : (
           <SolicitacaoEventoDetailsModal 

@@ -281,16 +281,8 @@ const Pistas = () => {
   const [pistasBackend, setPistasBackend] = useState([]);
 
   useEffect(() => {
-    const pistasAprovadas = JSON.parse(localStorage.getItem('pistasAprovadas') || '[]');
-    const pistasRejeitadas = JSON.parse(localStorage.getItem('pistasRejeitadas') || '[]');
-    
-    const todasPistas = [
-      ...pistasBackend,
-      ...pistasAprovadas,
-      ...pistasRejeitadas
-    ];
-    console.log('DEBUG: Total pistas combinadas:', todasPistas.length, todasPistas);
-    setPistas(todasPistas);
+    // Exibir apenas pistas vindas do backend (aprovadas/ativadas)
+    setPistas(pistasBackend);
   }, [pistasBackend]);
 
   const getLocationFromCep = async (cep) => {
@@ -310,17 +302,23 @@ const Pistas = () => {
     return 'Não informado';
   };
 
+  // ============================================
+  // ✅ FUNÇÃO CORRIGIDA: loadPistasBackend
+  // ============================================
   const loadPistasBackend = async () => {
     try {
       setLoading(true);
-      console.log('=== INICIANDO CARREGAMENTO DE PISTAS ===');
+      console.log('=== INICIANDO CARREGAMENTO DE PISTAS APROVADAS ===');
       const { lugarService } = await import('../../../services/lugarService');
-      const lugares = await lugarService.listarTodas();
-      console.log('DEBUG: Lugares do backend:', lugares.length, lugares);
-
+      
+      // ✅ CORREÇÃO: Usar listar() - retorna apenas ATIVADAS do backend
+      const lugares = await lugarService.listar();
+      // Filtro defensivo adicional: garantir que só 'ativada' entre na lista
+      const lugaresAtivos = (Array.isArray(lugares) ? lugares : []).filter(l => l.statusPista === 'ativada');
+      console.log('✅ Pistas ATIVADAS do backend (filtradas):', lugaresAtivos.length, lugaresAtivos);
       
       const pistasFormatadas = await Promise.all(
-        lugares.map(async (lugar) => {
+        lugaresAtivos.map(async (lugar) => {
           let rua = lugar.rua || '';
           let bairro = lugar.bairro || '';
           
@@ -369,6 +367,7 @@ const Pistas = () => {
             localizacao,
             active: lugar.statusPista === 'ativada',
             status: 'backend',
+            statusPista: lugar.statusPista, // ✅ Manter statusPista para controle
             tipo: lugar.tipo,
             valor: lugar.valor,
             categoria: lugar.categoria,
@@ -376,12 +375,11 @@ const Pistas = () => {
           };
         })
       );
-      
 
-      console.log('DEBUG: Pistas formatadas:', pistasFormatadas);
+      console.log('✅ Pistas formatadas:', pistasFormatadas);
       setPistasBackend(pistasFormatadas);
     } catch (error) {
-      console.error('Erro ao carregar pistas do backend:', error);
+      console.error('❌ Erro ao carregar pistas do backend:', error);
     } finally {
       setLoading(false);
     }
@@ -554,8 +552,6 @@ const Pistas = () => {
             Atualizar
           </RefreshButton>
         </RefreshContainer>
-        
-
 
         <ListContainer>
           {loading ? (
@@ -580,9 +576,9 @@ const Pistas = () => {
                     </StatusBadge>
                     <StatusBadge 
                       style={{
-                        background: pista.status === 'backend' ? '#e0f2fe' :
+                        background: pista.status === 'backend' ? '#dcfce7' :
                                    pista.status === 'aprovada' ? '#dcfce7' : '#fee2e2',
-                        color: pista.status === 'backend' ? '#0277bd' :
+                        color: pista.status === 'backend' ? '#166534' :
                                pista.status === 'aprovada' ? '#166534' : '#dc2626'
                       }}
                     >
@@ -658,9 +654,7 @@ const Pistas = () => {
         pista={editingPista}
         onSave={handleSavePista}
       />
-      
 
-      
       <ConfirmModal
         isOpen={showConfirmModal}
         onClose={() => setShowConfirmModal(false)}

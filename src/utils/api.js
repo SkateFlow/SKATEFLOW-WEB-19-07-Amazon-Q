@@ -9,7 +9,7 @@ const api = axios.create({
   timeout: 10000,
 });
 
-// Interceptor para tratamento de erros
+// Interceptor para traatamento de erros
 api.interceptors.response.use(
   (response) => response,
   (error) => {
