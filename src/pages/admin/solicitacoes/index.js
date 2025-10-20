@@ -6,6 +6,7 @@ import SidebarAdmin from '../../../components/SidebarAdmin';
 import SearchBar from '../../../components/SearchBar';
 import ConfirmModal from '../../../components/ConfirmModal';
 import { usePistasPendentes } from '../../../hooks/usePistasPendentes';
+import { useEventosPendentes } from '../../../hooks/useEventosPendentes';
 import { solicitacaoPistaService } from '../../../services/solicitacaoPistaService';
 
 const AdminContainer = styled.div`
@@ -203,9 +204,8 @@ const Solicitacoes = () => {
     const [aprovandoPista, setAprovandoPista] = useState(null);
   const [showMessage, setShowMessage] = useState('');
   const { pistasPendentes, removerPistaPendente } = usePistasPendentes();
+  const { eventosPendentes, aprovarEvento, rejeitarEvento } = useEventosPendentes();
   const [todasSolicitacoes, setTodasSolicitacoes] = useState([]);
-  const [eventosPendentes, setEventosPendentes] = useState([]);
-  const [solicitacoesPistaBackend, setSolicitacoesPistaBackend] = useState([]);
 
   React.useEffect(() => {
     const carregarSolicitacoes = async () => {
@@ -214,7 +214,7 @@ const Solicitacoes = () => {
         const solicitacoesBackend = await solicitacaoPistaService.listarPendentes();
         console.log('Solicitações encontradas:', solicitacoesBackend);
         
-        const solicitacoesFormatadas = solicitacoesBackend.map(s => ({ 
+        const solicitacoesPistas = solicitacoesBackend.map(s => ({ 
           ...s, 
           tipo: 'pista', 
           origem: 'backend',
@@ -223,7 +223,16 @@ const Solicitacoes = () => {
           publica: s.tipo === 'Pública'
         }));
         
-        setTodasSolicitacoes(solicitacoesFormatadas);
+        // Adicionar eventos pendentes do localStorage
+        const eventosFormatados = eventosPendentes.map(e => ({
+          ...e,
+          tipo: 'evento',
+          origem: 'localStorage',
+          dataEvento: e.dataInicio ? new Date(e.dataInicio).toLocaleDateString('pt-BR') : 'Não informado',
+          localEvento: e.lugar_id?.nome || 'Local não informado'
+        }));
+        
+        setTodasSolicitacoes([...solicitacoesPistas, ...eventosFormatados]);
       } catch (error) {
         console.error('Erro ao carregar solicitações:', error);
         setTodasSolicitacoes([]);
@@ -231,7 +240,7 @@ const Solicitacoes = () => {
     };
     
     carregarSolicitacoes();
-  }, []);
+  }, [eventosPendentes]);
 
   const truncateDescription = (text) => {
     if (!text) return 'Sem descrição';
@@ -250,11 +259,16 @@ const Solicitacoes = () => {
     setAprovandoPista(solicitacao.id);
     try {
       console.log('Aprovando solicitação:', solicitacao.id);
-      await solicitacaoPistaService.aprovar(solicitacao.id);
+      
+      if (solicitacao.tipo === 'pista') {
+        await solicitacaoPistaService.aprovar(solicitacao.id);
+      } else if (solicitacao.tipo === 'evento') {
+        aprovarEvento(solicitacao.id);
+      }
       
       // Recarregar solicitações
-      const solicitacoesAtualizadas = await solicitacaoPistaService.listarPendentes();
-      const solicitacoesFormatadas = solicitacoesAtualizadas.map(s => ({ 
+      const solicitacoesBackend = await solicitacaoPistaService.listarPendentes();
+      const solicitacoesPistas = solicitacoesBackend.map(s => ({ 
         ...s, 
         tipo: 'pista', 
         origem: 'backend',
@@ -262,7 +276,16 @@ const Solicitacoes = () => {
         localizacao: `${s.rua || ''}, ${s.bairro || ''}`.replace(/^,\s*|,\s*$/g, '') || 'Não informado',
         publica: s.tipo === 'Pública'
       }));
-      setTodasSolicitacoes(solicitacoesFormatadas);
+      
+      const eventosFormatados = eventosPendentes.map(e => ({
+        ...e,
+        tipo: 'evento',
+        origem: 'localStorage',
+        dataEvento: e.dataInicio ? new Date(e.dataInicio).toLocaleDateString('pt-BR') : 'Não informado',
+        localEvento: e.lugar_id?.nome || 'Local não informado'
+      }));
+      
+      setTodasSolicitacoes([...solicitacoesPistas, ...eventosFormatados]);
       
       setShowMessage('Aprovação concluída');
       setTimeout(() => setShowMessage(''), 2500);
@@ -278,11 +301,16 @@ const Solicitacoes = () => {
   const handleReject = async (solicitacao) => {
     try {
       console.log('Rejeitando solicitação:', solicitacao.id);
-      await solicitacaoPistaService.rejeitar(solicitacao.id);
+      
+      if (solicitacao.tipo === 'pista') {
+        await solicitacaoPistaService.rejeitar(solicitacao.id);
+      } else if (solicitacao.tipo === 'evento') {
+        rejeitarEvento(solicitacao.id);
+      }
       
       // Recarregar solicitações
-      const solicitacoesAtualizadas = await solicitacaoPistaService.listarPendentes();
-      const solicitacoesFormatadas = solicitacoesAtualizadas.map(s => ({ 
+      const solicitacoesBackend = await solicitacaoPistaService.listarPendentes();
+      const solicitacoesPistas = solicitacoesBackend.map(s => ({ 
         ...s, 
         tipo: 'pista', 
         origem: 'backend',
@@ -290,9 +318,18 @@ const Solicitacoes = () => {
         localizacao: `${s.rua || ''}, ${s.bairro || ''}`.replace(/^,\s*|,\s*$/g, '') || 'Não informado',
         publica: s.tipo === 'Pública'
       }));
-      setTodasSolicitacoes(solicitacoesFormatadas);
       
-      } catch (error) {
+      const eventosFormatados = eventosPendentes.map(e => ({
+        ...e,
+        tipo: 'evento',
+        origem: 'localStorage',
+        dataEvento: e.dataInicio ? new Date(e.dataInicio).toLocaleDateString('pt-BR') : 'Não informado',
+        localEvento: e.lugar_id?.nome || 'Local não informado'
+      }));
+      
+      setTodasSolicitacoes([...solicitacoesPistas, ...eventosFormatados]);
+      
+    } catch (error) {
       console.error('Erro ao rejeitar solicitação:', error);
       setShowMessage(`Erro ao rejeitar solicitação: ${error.message}`);
       setTimeout(() => setShowMessage(''), 3000);
@@ -407,7 +444,7 @@ const Solicitacoes = () => {
                   <div style={{ color: '#64748b', fontSize: '16px', marginBottom: '6px' }}>
                     {solicitacao.tipo === 'pista' 
                       ? (solicitacao.localizacao || `${solicitacao.rua || ''}, ${solicitacao.bairro || ''}`.replace(/^,\s*|,\s*$/g, '') || 'Não informado')
-                      : (solicitacao.dataEvento ? new Date(solicitacao.dataEvento).toLocaleDateString('pt-BR') : 'Não informado')
+                      : `${solicitacao.dataEvento} - ${solicitacao.localEvento}`
                     }
                   </div>
                   {solicitacao.tipo === 'pista' && solicitacao.categoria && (

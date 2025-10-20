@@ -140,7 +140,6 @@ const PerfilOrganizador = () => {
     nomeOrganizador: '',
     cpf_cnpj: '',
     telefone: '',
-    website: '',
     logradouro: '',
     numResidencia: '',
     cep: '',
@@ -169,7 +168,6 @@ const PerfilOrganizador = () => {
           nomeOrganizador: organizador.nome || '',
           cpf_cnpj: organizador.cpf_cnpj || '',
           telefone: organizador.telefone || '',
-          website: organizador.website || '',
           logradouro: organizador.logradouro || '',
           numResidencia: organizador.numResidencia || '',
           cep: organizador.cep || '',
@@ -205,7 +203,6 @@ const PerfilOrganizador = () => {
           nome: formData.nomeOrganizador,
           cpf_cnpj: formData.cpf_cnpj,
           telefone: formData.telefone,
-          website: formData.website,
           logradouro: formData.logradouro,
           numResidencia: formData.numResidencia,
           cep: formData.cep,
@@ -292,15 +289,7 @@ const PerfilOrganizador = () => {
               />
             </FormGroup>
 
-            <FormGroup>
-              <Label>Website</Label>
-              <Input
-                type="url"
-                value={formData.website}
-                onChange={(e) => handleInputChange('website', e.target.value)}
-                disabled={!editing}
-              />
-            </FormGroup>
+
           </ProfileSection>
 
           <ProfileSection>

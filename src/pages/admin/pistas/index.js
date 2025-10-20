@@ -315,14 +315,14 @@ const Pistas = () => {
       console.log('=== INICIANDO CARREGAMENTO DE PISTAS APROVADAS ===');
       const { lugarService } = await import('../../../services/lugarService');
       
-      // ✅ CORREÇÃO: Usar listar() - retorna apenas ATIVADAS do backend
-      const lugares = await lugarService.listar();
-      // Filtro defensivo adicional: garantir que só 'ativada' entre na lista
-      const lugaresAtivos = (Array.isArray(lugares) ? lugares : []).filter(l => l.statusPista === 'ativada');
-      console.log('✅ Pistas ATIVADAS do backend (filtradas):', lugaresAtivos.length, lugaresAtivos);
+      // ✅ CORREÇÃO: Usar listarTodas() - retorna TODAS as pistas (ativas e inativas)
+      const lugares = await lugarService.listarTodas();
+      // Não filtrar por status - mostrar todas as pistas na tela de admin
+      const todasPistas = Array.isArray(lugares) ? lugares : [];
+      console.log('✅ Todas as pistas do backend:', todasPistas.length, todasPistas);
       
       const pistasFormatadas = await Promise.all(
-        lugaresAtivos.map(async (lugar) => {
+        todasPistas.map(async (lugar) => {
           let rua = lugar.rua || '';
           let bairro = lugar.bairro || '';
           
@@ -375,6 +375,7 @@ const Pistas = () => {
             tipo: lugar.tipo,
             valor: lugar.valor,
             categoria: lugar.categoria,
+            usuario: lugar.usuario, // Incluir dados do usuário
             fotos: [] // Não carregar fotos na listagem para evitar memory leak
           };
         })
@@ -620,6 +621,11 @@ const Pistas = () => {
                         </div>
                       )}
                     </div>
+                    {pista.usuario?.nome && (
+                      <div style={{ fontSize: '12px', color: '#667eea', marginTop: '8px', fontWeight: '500' }}>
+                        👤 Criado por: {pista.usuario.nome}
+                      </div>
+                    )}
                   </PistaInfo>
 
                   <ActionButtons>

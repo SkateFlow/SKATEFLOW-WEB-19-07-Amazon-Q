@@ -313,7 +313,7 @@ const Map = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState('todos');
   const { adicionarPistaPendente } = usePistasPendentes();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
 
   const [spots, setSpots] = useState([]);
@@ -829,7 +829,7 @@ const Map = () => {
           }}
         >
           <FaPlus size={14} />
-          Solicitar Pista
+          {user?.nivelAcesso === 'ADMIN' || user?.isOrganizador ? 'Criar Pista' : 'Solicitar Pista'}
         </AddButton>
       </div>
     </PageContainer>

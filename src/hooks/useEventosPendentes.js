@@ -34,38 +34,20 @@ export const useEventosPendentes = () => {
     localStorage.setItem('eventosPendentes', JSON.stringify(eventosAtualizados));
   };
 
-  const aprovarEvento = async (eventoId) => {
+  const aprovarEvento = (eventoId) => {
     const evento = eventosPendentes.find(e => e.id === eventoId);
     if (evento) {
-      try {
-        // Salvar no backend com status Publicado
-        const eventoParaAprovar = { ...evento, statusEvento: 'Publicado' };
-        const { eventoService } = await import('../services/eventService');
-        const response = await eventoService.criar(eventoParaAprovar);
-        
-        // Se tem fotos, salvar
-        if (evento.fotos && evento.fotos.some(foto => foto)) {
-          const eventoIdBackend = response.id || eventoId;
-          
-          for (let i = 0; i < evento.fotos.length; i++) {
-            if (evento.fotos[i]) {
-              const fotoBase64 = evento.fotos[i].split(',')[1];
-              try {
-                await eventoService[`salvarFoto${i + 1}`](eventoIdBackend, fotoBase64);
-              } catch (error) {
-                console.error(`Erro ao salvar foto ${i + 1}:`, error);
-              }
-            }
-          }
-        }
+      // Adicionar à lista de eventos aprovados
+      const eventosAprovados = JSON.parse(localStorage.getItem('eventosAprovados') || '[]');
+      eventosAprovados.push({
+        ...evento,
+        statusEvento: 'ativado',
+        dataAprovacao: new Date().toISOString()
+      });
+      localStorage.setItem('eventosAprovados', JSON.stringify(eventosAprovados));
 
-        // Remover da lista de pendentes
-        removerEventoPendente(eventoId);
-        return true;
-      } catch (error) {
-        console.error('Erro ao aprovar evento:', error);
-        return false;
-      }
+      // Remover da lista de pendentes
+      removerEventoPendente(eventoId);
     }
   };
 
@@ -76,7 +58,7 @@ export const useEventosPendentes = () => {
       const eventosRejeitados = JSON.parse(localStorage.getItem('eventosRejeitados') || '[]');
       eventosRejeitados.push({
         ...evento,
-        status: 'rejeitado',
+        statusEvento: 'rejeitado',
         dataRejeicao: new Date().toISOString()
       });
       localStorage.setItem('eventosRejeitados', JSON.stringify(eventosRejeitados));

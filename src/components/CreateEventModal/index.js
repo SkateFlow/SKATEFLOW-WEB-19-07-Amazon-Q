@@ -140,12 +140,13 @@ const PhotoSection = styled.div`
   padding: 16px;
   background: #f8fafc;
   border-radius: 12px;
+  border: ${props => props.hasError ? '2px solid #dc2626' : 'none'};
 `;
 
 const PhotoUpload = styled.div`
   min-width: 120px;
   height: 120px;
-  border: 2px dashed #cbd5e0;
+  border: 2px dashed ${props => props.hasError ? '#dc2626' : '#cbd5e0'};
   border-radius: 8px;
   display: flex;
   flex-direction: column;
@@ -156,7 +157,7 @@ const PhotoUpload = styled.div`
   background: ${props => props.hasImage ? 'transparent' : '#ffffff'};
 
   &:hover {
-    border-color: #667eea;
+    border-color: ${props => props.hasError ? '#dc2626' : '#667eea'};
     background: ${props => props.hasImage ? 'transparent' : '#f7fafc'};
   }
 `;
@@ -224,7 +225,7 @@ const Button = styled.button`
 `;
 
 const CreateEventModal = ({ isOpen, onClose, onSave }) => {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [formData, setFormData] = useState({
     nome: '',
     info: '',
@@ -236,6 +237,7 @@ const CreateEventModal = ({ isOpen, onClose, onSave }) => {
   });
   const [lugares, setLugares] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [photoError, setPhotoError] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -274,13 +276,20 @@ const CreateEventModal = ({ isOpen, onClose, onSave }) => {
     setLoading(true);
 
     try {
-      const savedUser = localStorage.getItem('skateflow_user');
-      if (!savedUser) {
+      if (!user?.id) {
         alert('Você precisa estar logado para criar um evento');
+        setLoading(false);
         return;
       }
-
-      const userData = JSON.parse(savedUser);
+      
+      // Validar se pelo menos uma foto foi adicionada
+      const temFoto = formData.fotos.some(foto => foto !== null && foto !== '');
+      if (!temFoto) {
+        setPhotoError(true);
+        setLoading(false);
+        return;
+      }
+      setPhotoError(false);
       
       const eventoData = {
         nome: formData.nome,
@@ -289,35 +298,34 @@ const CreateEventModal = ({ isOpen, onClose, onSave }) => {
         dataFim: new Date(formData.dataFim).toISOString(),
         statusEvento: (user?.isOrganizador || user?.nivelAcesso === 'ADMIN') ? 'ativado' : 'Pendente',
         linkSite: formData.linkSite || null,
-        usuario_id: { id: userData.id },
+        usuario_id: { id: user.id },
         lugar_id: { id: parseInt(formData.lugarId) },
         fotos: formData.fotos.filter(foto => foto),
         dataCriacao: new Date().toISOString(),
-        criadoPor: userData.nome
+        criadoPor: user.nome
       };
 
       if (user?.isOrganizador || user?.nivelAcesso === 'ADMIN') {
         // Organizador/Admin: cria evento diretamente ativo
+        eventoData.statusEvento = 'ativado';
         const fotosBase64 = formData.fotos.filter(foto => foto);
         
         if (fotosBase64.length > 0) {
-          // Preparar dados com fotos
           const eventoComFotos = {
             ...eventoData,
             foto1: fotosBase64[0] ? fotosBase64[0].split(',')[1] : null,
             foto2: fotosBase64[1] ? fotosBase64[1].split(',')[1] : null,
             foto3: fotosBase64[2] ? fotosBase64[2].split(',')[1] : null
           };
-          
           await eventoService.criar(eventoComFotos);
         } else {
           await eventoService.criar(eventoData);
         }
-        
-        alert('Evento adicionado com sucesso!');
+        alert('Evento criado com sucesso!');
       } else {
-        // Usuário comum: adiciona à lista de pendentes
-        const eventoComId = { ...eventoData, id: Date.now(), statusEvento: 'Pendente' };
+        // Usuário comum: envia solicitação com status pendente
+        eventoData.statusEvento = 'Pendente';
+        const eventoComId = { ...eventoData, id: Date.now() };
         const eventosPendentes = JSON.parse(localStorage.getItem('eventosPendentes') || '[]');
         eventosPendentes.push(eventoComId);
         localStorage.setItem('eventosPendentes', JSON.stringify(eventosPendentes));
@@ -339,6 +347,7 @@ const CreateEventModal = ({ isOpen, onClose, onSave }) => {
       });
 
     } catch (error) {
+      console.error('Erro ao criar evento:', error);
       alert(typeof error === 'string' ? error : 'Erro ao criar evento');
     } finally {
       setLoading(false);
@@ -346,6 +355,18 @@ const CreateEventModal = ({ isOpen, onClose, onSave }) => {
   };
 
   if (!isOpen) return null;
+  
+  if (authLoading) {
+    return (
+      <ModalOverlay>
+        <ModalContent>
+          <div style={{ padding: '40px', textAlign: 'center' }}>
+            Carregando...
+          </div>
+        </ModalContent>
+      </ModalOverlay>
+    );
+  }
 
   return (
     <ModalOverlay onClick={onClose}>
@@ -359,6 +380,33 @@ const CreateEventModal = ({ isOpen, onClose, onSave }) => {
 
         <ModalBody>
           <form onSubmit={handleSubmit}>
+            <Label>Fotos do Evento (opcional)</Label>
+            <PhotoSection hasError={photoError}>
+              {[0, 1, 2].map(index => (
+                <PhotoUpload
+                  key={index}
+                  hasImage={formData.fotos[index]}
+                  hasError={photoError}
+                  onClick={() => document.getElementById(`photo-${index}`).click()}
+                >
+                  {formData.fotos[index] ? (
+                    <PhotoPreview src={formData.fotos[index]} alt={`Foto ${index + 1}`} />
+                  ) : (
+                    <PhotoLabel>
+                      <FiCamera size={24} />
+                      <span>Foto {index + 1}</span>
+                    </PhotoLabel>
+                  )}
+                  <PhotoInput
+                    id={`photo-${index}`}
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => handlePhotoChange(index, e.target.files[0])}
+                  />
+                </PhotoUpload>
+              ))}
+            </PhotoSection>
+
             <FormGrid>
               <FormGroup className="full-width">
                 <Label>Nome do Evento</Label>
@@ -428,31 +476,6 @@ const CreateEventModal = ({ isOpen, onClose, onSave }) => {
               </FormGroup>
             </FormGrid>
 
-            <Label>Fotos do Evento (opcional)</Label>
-            <PhotoSection>
-              {[0, 1, 2].map(index => (
-                <PhotoUpload
-                  key={index}
-                  hasImage={formData.fotos[index]}
-                  onClick={() => document.getElementById(`photo-${index}`).click()}
-                >
-                  {formData.fotos[index] ? (
-                    <PhotoPreview src={formData.fotos[index]} alt={`Foto ${index + 1}`} />
-                  ) : (
-                    <PhotoLabel>
-                      <FiCamera size={24} />
-                      <span>Foto {index + 1}</span>
-                    </PhotoLabel>
-                  )}
-                  <PhotoInput
-                    id={`photo-${index}`}
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => handlePhotoChange(index, e.target.files[0])}
-                  />
-                </PhotoUpload>
-              ))}
-            </PhotoSection>
 
             <ButtonGroup>
               <Button type="button" onClick={onClose}>

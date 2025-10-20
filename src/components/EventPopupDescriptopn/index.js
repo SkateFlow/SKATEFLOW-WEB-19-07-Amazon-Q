@@ -411,13 +411,26 @@ const EventPopup = ({ event, onClose }) => {
             <DateTimeRow>
               <DateTimeItem>
                 <InfoIcon><FaCalendarAlt size={16} /></InfoIcon>
-                <InfoText>{event.dataEvento}</InfoText>
+                <InfoText>Início: {event.dataEvento}</InfoText>
               </DateTimeItem>
               <DateTimeItem>
                 <InfoIcon><FaClock size={16} /></InfoIcon>
                 <InfoText>{event.horaEvento || '18:00'}</InfoText>
               </DateTimeItem>
             </DateTimeRow>
+            
+            {event.dataFim && (
+              <DateTimeRow>
+                <DateTimeItem>
+                  <InfoIcon><FaCalendarAlt size={16} /></InfoIcon>
+                  <InfoText>Fim: {event.dataFim}</InfoText>
+                </DateTimeItem>
+                <DateTimeItem>
+                  <InfoIcon><FaClock size={16} /></InfoIcon>
+                  <InfoText>{event.horaFim || '18:00'}</InfoText>
+                </DateTimeItem>
+              </DateTimeRow>
+            )}
             
             {event.criadoPor && (
               <InfoRow>
@@ -426,18 +439,15 @@ const EventPopup = ({ event, onClose }) => {
               </InfoRow>
             )}
             
-            {event.statusEvento && (
-              <InfoRow>
-                <InfoIcon>📊</InfoIcon>
-                <InfoText>Status: {event.statusEvento === 'ativado' ? 'Ativo' : event.statusEvento}</InfoText>
-              </InfoRow>
-            )}
+
           </div>
           
-          <WebsiteButton onClick={() => event.website && window.open(event.website, '_blank')}>
-            <span>ir ao site</span>
-            <FaExternalLinkAlt size={16} />
-          </WebsiteButton>
+          {event.linkSite && (
+              <WebsiteButton onClick={() => window.open(event.linkSite, '_blank')}>
+                <span>ir ao site</span>
+                <FaExternalLinkAlt size={16} />
+              </WebsiteButton>
+            )}
         </PopupBody>
       </PopupContent>
     </PopupOverlay>

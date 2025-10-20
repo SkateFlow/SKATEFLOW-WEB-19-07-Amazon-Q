@@ -22,20 +22,24 @@ export const AuthProvider = ({ children }) => {
     if (savedUser) {
       try {
         const userData = JSON.parse(savedUser);
+        setUser(userData);
+        setIsAuthenticated(true);
+        setLoading(false);
+        // Carregar foto em background sem afetar o estado de autenticação
         loadUserPhoto(userData);
       } catch (error) {
         console.error('Erro ao carregar dados do usuário:', error);
         localStorage.removeItem('skateflow_user');
+        setLoading(false);
       }
+    } else {
+      setLoading(false);
     }
-    setLoading(false);
   }, []);
 
   const loadUserPhoto = async (userData) => {
     // Se já tem foto, não carrega novamente
     if (userData.foto) {
-      setUser(userData);
-      setIsAuthenticated(true);
       return;
     }
     
@@ -53,16 +57,18 @@ export const AuthProvider = ({ children }) => {
         isOrganizador
       };
       setUser(userWithPhoto);
-      setIsAuthenticated(true);
       localStorage.setItem('skateflow_user', JSON.stringify(userWithPhoto));
     } catch (error) {
-      setUser(userData);
-      setIsAuthenticated(true);
+      console.error('Erro ao carregar foto do usuário:', error);
     }
   };
 
   const login = async (userData) => {
-    await loadUserPhoto(userData);
+    setUser(userData);
+    setIsAuthenticated(true);
+    localStorage.setItem('skateflow_user', JSON.stringify(userData));
+    // Carregar foto em background
+    loadUserPhoto(userData);
   };
 
   const logout = (reason = null) => {

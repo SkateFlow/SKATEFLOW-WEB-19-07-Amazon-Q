@@ -183,7 +183,6 @@ const CadastroOrganizador = () => {
     cpf_cnpj: '',
     dataNascimento: '',
     telefone: '',
-    website: '',
     logradouro: '',
     numResidencia: '',
     cep: '',
@@ -260,7 +259,6 @@ const CadastroOrganizador = () => {
         dataNascimento: formData.dataNascimento || null,
         telefone: formData.telefone,
         email: formData.email,
-        website: formData.website || null,
         logradouro: formData.logradouro || null,
         numResidencia: formData.numResidencia || null,
         cep: formData.cep,
@@ -416,14 +414,7 @@ const CadastroOrganizador = () => {
                   />
                 </InputGroup>
 
-                <InputGroup>
-                  <FormInput
-                    type="url"
-                    placeholder="Website"
-                    value={formData.website}
-                    onChange={(e) => handleInputChange('website', e.target.value)}
-                  />
-                </InputGroup>
+
 
                 <InputGroup>
                   <FormInput

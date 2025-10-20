@@ -23,9 +23,23 @@ export const usePistasPendentes = () => {
   }, []);
 
   const adicionarPistaPendente = (pista) => {
-    const novasPistas = [...pistasPendentes, pista];
-    setPistasPendentes(novasPistas);
-    localStorage.setItem('pistasPendentes', JSON.stringify(novasPistas));
+    try {
+      // Remover imagens base64 para economizar espaço
+      const pistaLimpa = {
+        ...pista,
+        fotos: [] // Limpar fotos para evitar quota exceeded
+      };
+      const novasPistas = [...pistasPendentes, pistaLimpa];
+      setPistasPendentes(novasPistas);
+      localStorage.setItem('pistasPendentes', JSON.stringify(novasPistas));
+    } catch (error) {
+      console.error('Erro ao salvar pista pendente:', error);
+      // Tentar limpar localStorage se estiver cheio
+      if (error.name === 'QuotaExceededError') {
+        localStorage.removeItem('pistasPendentes');
+        setPistasPendentes([]);
+      }
+    }
   };
 
   const removerPistaPendente = (pistaId) => {

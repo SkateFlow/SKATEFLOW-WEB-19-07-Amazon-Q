@@ -9,7 +9,7 @@ import {
   SaveButton
 } from '../EditPistaModal/EditPistaModalElements';
 
-const PistaRequestConfirmModal = ({ isOpen, onClose, isAdmin }) => {
+const EventRequestConfirmModal = ({ isOpen, onClose, isOrganizer }) => {
   return (
     <AnimatePresence mode="wait">
       {isOpen && (
@@ -53,7 +53,7 @@ const PistaRequestConfirmModal = ({ isOpen, onClose, isAdmin }) => {
             
             <ModalHeader style={{ borderBottom: 'none', paddingBottom: '0' }}>
               <ModalTitle style={{ fontSize: '20px', color: '#1f2937' }}>
-                {isAdmin ? 'Pista Cadastrada com Sucesso!' : 'Pista Solicitada com Sucesso!'}
+                {isOrganizer ? 'Evento Cadastrado!' : 'Solicitação Enviada!'}
               </ModalTitle>
             </ModalHeader>
             
@@ -63,9 +63,9 @@ const PistaRequestConfirmModal = ({ isOpen, onClose, isAdmin }) => {
               fontSize: '14px',
               lineHeight: '1.6'
             }}>
-              {isAdmin 
-                ? 'Sua pista foi cadastrada com sucesso e já está disponível no mapa.'
-                : 'Sua solicitação de pista foi enviada para o sistema e está sendo analisada. Você receberá uma notificação quando ela for aprovada ou se houver alguma observação.'
+              {isOrganizer 
+                ? 'Seu evento foi cadastrado com sucesso e já está disponível para visualização.'
+                : 'Sua solicitação de evento foi enviada para o sistema e está sendo analisada. Você receberá uma notificação quando ela for aprovada ou se houver alguma observação.'
               }
             </div>
             
@@ -86,4 +86,4 @@ const PistaRequestConfirmModal = ({ isOpen, onClose, isAdmin }) => {
   );
 };
 
-export default PistaRequestConfirmModal;
+export default EventRequestConfirmModal;

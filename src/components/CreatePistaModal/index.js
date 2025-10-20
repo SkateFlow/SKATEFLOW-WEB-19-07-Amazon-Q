@@ -52,6 +52,7 @@ const CreatePistaModal = ({ isOpen, onClose, onSave }) => {
   
   const [locationInfo, setLocationInfo] = useState('');
   const [errors, setErrors] = useState({});
+  const [photoError, setPhotoError] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [timeoutId, setTimeoutId] = useState(null);
@@ -289,6 +290,15 @@ const CreatePistaModal = ({ isOpen, onClose, onSave }) => {
       }
     });
     
+    // Validar se pelo menos uma foto foi adicionada
+    const temFoto = formData.fotos.some(foto => foto !== '' && foto !== null);
+    if (!temFoto) {
+      setPhotoError(true);
+      newErrors.fotos = 'É obrigatório adicionar pelo menos uma imagem da pista';
+    } else {
+      setPhotoError(false);
+    }
+    
     setErrors(newErrors);
     
     if (Object.keys(newErrors).length === 0) {
@@ -304,35 +314,63 @@ const CreatePistaModal = ({ isOpen, onClose, onSave }) => {
         
         const categoriaEscolhida = categorias.find(cat => cat.id === formData.categoriaId);
         
-        // Enviar solicitação para o backend
-        const solicitarPista = async () => {
-          try {
-            const dadosSolicitacao = {
-              nome: formData.nome,
-              descricao: formData.descricao,
-              tipo: formData.publica ? 'Pública' : 'Particular',
-              cep: formData.cep,
-              rua: formData.rua,
-              bairro: formData.bairro,
-              numero: formData.numero,
-              latitude: formData.latitude,
-              longitude: formData.longitude,
-              categoriaId: formData.categoriaId,
-              usuarioId: formData.usuarioId,
-              valor: formData.valor || 0,
-              foto1: processedImages[0]?.replace(/^data:image\/[a-z]+;base64,/, '') || null,
-              foto2: processedImages[1]?.replace(/^data:image\/[a-z]+;base64,/, '') || null,
-              foto3: processedImages[2]?.replace(/^data:image\/[a-z]+;base64,/, '') || null
-            };
-            
-            await lugarService.solicitar(dadosSolicitacao);
-            console.log('Solicitação enviada com sucesso!');
-          } catch (error) {
-            console.error('Erro ao enviar solicitação:', error);
+        // Verificar nível de acesso do usuário
+        const processarPista = async () => {
+          if (user?.nivelAcesso === 'ADMIN' || user?.isOrganizador) {
+            // Admin/Organizador: cria pista diretamente
+            try {
+              const dadosPista = {
+                nome: formData.nome,
+                descricao: formData.descricao,
+                tipo: formData.publica ? 'Pública' : 'Particular',
+                cep: formData.cep,
+                rua: formData.rua,
+                bairro: formData.bairro,
+                numero: formData.numero,
+                latitude: formData.latitude,
+                longitude: formData.longitude,
+                categoriaId: formData.categoriaId,
+                usuarioId: formData.usuarioId,
+                valor: formData.valor || 0,
+                statusPista: 'ativada',
+                foto1: processedImages[0]?.replace(/^data:image\/[a-z]+;base64,/, '') || null,
+                foto2: processedImages[1]?.replace(/^data:image\/[a-z]+;base64,/, '') || null,
+                foto3: processedImages[2]?.replace(/^data:image\/[a-z]+;base64,/, '') || null
+              };
+              await lugarService.criar(dadosPista);
+              console.log('Pista criada com sucesso!');
+            } catch (error) {
+              console.error('Erro ao criar pista:', error);
+            }
+          } else {
+            // Usuário comum: envia solicitação
+            try {
+              const dadosSolicitacao = {
+                nome: formData.nome,
+                descricao: formData.descricao,
+                tipo: formData.publica ? 'Pública' : 'Particular',
+                cep: formData.cep,
+                rua: formData.rua,
+                bairro: formData.bairro,
+                numero: formData.numero,
+                latitude: formData.latitude,
+                longitude: formData.longitude,
+                categoriaId: formData.categoriaId,
+                usuarioId: formData.usuarioId,
+                valor: formData.valor || 0,
+                foto1: processedImages[0]?.replace(/^data:image\/[a-z]+;base64,/, '') || null,
+                foto2: processedImages[1]?.replace(/^data:image\/[a-z]+;base64,/, '') || null,
+                foto3: processedImages[2]?.replace(/^data:image\/[a-z]+;base64,/, '') || null
+              };
+              await lugarService.solicitar(dadosSolicitacao);
+              console.log('Solicitação enviada com sucesso!');
+            } catch (error) {
+              console.error('Erro ao enviar solicitação:', error);
+            }
           }
         };
         
-        solicitarPista();
+        processarPista();
         
         // Manter comportamento local para compatibilidade
         const newPista = {
@@ -376,16 +414,18 @@ const CreatePistaModal = ({ isOpen, onClose, onSave }) => {
             onClick={(e) => e.stopPropagation()}
           >
             <ModalHeader>
-              <ModalTitle>Solicitar Nova Pista</ModalTitle>
+              <ModalTitle>
+                {user?.isOrganizador || user?.nivelAcesso === 'ADMIN' ? 'Criar Nova Pista' : 'Solicitar Nova Pista'}
+              </ModalTitle>
               <CloseButton onClick={handleClose}>
                 <FiX />
               </CloseButton>
             </ModalHeader>
 
             <ModalContent>
-              <PhotoSection>
+              <PhotoSection style={{ border: photoError ? '2px solid #dc2626' : 'none' }}>
                 {[0, 1, 2].map((index) => (
-                  <PhotoUpload key={index}>
+                  <PhotoUpload key={index} style={{ borderColor: photoError ? '#dc2626' : '#cbd5e0' }}>
                     {formData.fotos[index] ? (
                       <img 
                         src={formData.fotos[index]} 
@@ -409,6 +449,7 @@ const CreatePistaModal = ({ isOpen, onClose, onSave }) => {
                     />
                   </PhotoUpload>
                 ))}
+
               </PhotoSection>
 
               <FormGrid>
@@ -634,7 +675,9 @@ const CreatePistaModal = ({ isOpen, onClose, onSave }) => {
 
               <ButtonGroup>
                 <CancelButton onClick={handleClose}>Cancelar</CancelButton>
-                <SaveButton onClick={handleSave}>Solicitar Pista</SaveButton>
+                <SaveButton onClick={handleSave}>
+                  {user?.isOrganizador || user?.nivelAcesso === 'ADMIN' ? 'Criar Pista' : 'Solicitar Pista'}
+                </SaveButton>
               </ButtonGroup>
             </ModalContent>
           </ModalContainer>
@@ -700,6 +743,7 @@ const CreatePistaModal = ({ isOpen, onClose, onSave }) => {
       <PistaRequestConfirmModal 
         isOpen={showSuccessModal}
         onClose={() => setShowSuccessModal(false)}
+        isAdmin={user?.nivelAcesso === 'ADMIN' || user?.isOrganizador}
       />
     </AnimatePresence>
   );

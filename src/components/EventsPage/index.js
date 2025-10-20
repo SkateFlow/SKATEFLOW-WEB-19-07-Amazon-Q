@@ -139,13 +139,13 @@ const CardActions = styled.div`
 `;
 
 const BadgeOutline = styled.span`
-  border: 1px solid #4a5568;
-  color: #4a5568;
-  background: transparent;
+  border: 1px solid #1a237e;
+  color: #1a237e;
+  background: rgba(26, 35, 126, 0.05);
   padding: 4px 8px;
   border-radius: 12px;
   font-size: 0.75rem;
-  font-weight: 400;
+  font-weight: 500;
 `;
 
 const SearchAndButtonContainer = styled.div`
@@ -307,6 +307,26 @@ const CloseButton = styled.button`
   }
 `;
 
+const NotificationMessage = styled.div`
+  position: fixed;
+  top: 84px;
+  left: 50%;
+  transform: translateX(-50%) translateY(${props => props.show ? '0' : '-100%'});
+  background: #11406dff;
+  color: white;
+  padding: 16px 32px;
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 1000;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+  display: inline-block;
+  width: auto;
+  min-width: fit-content;
+  opacity: ${props => props.show ? 1 : 0};
+  transition: all 0.3s ease;
+`;
+
 const PopupGrid = styled.div`
   display: grid;
   grid-template-columns: 1fr;
@@ -335,6 +355,9 @@ const EventsPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showAllEvents, setShowAllEvents] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showNotification, setShowNotification] = useState(false);
+  const [showSuccessNotification, setShowSuccessNotification] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
   const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
 
@@ -348,7 +371,21 @@ const EventsPage = () => {
   useEffect(() => {
     fetchEvents();
     window.scrollTo(0, 0);
+    
+    // Função para mostrar notificação quando já estiver na tela de eventos
+    window.showEventsNotification = () => {
+      setShowNotification(true);
+      setTimeout(() => {
+        setShowNotification(false);
+      }, 3000);
+    };
+    
+    return () => {
+      delete window.showEventsNotification;
+    };
   }, []);
+
+
 
   const fetchEvents = async () => {
     try {
@@ -391,13 +428,32 @@ const EventsPage = () => {
               ...evento,
               nomeEvento: evento.nome,
               descricao: evento.info,
-              dataEvento: evento.dataInicio ? new Date(evento.dataInicio).toLocaleDateString('pt-BR') : 'Data não informada',
-              horaEvento: evento.dataInicio ? new Date(evento.dataInicio).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '18:00',
+              dataEvento: evento.dataInicio ? new Date(evento.dataInicio).toLocaleDateString('pt-BR', {
+                day: '2-digit',
+                month: '2-digit', 
+                year: 'numeric'
+              }) : 'Data não informada',
+              horaEvento: evento.dataInicio ? new Date(evento.dataInicio).toLocaleTimeString('pt-BR', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                hour12: false
+              }) : '18:00',
+              dataFim: evento.dataFim ? new Date(evento.dataFim).toLocaleDateString('pt-BR', {
+                day: '2-digit',
+                month: '2-digit', 
+                year: 'numeric'
+              }) : null,
+              horaFim: evento.dataFim ? new Date(evento.dataFim).toLocaleTimeString('pt-BR', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                hour12: false
+              }) : null,
               localEvento: evento.lugar_id?.nome || 'Local não informado',
               imagemEvento: foto1Base64 || 'https://via.placeholder.com/400x280?text=Sem+Imagem',
               fotosEvento: fotosEvento.length > 0 ? fotosEvento : ['https://via.placeholder.com/400x280?text=Sem+Imagem'],
               criadoPor: evento.usuario_id?.nome || 'Usuário não informado',
-              statusEvento: evento.statusEvento
+              statusEvento: evento.statusEvento,
+              linkSite: evento.linkSite
             };
           })
         );
@@ -440,7 +496,9 @@ const EventsPage = () => {
   };
 
   const handleCreateEvent = () => {
-    if (isAuthenticated) {
+    console.log('handleCreateEvent - isAuthenticated:', isAuthenticated);
+    console.log('handleCreateEvent - user:', user);
+    if (isAuthenticated && user) {
       setShowCreateModal(true);
     } else {
       localStorage.setItem('login_message', 'Você precisa estar logado para cadastrar um evento.');
@@ -453,6 +511,17 @@ const EventsPage = () => {
     // Recarregar eventos após criar
     fetchEvents();
     setShowCreateModal(false);
+    
+    // Mostrar notificação de sucesso
+    if (user?.isOrganizador || user?.nivelAcesso === 'ADMIN') {
+      setSuccessMessage('Evento cadastrado com sucesso!');
+    } else {
+      setSuccessMessage('Solicitação de evento enviada com sucesso!');
+    }
+    setShowSuccessNotification(true);
+    setTimeout(() => {
+      setShowSuccessNotification(false);
+    }, 3000);
   };
 
   return (
@@ -460,6 +529,12 @@ const EventsPage = () => {
 
       <Sidebar isOpen={isOpen} toggle={toggle}/>
       <Navbar toggle={toggle} scrollNav={true}/>
+      <NotificationMessage show={showNotification}>
+        Você já está nessa página!
+      </NotificationMessage>
+      <NotificationMessage show={showSuccessNotification} style={{ background: '#10b981' }}>
+        {successMessage}
+      </NotificationMessage>
       <EventsContainer>
         <h1>Eventos</h1>
         <SearchAndButtonContainer>

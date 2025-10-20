@@ -136,8 +136,18 @@ const Navbar = ({ toggle, scrollNav: forceScrollNav }) => {
                                         activeClass='active'
                                         exact='true'
                                         scrollNav={finalScrollNav}>Eventos</AnimatedScrollLink>
+                                    ) : location.pathname === '/events' ? (
+                                        <AnimatedRouterLink 
+                                        to="#" 
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            if (window.showEventsNotification) {
+                                                window.showEventsNotification();
+                                            }
+                                        }}
+                                        scrollNav={finalScrollNav}>Eventos</AnimatedRouterLink>
                                     ) : (
-                                        <AnimatedRouterLink to="/events" isActive={location.pathname === '/events'} scrollNav={finalScrollNav}>Eventos</AnimatedRouterLink>
+                                        <AnimatedRouterLink to="/events" scrollNav={finalScrollNav}>Eventos</AnimatedRouterLink>
                                     )}
                                 </NavItem>
                                 <NavItem>
