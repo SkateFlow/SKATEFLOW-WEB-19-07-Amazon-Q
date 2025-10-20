@@ -476,7 +476,7 @@ const EventsPage = () => {
           </SearchContainer>
           <CreateEventButton onClick={handleCreateEvent}>
             <FaPlus />
-            {user?.isOrganizador ? 'Criar Evento' : 'Solicitar Evento'}
+            {(user?.isOrganizador || user?.nivelAcesso === 'ADMIN') ? 'Criar Evento' : 'Solicitar Evento'}
           </CreateEventButton>
         </SearchAndButtonContainer>
         <SectionLabel>Recentes</SectionLabel>

@@ -22,7 +22,7 @@ export const eventoService = {
   criar: async (evento) => {
     try {
       // Se o evento tem fotos, usar o endpoint com fotos
-      if (evento.foto1 || evento.foto2 || evento.foto3) {
+      if (evento.foto1 || evento.foto2 || evento.foto3 || (evento.fotos && evento.fotos.length > 0)) {
         const response = await api.post('/evento/saveWithPhotos', evento);
         return response.data;
       } else {

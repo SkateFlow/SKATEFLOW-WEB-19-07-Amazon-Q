@@ -58,7 +58,7 @@ const SolicitacaoGrid = styled.div`
 const SolicitacaoCard = styled.div`
   background: #fff;
   border-radius: 12px;
-  padding: 64px 56px;
+  padding: 54px 46px;
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
   border: 1px solid #e2e8f0;
   transition: all 0.3s ease;
@@ -66,8 +66,8 @@ const SolicitacaoCard = styled.div`
   display: flex;
   flex-direction: column;
   gap: 28px;
-  min-height: 420px; /* 🔥 altura bem maior */
-  
+  min-height: 360px; /* 🔥 altura bem maior */
+
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);

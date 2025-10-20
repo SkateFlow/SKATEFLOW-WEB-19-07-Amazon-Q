@@ -38,9 +38,10 @@ export const useEventosPendentes = () => {
     const evento = eventosPendentes.find(e => e.id === eventoId);
     if (evento) {
       try {
-        // Salvar no backend
+        // Salvar no backend com status Publicado
+        const eventoParaAprovar = { ...evento, statusEvento: 'Publicado' };
         const { eventoService } = await import('../services/eventService');
-        const response = await eventoService.criar(evento);
+        const response = await eventoService.criar(eventoParaAprovar);
         
         // Se tem fotos, salvar
         if (evento.fotos && evento.fotos.some(foto => foto)) {

@@ -30,6 +30,7 @@ const EditEventModal = ({ isOpen, onClose, event, onSave }) => {
     descricao: '',
     dataInicio: '',
     dataFim: '',
+    linkSite: '',
     ativo: true,
     fotos: ['', '', '']
   });
@@ -46,6 +47,7 @@ const EditEventModal = ({ isOpen, onClose, event, onSave }) => {
         descricao: event.descricao || '',
         dataInicio: event.dataInicio || '',
         dataFim: event.dataFim || '',
+        linkSite: event.linkSite || '',
         ativo: event.ativo !== undefined ? event.ativo : true,
         fotos: event.fotos || ['', '', '']
       };
@@ -339,6 +341,16 @@ const EditEventModal = ({ isOpen, onClose, event, onSave }) => {
                       </motion.div>
                     )}
                   </AnimatePresence>
+                </FormGroup>
+
+                <FormGroup span={2}>
+                  <Label>Link do Site do Evento (opcional)</Label>
+                  <Input
+                    type="url"
+                    value={formData.linkSite}
+                    onChange={(e) => handleInputChange('linkSite', e.target.value)}
+                    placeholder="https://exemplo.com"
+                  />
                 </FormGroup>
 
 

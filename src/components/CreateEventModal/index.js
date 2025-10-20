@@ -231,6 +231,7 @@ const CreateEventModal = ({ isOpen, onClose, onSave }) => {
     dataInicio: '',
     dataFim: '',
     lugarId: '',
+    linkSite: '',
     fotos: [null, null, null]
   });
   const [lugares, setLugares] = useState([]);
@@ -286,7 +287,8 @@ const CreateEventModal = ({ isOpen, onClose, onSave }) => {
         info: formData.info,
         dataInicio: new Date(formData.dataInicio).toISOString(),
         dataFim: new Date(formData.dataFim).toISOString(),
-        statusEvento: user?.isOrganizador ? 'ativado' : 'pendente',
+        statusEvento: (user?.isOrganizador || user?.nivelAcesso === 'ADMIN') ? 'ativado' : 'Pendente',
+        linkSite: formData.linkSite || null,
         usuario_id: { id: userData.id },
         lugar_id: { id: parseInt(formData.lugarId) },
         fotos: formData.fotos.filter(foto => foto),
@@ -294,13 +296,28 @@ const CreateEventModal = ({ isOpen, onClose, onSave }) => {
         criadoPor: userData.nome
       };
 
-      if (user?.isOrganizador) {
-        // Organizador: cria evento diretamente ativo
-        await eventoService.criar(eventoData);
-        alert('Evento criado com sucesso!');
+      if (user?.isOrganizador || user?.nivelAcesso === 'ADMIN') {
+        // Organizador/Admin: cria evento diretamente ativo
+        const fotosBase64 = formData.fotos.filter(foto => foto);
+        
+        if (fotosBase64.length > 0) {
+          // Preparar dados com fotos
+          const eventoComFotos = {
+            ...eventoData,
+            foto1: fotosBase64[0] ? fotosBase64[0].split(',')[1] : null,
+            foto2: fotosBase64[1] ? fotosBase64[1].split(',')[1] : null,
+            foto3: fotosBase64[2] ? fotosBase64[2].split(',')[1] : null
+          };
+          
+          await eventoService.criar(eventoComFotos);
+        } else {
+          await eventoService.criar(eventoData);
+        }
+        
+        alert('Evento adicionado com sucesso!');
       } else {
         // Usuário comum: adiciona à lista de pendentes
-        const eventoComId = { ...eventoData, id: Date.now() };
+        const eventoComId = { ...eventoData, id: Date.now(), statusEvento: 'Pendente' };
         const eventosPendentes = JSON.parse(localStorage.getItem('eventosPendentes') || '[]');
         eventosPendentes.push(eventoComId);
         localStorage.setItem('eventosPendentes', JSON.stringify(eventosPendentes));
@@ -317,6 +334,7 @@ const CreateEventModal = ({ isOpen, onClose, onSave }) => {
         dataInicio: '',
         dataFim: '',
         lugarId: '',
+        linkSite: '',
         fotos: [null, null, null]
       });
 
@@ -396,6 +414,16 @@ const CreateEventModal = ({ isOpen, onClose, onSave }) => {
                   onChange={(e) => handleInputChange('info', e.target.value)}
                   placeholder="Descreva o evento..."
                   required
+                />
+              </FormGroup>
+
+              <FormGroup className="full-width">
+                <Label>Link do Site do Evento (opcional)</Label>
+                <Input
+                  type="url"
+                  value={formData.linkSite}
+                  onChange={(e) => handleInputChange('linkSite', e.target.value)}
+                  placeholder="https://exemplo.com"
                 />
               </FormGroup>
             </FormGrid>

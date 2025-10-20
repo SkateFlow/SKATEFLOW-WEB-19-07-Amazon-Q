@@ -209,7 +209,7 @@ const Eventos = () => {
         descricao: evento.info,
         dataInicio: evento.dataInicio,
         dataFim: evento.dataFim,
-        active: evento.statusEvento === 'ativado'
+        active: evento.statusEvento === 'Publicado' || evento.statusEvento === 'ativado'
       }));
       
       setEvents(eventosFormatados);
@@ -267,7 +267,7 @@ const Eventos = () => {
         descricao: eventoCompleto.info,
         dataInicio: eventoCompleto.dataInicio,
         dataFim: eventoCompleto.dataFim,
-        ativo: eventoCompleto.statusEvento === 'ativado',
+        ativo: eventoCompleto.statusEvento === 'Publicado' || eventoCompleto.statusEvento === 'ativado',
         fotos: fotos,
         publicadoPor: eventoCompleto.usuario_id?.nome || 'Usuário não informado',
         dataCadastro: eventoCompleto.dataCadastro ? new Date(eventoCompleto.dataCadastro).toLocaleDateString('pt-BR') : new Date().toLocaleDateString('pt-BR')
@@ -291,7 +291,7 @@ const Eventos = () => {
         info: updatedEvent.descricao,
         dataInicio: updatedEvent.dataInicio,
         dataFim: updatedEvent.dataFim,
-        statusEvento: updatedEvent.ativo ? 'ativado' : 'inativo'
+        statusEvento: updatedEvent.ativo ? 'Publicado' : 'Pendente'
       };
       
       await eventoService.atualizar(updatedEvent.id, eventoData);
@@ -339,7 +339,7 @@ const Eventos = () => {
       
       await eventoService.atualizar(eventId, {
         ...eventoCompleto,
-        statusEvento: event.active ? 'inativo' : 'ativado'
+        statusEvento: event.active ? 'Pendente' : 'Publicado'
       });
       
       setEvents(events.map(event => 
