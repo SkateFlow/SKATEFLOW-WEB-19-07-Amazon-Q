@@ -113,6 +113,9 @@ const CardTitle = styled.h2`
   font-weight: 600;
   color: #1a237e;
   flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 `;
 
 const Badge = styled.span`
@@ -130,6 +133,9 @@ const CardDescription = styled.p`
   font-size: 0.9rem;
   color: #4a5568;
   line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 `;
 
 const CardActions = styled.div`
@@ -146,6 +152,10 @@ const BadgeOutline = styled.span`
   border-radius: 12px;
   font-size: 0.75rem;
   font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
 `;
 
 const SearchAndButtonContainer = styled.div`

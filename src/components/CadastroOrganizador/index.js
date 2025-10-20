@@ -215,8 +215,35 @@ const CadastroOrganizador = () => {
     try {
       // Validações
       if (!formData.nome || !formData.email || !formData.senha || !formData.confirmarSenha ||
-          !formData.nomeOrganizador || !formData.cpf_cnpj || !formData.telefone || !formData.cep) {
+          !formData.nomeOrganizador || !formData.cpf_cnpj || !formData.telefone || !formData.cep ||
+          !formData.dataNascimento) {
         setErrorMessage('Preencha todos os campos obrigatórios');
+        return;
+      }
+
+      // Validar idade (maior de 18 anos)
+      const hoje = new Date();
+      const nascimento = new Date(formData.dataNascimento);
+      const idade = hoje.getFullYear() - nascimento.getFullYear();
+      const mesAtual = hoje.getMonth();
+      const diaAtual = hoje.getDate();
+      const mesNascimento = nascimento.getMonth();
+      const diaNascimento = nascimento.getDate();
+      
+      let idadeReal = idade;
+      if (mesAtual < mesNascimento || (mesAtual === mesNascimento && diaAtual < diaNascimento)) {
+        idadeReal--;
+      }
+      
+      if (idadeReal < 18) {
+        setErrorMessage('Apenas maiores de 18 anos podem se cadastrar como organizador');
+        return;
+      }
+
+      // Validar CPF (formato básico)
+      const cpfLimpo = formData.cpf_cnpj.replace(/\D/g, '');
+      if (cpfLimpo.length !== 11 && cpfLimpo.length !== 14) {
+        setErrorMessage('CPF/CNPJ deve ter 11 ou 14 dígitos');
         return;
       }
 
@@ -395,9 +422,10 @@ const CadastroOrganizador = () => {
                 <InputGroup>
                   <FormInput
                     type="date"
-                    placeholder="Data de nascimento"
+                    placeholder="Data de nascimento *"
                     value={formData.dataNascimento}
                     onChange={(e) => handleInputChange('dataNascimento', e.target.value)}
+                    required
                   />
                 </InputGroup>
               </FormSection>

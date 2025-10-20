@@ -4,6 +4,7 @@ import { FiX, FiCamera, FiMapPin, FiCalendar, FiClock } from 'react-icons/fi';
 import { lugarService } from '../../services/lugarService';
 import { eventoService } from '../../services/eventService';
 import { useAuth } from '../../context/AuthContext';
+import EventRequestConfirmModal from '../EventRequestConfirmModal';
 
 const ModalOverlay = styled.div`
   position: fixed;
@@ -23,10 +24,11 @@ const ModalContent = styled.div`
   background: white;
   border-radius: 16px;
   width: 100%;
-  max-width: 600px;
+  max-width: 800px;
   max-height: 90vh;
   overflow-y: auto;
   position: relative;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
 `;
 
 const ModalHeader = styled.div`
@@ -50,17 +52,23 @@ const CloseButton = styled.button`
   color: #64748b;
   cursor: pointer;
   padding: 8px;
-  border-radius: 8px;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: all 0.2s ease;
 
   &:hover {
     background: #f1f5f9;
     color: #1a237e;
+    transform: scale(1.1);
   }
 `;
 
 const ModalBody = styled.div`
-  padding: 24px;
+  padding: 0 24px 24px 24px;
 `;
 
 const FormGrid = styled.div`
@@ -92,20 +100,20 @@ const Label = styled.label`
 
 const Input = styled.input`
   padding: 12px 16px;
-  border: 2px solid #e2e8f0;
+  border: 2px solid ${props => props.hasError ? '#dc2626' : '#e2e8f0'};
   border-radius: 8px;
   font-size: 16px;
   transition: border-color 0.2s ease;
 
   &:focus {
     outline: none;
-    border-color: #667eea;
+    border-color: ${props => props.hasError ? '#dc2626' : '#667eea'};
   }
 `;
 
 const Select = styled.select`
   padding: 12px 16px;
-  border: 2px solid #e2e8f0;
+  border: 2px solid ${props => props.hasError ? '#dc2626' : '#e2e8f0'};
   border-radius: 8px;
   font-size: 16px;
   background: white;
@@ -113,13 +121,13 @@ const Select = styled.select`
 
   &:focus {
     outline: none;
-    border-color: #667eea;
+    border-color: ${props => props.hasError ? '#dc2626' : '#667eea'};
   }
 `;
 
 const TextArea = styled.textarea`
   padding: 12px 16px;
-  border: 2px solid #e2e8f0;
+  border: 2px solid ${props => props.hasError ? '#dc2626' : '#e2e8f0'};
   border-radius: 8px;
   font-size: 16px;
   min-height: 100px;
@@ -128,43 +136,57 @@ const TextArea = styled.textarea`
 
   &:focus {
     outline: none;
-    border-color: #667eea;
+    border-color: ${props => props.hasError ? '#dc2626' : '#667eea'};
   }
 `;
 
 const PhotoSection = styled.div`
-  display: flex;
-  gap: 16px;
-  margin-bottom: 16px;
-  overflow-x: auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 24px;
   padding: 16px;
   background: #f8fafc;
   border-radius: 12px;
-  border: ${props => props.hasError ? '2px solid #dc2626' : 'none'};
+  border: ${props => props.hasError ? '2px solid #dc2626' : '1px solid #e2e8f0'};
 `;
 
 const PhotoUpload = styled.div`
-  min-width: 120px;
-  height: 120px;
+  position: relative;
+  width: 100%;
+  height: 100px;
   border: 2px dashed ${props => props.hasError ? '#dc2626' : '#cbd5e0'};
-  border-radius: 8px;
+  border-radius: 12px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   background: ${props => props.hasImage ? 'transparent' : '#ffffff'};
+  overflow: hidden;
 
   &:hover {
     border-color: ${props => props.hasError ? '#dc2626' : '#667eea'};
     background: ${props => props.hasImage ? 'transparent' : '#f7fafc'};
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
   }
 `;
 
 const PhotoPreview = styled.img`
-  width: 120px;
-  height: 120px;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
   border-radius: 8px;
 `;
@@ -180,7 +202,12 @@ const PhotoLabel = styled.div`
   gap: 8px;
   color: #64748b;
   font-size: 12px;
+  font-weight: 500;
   text-align: center;
+  
+  svg {
+    color: #9ca3af;
+  }
 `;
 
 const ButtonGroup = styled.div`
@@ -238,6 +265,8 @@ const CreateEventModal = ({ isOpen, onClose, onSave }) => {
   const [lugares, setLugares] = useState([]);
   const [loading, setLoading] = useState(false);
   const [photoError, setPhotoError] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -276,64 +305,106 @@ const CreateEventModal = ({ isOpen, onClose, onSave }) => {
     setLoading(true);
 
     try {
-      if (!user?.id) {
-        alert('Você precisa estar logado para criar um evento');
-        setLoading(false);
-        return;
+      // Validar campos obrigatórios
+      const newErrors = {};
+      
+      if (!formData.nome.trim()) {
+        newErrors.nome = 'Nome do evento é obrigatório';
+      }
+      
+      if (!formData.info.trim()) {
+        newErrors.info = 'Descrição é obrigatória';
+      } else if (formData.info.length > 300) {
+        newErrors.info = 'Descrição deve ter no máximo 300 caracteres';
+      }
+      
+      if (!formData.dataInicio) {
+        newErrors.dataInicio = 'Data de início é obrigatória';
+      }
+      
+      if (!formData.dataFim) {
+        newErrors.dataFim = 'Data de fim é obrigatória';
+      }
+      
+      if (!formData.lugarId) {
+        newErrors.lugarId = 'Selecione uma pista';
       }
       
       // Validar se pelo menos uma foto foi adicionada
       const temFoto = formData.fotos.some(foto => foto !== null && foto !== '');
       if (!temFoto) {
         setPhotoError(true);
+        newErrors.fotos = 'É obrigatório adicionar pelo menos uma foto';
+      } else {
+        setPhotoError(false);
+      }
+      
+      setErrors(newErrors);
+      
+      if (Object.keys(newErrors).length > 0) {
         setLoading(false);
         return;
       }
-      setPhotoError(false);
       
-      const eventoData = {
-        nome: formData.nome,
-        info: formData.info,
-        dataInicio: new Date(formData.dataInicio).toISOString(),
-        dataFim: new Date(formData.dataFim).toISOString(),
-        statusEvento: (user?.isOrganizador || user?.nivelAcesso === 'ADMIN') ? 'ativado' : 'Pendente',
-        linkSite: formData.linkSite || null,
-        usuario_id: { id: user.id },
-        lugar_id: { id: parseInt(formData.lugarId) },
-        fotos: formData.fotos.filter(foto => foto),
-        dataCriacao: new Date().toISOString(),
+      const processarEvento = async () => {
+        if (user?.nivelAcesso === 'ADMIN' || user?.isOrganizador) {
+          // Admin/Organizador: cria evento diretamente
+          try {
+            const eventoData = {
+              nome: formData.nome,
+              info: formData.info,
+              dataInicio: new Date(formData.dataInicio).toISOString(),
+              dataFim: new Date(formData.dataFim).toISOString(),
+              statusEvento: 'ativado',
+              linkSite: formData.linkSite || null,
+              usuario_id: { id: user.id },
+              lugar_id: { id: parseInt(formData.lugarId) },
+              foto1: formData.fotos[0] ? formData.fotos[0].split(',')[1] : null,
+              foto2: formData.fotos[1] ? formData.fotos[1].split(',')[1] : null,
+              foto3: formData.fotos[2] ? formData.fotos[2].split(',')[1] : null
+            };
+            await eventoService.criar(eventoData);
+            console.log('Evento criado com sucesso!');
+          } catch (error) {
+            console.error('Erro ao criar evento:', error);
+          }
+        } else {
+          // Usuário comum: envia solicitação
+          try {
+            const eventoData = {
+              nome: formData.nome,
+              info: formData.info,
+              dataInicio: new Date(formData.dataInicio).toISOString(),
+              dataFim: new Date(formData.dataFim).toISOString(),
+              linkSite: formData.linkSite || null,
+              usuario_id: { id: user.id },
+              lugar_id: { id: parseInt(formData.lugarId) },
+              foto1: formData.fotos[0] ? formData.fotos[0].split(',')[1] : null,
+              foto2: formData.fotos[1] ? formData.fotos[1].split(',')[1] : null,
+              foto3: formData.fotos[2] ? formData.fotos[2].split(',')[1] : null
+            };
+            await eventoService.solicitar(eventoData);
+            console.log('Solicitação enviada com sucesso!');
+          } catch (error) {
+            console.error('Erro ao enviar solicitação:', error);
+          }
+        }
+      };
+      
+      await processarEvento();
+      
+      // Manter comportamento local para compatibilidade
+      const eventoLocal = {
+        ...formData,
+        id: Date.now(),
+        status: 'pendente',
+        dataSolicitacao: new Date().toISOString(),
         criadoPor: user.nome
       };
-
-      if (user?.isOrganizador || user?.nivelAcesso === 'ADMIN') {
-        // Organizador/Admin: cria evento diretamente ativo
-        eventoData.statusEvento = 'ativado';
-        const fotosBase64 = formData.fotos.filter(foto => foto);
-        
-        if (fotosBase64.length > 0) {
-          const eventoComFotos = {
-            ...eventoData,
-            foto1: fotosBase64[0] ? fotosBase64[0].split(',')[1] : null,
-            foto2: fotosBase64[1] ? fotosBase64[1].split(',')[1] : null,
-            foto3: fotosBase64[2] ? fotosBase64[2].split(',')[1] : null
-          };
-          await eventoService.criar(eventoComFotos);
-        } else {
-          await eventoService.criar(eventoData);
-        }
-        alert('Evento criado com sucesso!');
-      } else {
-        // Usuário comum: envia solicitação com status pendente
-        eventoData.statusEvento = 'Pendente';
-        const eventoComId = { ...eventoData, id: Date.now() };
-        const eventosPendentes = JSON.parse(localStorage.getItem('eventosPendentes') || '[]');
-        eventosPendentes.push(eventoComId);
-        localStorage.setItem('eventosPendentes', JSON.stringify(eventosPendentes));
-        alert('Solicitação de evento enviada para aprovação!');
-      }
-
-      onSave(eventoData);
+      
+      onSave(eventoLocal);
       onClose();
+      setShowSuccessModal(true);
       
       // Reset form
       setFormData({
@@ -345,10 +416,11 @@ const CreateEventModal = ({ isOpen, onClose, onSave }) => {
         linkSite: '',
         fotos: [null, null, null]
       });
+      setErrors({});
 
     } catch (error) {
-      console.error('Erro ao criar evento:', error);
-      alert(typeof error === 'string' ? error : 'Erro ao criar evento');
+      console.error('Erro ao processar evento:', error);
+      alert(typeof error === 'string' ? error : 'Erro ao processar evento');
     } finally {
       setLoading(false);
     }
@@ -380,25 +452,22 @@ const CreateEventModal = ({ isOpen, onClose, onSave }) => {
 
         <ModalBody>
           <form onSubmit={handleSubmit}>
-            <Label>Fotos do Evento (opcional)</Label>
             <PhotoSection hasError={photoError}>
               {[0, 1, 2].map(index => (
                 <PhotoUpload
                   key={index}
                   hasImage={formData.fotos[index]}
                   hasError={photoError}
-                  onClick={() => document.getElementById(`photo-${index}`).click()}
                 >
                   {formData.fotos[index] ? (
                     <PhotoPreview src={formData.fotos[index]} alt={`Foto ${index + 1}`} />
                   ) : (
-                    <PhotoLabel>
-                      <FiCamera size={24} />
+                    <>
+                      <FiCamera size={20} />
                       <span>Foto {index + 1}</span>
-                    </PhotoLabel>
+                    </>
                   )}
-                  <PhotoInput
-                    id={`photo-${index}`}
+                  <input
                     type="file"
                     accept="image/*"
                     onChange={(e) => handlePhotoChange(index, e.target.files[0])}
@@ -415,8 +484,10 @@ const CreateEventModal = ({ isOpen, onClose, onSave }) => {
                   value={formData.nome}
                   onChange={(e) => handleInputChange('nome', e.target.value)}
                   placeholder="Digite o nome do evento"
+                  hasError={errors.nome}
                   required
                 />
+                {errors.nome && <div style={{ color: '#dc2626', fontSize: '12px', marginTop: '4px' }}>{errors.nome}</div>}
               </FormGroup>
 
               <FormGroup>
@@ -425,8 +496,10 @@ const CreateEventModal = ({ isOpen, onClose, onSave }) => {
                   type="datetime-local"
                   value={formData.dataInicio}
                   onChange={(e) => handleInputChange('dataInicio', e.target.value)}
+                  hasError={errors.dataInicio}
                   required
                 />
+                {errors.dataInicio && <div style={{ color: '#dc2626', fontSize: '12px', marginTop: '4px' }}>{errors.dataInicio}</div>}
               </FormGroup>
 
               <FormGroup>
@@ -435,8 +508,10 @@ const CreateEventModal = ({ isOpen, onClose, onSave }) => {
                   type="datetime-local"
                   value={formData.dataFim}
                   onChange={(e) => handleInputChange('dataFim', e.target.value)}
+                  hasError={errors.dataFim}
                   required
                 />
+                {errors.dataFim && <div style={{ color: '#dc2626', fontSize: '12px', marginTop: '4px' }}>{errors.dataFim}</div>}
               </FormGroup>
 
               <FormGroup className="full-width">
@@ -444,6 +519,7 @@ const CreateEventModal = ({ isOpen, onClose, onSave }) => {
                 <Select
                   value={formData.lugarId}
                   onChange={(e) => handleInputChange('lugarId', e.target.value)}
+                  hasError={errors.lugarId}
                   required
                 >
                   <option value="">Selecione um local</option>
@@ -453,6 +529,7 @@ const CreateEventModal = ({ isOpen, onClose, onSave }) => {
                     </option>
                   ))}
                 </Select>
+                {errors.lugarId && <div style={{ color: '#dc2626', fontSize: '12px', marginTop: '4px' }}>{errors.lugarId}</div>}
               </FormGroup>
 
               <FormGroup className="full-width">
@@ -461,8 +538,14 @@ const CreateEventModal = ({ isOpen, onClose, onSave }) => {
                   value={formData.info}
                   onChange={(e) => handleInputChange('info', e.target.value)}
                   placeholder="Descreva o evento..."
+                  maxLength={300}
+                  hasError={errors.info}
                   required
                 />
+                <div style={{ fontSize: '12px', color: '#64748b', textAlign: 'right' }}>
+                  {formData.info.length}/300 caracteres
+                </div>
+                {errors.info && <div style={{ color: '#dc2626', fontSize: '12px', marginTop: '4px' }}>{errors.info}</div>}
               </FormGroup>
 
               <FormGroup className="full-width">
@@ -488,6 +571,12 @@ const CreateEventModal = ({ isOpen, onClose, onSave }) => {
           </form>
         </ModalBody>
       </ModalContent>
+      
+      <EventRequestConfirmModal
+        isOpen={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        isOrganizer={user?.nivelAcesso === 'ADMIN' || user?.isOrganizador}
+      />
     </ModalOverlay>
   );
 };
