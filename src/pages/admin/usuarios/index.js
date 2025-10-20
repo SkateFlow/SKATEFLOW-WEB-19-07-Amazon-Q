@@ -76,6 +76,17 @@ const TableContainer = styled.div`
   border: 1px solid #e2e8f0;
   overflow: hidden;
   position: relative;
+  margin-top: -40px;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: -60px;
+    right: 0;
+    width: 120px;
+    height: 50px;
+    z-index: 1;
+  }
 `;
 
 const Table = styled.table`
@@ -349,6 +360,7 @@ const RefreshContainer = styled.div`
   display: flex;
   justify-content: flex-end;
   margin-bottom: 8px;
+  margin-top: -20px;
 `;
 
 const PaginationButton = styled.button`
@@ -566,13 +578,6 @@ const Usuarios = () => {
           />
         </SearchContainer>
 
-        <RefreshContainer>
-          <RefreshButton onClick={carregarUsuarios} disabled={loading}>
-            <FiRefreshCw size={16} />
-            Atualizar
-          </RefreshButton>
-        </RefreshContainer>
-
         {error && (
           <ErrorNotification>
             <div className="error-icon">⚠️</div>
@@ -583,6 +588,13 @@ const Usuarios = () => {
             <button className="close-button" onClick={() => setError(null)}>×</button>
           </ErrorNotification>
         )}
+
+        <RefreshContainer>
+          <RefreshButton onClick={carregarUsuarios} disabled={loading}>
+            <FiRefreshCw size={16} />
+            Atualizar
+          </RefreshButton>
+        </RefreshContainer>
 
         <PaginationContainer>
           {filteredUsers.length > 7 && (

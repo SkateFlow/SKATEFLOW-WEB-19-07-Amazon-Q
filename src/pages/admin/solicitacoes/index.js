@@ -196,6 +196,35 @@ const EmptySubtext = styled.p`
   margin: 0;
 `;
 
+const LoadingContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  gap: 16px;
+`;
+
+const LoadingSpinner = styled.div`
+  width: 40px;
+  height: 40px;
+  border: 3px solid #e2e8f0;
+  border-top: 3px solid #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+`;
+
+const LoadingText = styled.p`
+  color: #64748b;
+  font-size: 14px;
+  margin: 0;
+`;
+
 const Solicitacoes = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('todas');
@@ -203,6 +232,7 @@ const Solicitacoes = () => {
   const [solicitacaoToDelete, setSolicitacaoToDelete] = useState(null);
     const [aprovandoPista, setAprovandoPista] = useState(null);
   const [showMessage, setShowMessage] = useState('');
+  const [loading, setLoading] = useState(true);
   const { pistasPendentes, removerPistaPendente } = usePistasPendentes();
   const { eventosPendentes, aprovarEvento, rejeitarEvento } = useEventosPendentes();
   const [todasSolicitacoes, setTodasSolicitacoes] = useState([]);
@@ -210,6 +240,7 @@ const Solicitacoes = () => {
   React.useEffect(() => {
     const carregarSolicitacoes = async () => {
       try {
+        setLoading(true);
         console.log('Carregando solicitações do backend...');
         const solicitacoesBackend = await solicitacaoPistaService.listarPendentes();
         console.log('Solicitações encontradas:', solicitacoesBackend);
@@ -236,6 +267,8 @@ const Solicitacoes = () => {
       } catch (error) {
         console.error('Erro ao carregar solicitações:', error);
         setTodasSolicitacoes([]);
+      } finally {
+        setLoading(false);
       }
     };
     
@@ -360,6 +393,44 @@ const Solicitacoes = () => {
             <Title>Solicitações</Title>
             <Subtitle>Gerencie as solicitações de pistas e eventos enviadas pelos usuários</Subtitle>
           </HeaderContent>
+          <ActionButton
+            onClick={() => {
+              setLoading(true);
+              const carregarSolicitacoes = async () => {
+                try {
+                  const solicitacoesBackend = await solicitacaoPistaService.listarPendentes();
+                  const solicitacoesPistas = solicitacoesBackend.map(s => ({ 
+                    ...s, 
+                    tipo: 'pista', 
+                    origem: 'backend',
+                    categoria: s.categoria?.nome || 'street',
+                    localizacao: `${s.rua || ''}, ${s.bairro || ''}`.replace(/^,\s*|,\s*$/g, '') || 'Não informado',
+                    publica: s.tipo === 'Pública'
+                  }));
+                  const eventosFormatados = eventosPendentes.map(e => ({
+                    ...e,
+                    tipo: 'evento',
+                    origem: 'localStorage',
+                    dataEvento: e.dataInicio ? new Date(e.dataInicio).toLocaleDateString('pt-BR') : 'Não informado',
+                    localEvento: e.lugar_id?.nome || 'Local não informado'
+                  }));
+                  setTodasSolicitacoes([...solicitacoesPistas, ...eventosFormatados]);
+                } catch (error) {
+                  console.error('Erro ao carregar solicitações:', error);
+                } finally {
+                  setLoading(false);
+                }
+              };
+              carregarSolicitacoes();
+            }}
+            style={{
+              background: '#e0f2fe',
+              color: '#0277bd',
+              alignSelf: 'flex-start'
+            }}
+          >
+            🔄 Atualizar
+          </ActionButton>
         </Header>
         
         <AnimatePresence>
@@ -420,7 +491,12 @@ const Solicitacoes = () => {
           ))}
         </div>
 
-        {filteredSolicitacoes.length === 0 ? (
+        {loading ? (
+          <LoadingContainer>
+            <LoadingSpinner />
+            <LoadingText>Carregando solicitações...</LoadingText>
+          </LoadingContainer>
+        ) : filteredSolicitacoes.length === 0 ? (
           <EmptyState>
             <EmptyIcon>📋</EmptyIcon>
             <EmptyText>{searchTerm ? 'Nenhuma solicitação encontrada' : 'Nenhuma solicitação pendente'}</EmptyText>

@@ -349,19 +349,27 @@ const Dashboard = () => {
         });
       });
     } else {
-      const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
-      const counts = new Array(12).fill(0);
+      // Mostrar dias do mês atual
+      const currentMonth = now.getMonth();
+      const currentYear = now.getFullYear();
+      const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+      const counts = new Array(daysInMonth).fill(0);
       
       usuarios.forEach(usuario => {
         const date = new Date(usuario.dataCadastro);
-        if (date.getFullYear() === now.getFullYear()) {
-          counts[date.getMonth()]++;
+        if (date.getFullYear() === currentYear && date.getMonth() === currentMonth) {
+          const day = date.getDate();
+          counts[day - 1]++; // -1 porque array começa em 0
         }
       });
       
-      months.forEach((month, index) => {
-        data.push({ label: month, value: counts[index] });
-      });
+      for (let day = 1; day <= daysInMonth; day++) {
+        data.push({ 
+          label: day.toString(), 
+          value: counts[day - 1],
+          isToday: day === now.getDate()
+        });
+      }
     }
     
     setChartData(data);
@@ -395,9 +403,9 @@ const Dashboard = () => {
       }
       
       const prevPoint = points[i - 1];
-      const controlX1 = prevPoint.x + (point.x - prevPoint.x) * 0.5;
+      const controlX1 = prevPoint.x + (point.x - prevPoint.x) * 0.4;
       const controlY1 = prevPoint.y;
-      const controlX2 = point.x - (point.x - prevPoint.x) * 0.5;
+      const controlX2 = point.x - (point.x - prevPoint.x) * 0.4;
       const controlY2 = point.y;
       
       return `${path} C ${controlX1} ${controlY1}, ${controlX2} ${controlY2}, ${point.x} ${point.y}`;
@@ -417,7 +425,7 @@ const Dashboard = () => {
         {points.map((point, i) => (
           <g key={i}>
             <ChartLabel x={point.x} y={height - 20} isToday={chartData[i]?.isToday}>{point.label}</ChartLabel>
-            <ChartValue x={point.x} y={point.y - 15}>{point.value}</ChartValue>
+            {point.value > 0 && <ChartValue x={point.x} y={point.y - 15}>{point.value}</ChartValue>}
           </g>
         ))}
       </Chart>
