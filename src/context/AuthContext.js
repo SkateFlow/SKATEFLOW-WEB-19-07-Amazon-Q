@@ -85,8 +85,12 @@ export const AuthProvider = ({ children }) => {
     return true;
   };
 
+  const isAdminOrGerente = () => {
+    return user?.nivelAcesso === 'ADMIN' || user?.nivelAcesso === 'GERENTE';
+  };
+
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, loading, login, logout, checkUserExists }}>
+    <AuthContext.Provider value={{ user, isAuthenticated, loading, login, logout, checkUserExists, isAdminOrGerente }}>
       {children}
     </AuthContext.Provider>
   );

@@ -273,7 +273,7 @@ const Navbar = ({ toggle, scrollNav: forceScrollNav }) => {
                                                 <AdminLink to={user?.isOrganizador ? "/organizador/perfil" : "/perfil"} variants={itemVariants}>
                                                     {user?.isOrganizador ? "Area do Organizador" : "Meu Perfil"}
                                                 </AdminLink>
-                                                {user?.nivelAcesso === 'ADMIN' && (
+                                                {(user?.nivelAcesso === 'ADMIN' || user?.nivelAcesso === 'GERENTE') && (
                                                     <AdminLink to="/admin" variants={itemVariants}>
                                                         Área do Administrador
                                                     </AdminLink>

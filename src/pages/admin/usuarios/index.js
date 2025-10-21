@@ -1,12 +1,14 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import styled from 'styled-components';
-import { FiEdit, FiTrash2, FiRefreshCw } from 'react-icons/fi';
+import { FiEdit, FiTrash2, FiRefreshCw, FiUserPlus } from 'react-icons/fi';
 import SidebarAdmin from '../../../components/SidebarAdmin';
 import SearchBar from '../../../components/SearchBar';
 import EditUserModal from '../../../components/EditUserModal';
 import ConfirmModal from '../../../components/ConfirmModal';
+import CreateGerenteModal from '../../../components/CreateGerenteModal';
 import { usuarioService } from '../../../services/usuarioService';
 import { organizadorService } from '../../../services/organizadorService';
+import { useAuth } from '../../../context/AuthContext';
 
 const AdminContainer = styled.div`
   background: 
@@ -346,10 +348,43 @@ const PaginationContainer = styled.div`
 
 const RefreshContainer = styled.div`
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
   align-items: center;
   gap: 8px;
   margin-bottom: 30px;
+`;
+
+const ButtonsGroup = styled.div`
+  display: flex;
+  gap: 12px;
+  align-items: center;
+`;
+
+const CreateGerenteButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: #0f2468ff;
+  color: white;
+  
+  &:hover {
+    background: #113774ff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(15, 36, 104, 0.3);
+  }
+  
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
 `;
 
 const PaginationButton = styled.button`
@@ -382,16 +417,27 @@ const PaginationInfo = styled.span`
 `;
 
 const Usuarios = () => {
+  const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
+  const [showCreateGerenteModal, setShowCreateGerenteModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const usersPerPage = 7;
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const isGerente = user?.nivelAcesso === 'GERENTE';
+  
+  // Identificar o gerente mais antigo
+  const gerenteMaisAntigo = users
+    .filter(u => u.isGerente)
+    .sort((a, b) => new Date(a.dataCadastro) - new Date(b.dataCadastro))[0];
+  
+  const isGerenteMaisAntigo = user?.id === gerenteMaisAntigo?.id;
 
   const carregarUsuarios = async () => {
     try {
@@ -487,15 +533,15 @@ const Usuarios = () => {
   };
 
   const handleDelete = (userId) => {
-    const user = users.find(u => u.id === userId);
+    const userToDelete = users.find(u => u.id === userId);
     
-    // Bloquear exclusão de contas GERENTE
-    if (user.isGerente) {
-      setError('Contas de GERENTE não podem ser excluídas!');
+    // Bloquear exclusão de contas GERENTE (exceto para o gerente mais antigo)
+    if (userToDelete.isGerente && !isGerenteMaisAntigo) {
+      setError('Apenas o gerente mais antigo pode excluir contas de GERENTE!');
       return;
     }
     
-    setUserToDelete(user);
+    setUserToDelete(userToDelete);
     setShowConfirmModal(true);
   };
 
@@ -588,10 +634,20 @@ const Usuarios = () => {
         )}
 
         <RefreshContainer>
-          <RefreshButton onClick={carregarUsuarios} disabled={loading}>
-            <FiRefreshCw size={16} />
-            Atualizar
-          </RefreshButton>
+          <div>
+            {isGerente && (
+              <CreateGerenteButton onClick={() => setShowCreateGerenteModal(true)}>
+                <FiUserPlus size={16} />
+                Cadastrar Gerente
+              </CreateGerenteButton>
+            )}
+          </div>
+          <ButtonsGroup>
+            <RefreshButton onClick={carregarUsuarios} disabled={loading}>
+              <FiRefreshCw size={16} />
+              Atualizar
+            </RefreshButton>
+          </ButtonsGroup>
         </RefreshContainer>
 
         {loading ? (
@@ -649,22 +705,24 @@ const Usuarios = () => {
                       </TableCell>
                       <TableCell>
                         <ActionButtons>
-                          <EditButton onClick={() => handleEdit(user.id)}>
-                            <FiEdit size={16} />
-                            Editar
-                          </EditButton>
+                          {isGerente && (
+                            <EditButton onClick={() => handleEdit(user.id)}>
+                              <FiEdit size={16} />
+                              Editar
+                            </EditButton>
+                          )}
                           <DeleteButton 
                             onClick={() => handleDelete(user.id)}
-                            disabled={user.isGerente}
+                            disabled={user.isGerente && !isGerenteMaisAntigo}
                             style={{
-                              opacity: user.isGerente ? 0.5 : 1,
-                              cursor: user.isGerente ? 'not-allowed' : 'pointer',
-                              background: user.isGerente ? '#f1f5f9' : '#fee2e2',
-                              color: user.isGerente ? '#94a3b8' : '#dc2626'
+                              opacity: (user.isGerente && !isGerenteMaisAntigo) ? 0.5 : 1,
+                              cursor: (user.isGerente && !isGerenteMaisAntigo) ? 'not-allowed' : 'pointer',
+                              background: (user.isGerente && !isGerenteMaisAntigo) ? '#f1f5f9' : '#fee2e2',
+                              color: (user.isGerente && !isGerenteMaisAntigo) ? '#94a3b8' : '#dc2626'
                             }}
                           >
                             <FiTrash2 size={16} />
-                            {user.isGerente ? 'Protegido' : 'Excluir'}
+                            {(user.isGerente && !isGerenteMaisAntigo) ? 'Protegido' : 'Excluir'}
                           </DeleteButton>
                         </ActionButtons>
                       </TableCell>
@@ -698,12 +756,14 @@ const Usuarios = () => {
           </>
         )}
         
-        <EditUserModal
-          isOpen={showEditModal}
-          onClose={() => setShowEditModal(false)}
-          user={selectedUser}
-          onSave={handleSaveUser}
-        />
+        {isGerente && (
+          <EditUserModal
+            isOpen={showEditModal}
+            onClose={() => setShowEditModal(false)}
+            user={selectedUser}
+            onSave={handleSaveUser}
+          />
+        )}
         
         <ConfirmModal
           isOpen={showConfirmModal}
@@ -711,6 +771,15 @@ const Usuarios = () => {
           onConfirm={confirmDelete}
           title="Excluir usuário?"
           message={`Tem certeza que deseja excluir o usuário "${userToDelete?.nome}"? Esta ação não pode ser desfeita.`}
+        />
+        
+        <CreateGerenteModal
+          isOpen={showCreateGerenteModal}
+          onClose={() => setShowCreateGerenteModal(false)}
+          onSuccess={() => {
+            carregarUsuarios();
+            setShowCreateGerenteModal(false);
+          }}
         />
       </ContentContainer>
     </AdminContainer>

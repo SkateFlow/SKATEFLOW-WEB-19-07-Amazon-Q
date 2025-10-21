@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { FiX, FiUser } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usuarioService } from '../../services/usuarioService';
+import { useAuth } from '../../context/AuthContext';
 import {
   ModalOverlay,
   ModalContainer,
@@ -24,6 +25,9 @@ import {
 } from './EditUserModalElements';
 
 const EditUserModal = ({ isOpen, onClose, user, onSave }) => {
+  const { user: currentUser } = useAuth();
+  const isGerente = currentUser?.nivelAcesso === 'GERENTE';
+  
   const [formData, setFormData] = useState({
     nome: '',
     email: '',
@@ -148,6 +152,8 @@ const EditUserModal = ({ isOpen, onClose, user, onSave }) => {
                     value={formData.nome}
                     onChange={(e) => handleInputChange('nome', e.target.value)}
                     placeholder="Nome do usuário"
+                    readOnly={!isGerente}
+                    style={{ backgroundColor: !isGerente ? '#f8fafc' : 'white' }}
                   />
                 </FormGroup>
 
@@ -161,21 +167,25 @@ const EditUserModal = ({ isOpen, onClose, user, onSave }) => {
                   />
                 </FormGroup>
 
-                <SwitchGroup>
-                  <SwitchLabel>Administrador</SwitchLabel>
-                  <Switch 
-                    checked={formData.isAdmin}
-                    onClick={() => handleInputChange('isAdmin', !formData.isAdmin)}
-                  />
-                </SwitchGroup>
+                {isGerente && (
+                  <SwitchGroup>
+                    <SwitchLabel>Administrador</SwitchLabel>
+                    <Switch 
+                      checked={formData.isAdmin}
+                      onClick={() => handleInputChange('isAdmin', !formData.isAdmin)}
+                    />
+                  </SwitchGroup>
+                )}
 
-                <SwitchGroup>
-                  <SwitchLabel>Usuário Ativo</SwitchLabel>
-                  <Switch 
-                    checked={formData.isActive}
-                    onClick={() => handleInputChange('isActive', !formData.isActive)}
-                  />
-                </SwitchGroup>
+                {isGerente && (
+                  <SwitchGroup>
+                    <SwitchLabel>Usuário Ativo</SwitchLabel>
+                    <Switch 
+                      checked={formData.isActive}
+                      onClick={() => handleInputChange('isActive', !formData.isActive)}
+                    />
+                  </SwitchGroup>
+                )}
               </FormGrid>
 
               {error && (
@@ -194,9 +204,11 @@ const EditUserModal = ({ isOpen, onClose, user, onSave }) => {
 
               <ButtonGroup>
                 <CancelButton onClick={handleClose} disabled={loading}>Cancelar</CancelButton>
-                <SaveButton onClick={handleSave} disabled={loading}>
-                  {loading ? 'Salvando...' : 'Salvar Alterações'}
-                </SaveButton>
+                {isGerente && (
+                  <SaveButton onClick={handleSave} disabled={loading}>
+                    {loading ? 'Salvando...' : 'Salvar Alterações'}
+                  </SaveButton>
+                )}
               </ButtonGroup>
             </ModalContent>
           </ModalContainer>

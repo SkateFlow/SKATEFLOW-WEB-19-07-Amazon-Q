@@ -3,7 +3,7 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const AdminRoute = ({ children }) => {
-  const { isAuthenticated, user, loading } = useAuth();
+  const { isAuthenticated, isAdminOrGerente, loading } = useAuth();
   
   if (loading) {
     return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>Carregando...</div>;
@@ -13,7 +13,7 @@ const AdminRoute = ({ children }) => {
     return <Navigate to="/login" />;
   }
   
-  if (user?.nivelAcesso !== 'ADMIN') {
+  if (!isAdminOrGerente()) {
     return <Navigate to="/" />;
   }
   
