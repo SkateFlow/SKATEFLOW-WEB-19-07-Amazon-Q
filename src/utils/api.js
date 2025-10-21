@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Configuração base para todas as requisições axios
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'https://projeto-spring-4avufeyvl-skateflows-projects.vercel.app/',
+  baseURL: process.env.REACT_APP_API_URL || 'https//:localhost:8080',
   headers: {
     'Content-Type': 'application/json',
   },
