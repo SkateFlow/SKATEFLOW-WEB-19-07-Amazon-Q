@@ -206,6 +206,28 @@ const CadastroOrganizador = () => {
     }));
   };
 
+  const buscarEnderecoPorCep = async (cep) => {
+    const cepLimpo = cep.replace(/\D/g, '');
+    if (cepLimpo.length === 8) {
+      try {
+        const response = await fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`);
+        const data = await response.json();
+        
+        if (!data.erro) {
+          setFormData(prev => ({
+            ...prev,
+            logradouro: data.logradouro || '',
+            bairro: data.bairro || '',
+            cidade: data.localidade || '',
+            uf: data.uf || ''
+          }));
+        }
+      } catch (error) {
+        console.error('Erro ao buscar CEP:', error);
+      }
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -218,6 +240,22 @@ const CadastroOrganizador = () => {
           !formData.nomeOrganizador || !formData.cpf_cnpj || !formData.telefone || !formData.cep ||
           !formData.dataNascimento) {
         setErrorMessage('Preencha todos os campos obrigatórios');
+        return;
+      }
+
+      // Validar tamanhos dos campos
+      if (formData.nome.length > 200) {
+        setErrorMessage('Nome deve ter no máximo 200 caracteres');
+        return;
+      }
+
+      if (formData.email.length > 200) {
+        setErrorMessage('Email deve ter no máximo 200 caracteres');
+        return;
+      }
+
+      if (formData.nomeOrganizador.length > 200) {
+        setErrorMessage('Nome do organizador deve ter no máximo 200 caracteres');
         return;
       }
 
@@ -267,11 +305,12 @@ const CadastroOrganizador = () => {
         return;
       }
 
-      // 1. Criar usuário primeiro
+      // 1. Criar usuário primeiro com nível ORGANIZADOR
       const usuarioData = {
-        nome: formData.nome,
-        email: formData.email,
-        senha: formData.senha
+        nome: formData.nome.trim(),
+        email: formData.email.trim(),
+        senha: formData.senha,
+        nivelAcesso: 'ORGANIZADOR'
       };
       
       await usuarioService.cadastrar(usuarioData);
@@ -449,7 +488,11 @@ const CadastroOrganizador = () => {
                     type="text"
                     placeholder="CEP *"
                     value={formData.cep}
-                    onChange={(e) => handleInputChange('cep', e.target.value)}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      handleInputChange('cep', value);
+                      buscarEnderecoPorCep(value);
+                    }}
                     required
                   />
                 </InputGroup>

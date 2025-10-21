@@ -468,11 +468,13 @@ const Perfil = () => {
   const [formData, setFormData] = useState({
     nome: '',
     email: '',
+    senhaAtual: '',
     novaSenha: '',
     confirmarSenha: '',
     foto: null
   });
   const [showPasswords, setShowPasswords] = useState({
+    atual: false,
     nova: false,
     confirmar: false
   });
@@ -735,6 +737,9 @@ const Perfil = () => {
       }
 
       if (formData.novaSenha) {
+        if (!formData.senhaAtual) {
+          throw 'Senha atual é obrigatória para alterar a senha';
+        }
         if (formData.novaSenha.length < 8) {
           throw 'Nova senha deve ter pelo menos 8 caracteres';
         }
@@ -755,22 +760,31 @@ const Perfil = () => {
       await usuarioService.atualizar(user.id, updateData);
 
       if (formData.novaSenha) {
-        await usuarioService.alterarSenha(user.id, { senha: formData.novaSenha });
+        await usuarioService.alterarSenha(user.id, { 
+          senhaAtual: formData.senhaAtual,
+          novaSenha: formData.novaSenha 
+        });
       }
 
-      // Salvar foto se foi alterada
-      if (formData.foto && formData.foto !== user.foto) {
-        const fotoBase64 = formData.foto.split(',')[1]; // Remove o prefixo data:image/...
-        await usuarioService.salvarFoto(user.id, fotoBase64);
+      // Salvar foto se foi alterada ou removida
+      if (formData.foto !== user.foto) {
+        if (formData.foto) {
+          const fotoBase64 = formData.foto.split(',')[1]; // Remove o prefixo data:image/...
+          await usuarioService.salvarFoto(user.id, fotoBase64);
+        } else {
+          // Foto removida - enviar string vazia para remover do banco
+          await usuarioService.salvarFoto(user.id, '');
+        }
       }
 
-      const updatedUser = { ...user, nome: formData.nome, foto: formData.foto };
+      const updatedUser = { ...user, nome: formData.nome, foto: formData.foto || null };
       login(updatedUser);
 
       setSuccess('Perfil atualizado com sucesso!');
       setShowNotification(true);
       setFormData(prev => ({
         ...prev,
+        senhaAtual: '',
         novaSenha: '',
         confirmarSenha: ''
       }));
@@ -855,25 +869,7 @@ const Perfil = () => {
                     />
                   </FormGroup>
 
-                  <FormGroup>
-                    <Label>Nível de Acesso</Label>
-                    <Input
-                      type="text"
-                      value={user?.nivelAcesso || 'USUARIO'}
-                      disabled
-                      style={{ background: '#f8fafc' }}
-                    />
-                  </FormGroup>
 
-                  <FormGroup>
-                    <Label>Status da Conta</Label>
-                    <Input
-                      type="text"
-                      value={user?.statusUsuario || 'ATIVO'}
-                      disabled
-                      style={{ background: '#f8fafc' }}
-                    />
-                  </FormGroup>
                 </FormGrid>
               </>
             ) : (
@@ -885,6 +881,7 @@ const Perfil = () => {
                     setIsEditing(false);
                     setFormData(prev => ({
                       ...prev,
+                      senhaAtual: '',
                       novaSenha: '',
                       confirmarSenha: ''
                     }));
@@ -954,6 +951,24 @@ const Perfil = () => {
                 </FormGroup>
 
 
+
+                <FormGroup style={{ gridColumn: '1 / -1' }}>
+                  <Label>Senha Atual</Label>
+                  <PasswordGroup>
+                    <Input
+                      type={showPasswords.atual ? "text" : "password"}
+                      value={formData.senhaAtual}
+                      onChange={(e) => handleInputChange('senhaAtual', e.target.value)}
+                      placeholder="Digite sua senha atual"
+                    />
+                    <PasswordToggle
+                      type="button"
+                      onClick={() => setShowPasswords(prev => ({ ...prev, atual: !prev.atual }))}
+                    >
+                      {showPasswords.atual ? <FiEyeOff /> : <FiEye />}
+                    </PasswordToggle>
+                  </PasswordGroup>
+                </FormGroup>
 
                 <FormGroup style={{ gridColumn: '1 / -1' }}>
                   <Label>Nova Senha</Label>

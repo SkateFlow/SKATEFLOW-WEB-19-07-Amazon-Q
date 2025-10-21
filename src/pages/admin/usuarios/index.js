@@ -76,17 +76,6 @@ const TableContainer = styled.div`
   border: 1px solid #e2e8f0;
   overflow: hidden;
   position: relative;
-  margin-top: -40px;
-  
-  &::before {
-    content: '';
-    position: absolute;
-    top: -60px;
-    right: 0;
-    width: 120px;
-    height: 50px;
-    z-index: 1;
-  }
 `;
 
 const Table = styled.table`
@@ -348,19 +337,19 @@ const ErrorNotification = styled.div`
 
 const PaginationContainer = styled.div`
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
   align-items: center;
   gap: 8px;
-  margin-top: 16px;
-  margin-bottom: 8px;
-  padding: 0;
+  margin-top: 20px;
+  padding: 20px 0;
 `;
 
 const RefreshContainer = styled.div`
   display: flex;
   justify-content: flex-end;
-  margin-bottom: 8px;
-  margin-top: -20px;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 30px;
 `;
 
 const PaginationButton = styled.button`
@@ -418,7 +407,9 @@ const Usuarios = () => {
         id: usuario.id,
         nome: usuario.nome,
         email: usuario.email,
+        nivelAcesso: usuario.nivelAcesso,
         isAdmin: usuario.nivelAcesso === 'ADMIN',
+        isGerente: usuario.nivelAcesso === 'GERENTE',
         isOrganizador: organizadoresIds.includes(usuario.id),
         foto: null, // Carregar sob demanda
         isActive: usuario.statusUsuario === 'ATIVO',
@@ -497,6 +488,13 @@ const Usuarios = () => {
 
   const handleDelete = (userId) => {
     const user = users.find(u => u.id === userId);
+    
+    // Bloquear exclusão de contas GERENTE
+    if (user.isGerente) {
+      setError('Contas de GERENTE não podem ser excluídas!');
+      return;
+    }
+    
     setUserToDelete(user);
     setShowConfirmModal(true);
   };
@@ -596,26 +594,6 @@ const Usuarios = () => {
           </RefreshButton>
         </RefreshContainer>
 
-        <PaginationContainer>
-          {filteredUsers.length > 7 && (
-            <>
-              <PaginationButton 
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1}
-              >
-                ‹ Anterior
-              </PaginationButton>
-              
-              <PaginationButton 
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages}
-              >
-                Próximo ›
-              </PaginationButton>
-            </>
-          )}
-        </PaginationContainer>
-
         {loading ? (
           <EmptyState>
             <EmptyIcon>⏳</EmptyIcon>
@@ -634,57 +612,90 @@ const Usuarios = () => {
             <EmptySubtext>{searchTerm ? 'Tente pesquisar com outros termos' : 'Os usuários adicionados aparecerão aqui'}</EmptySubtext>
           </EmptyState>
         ) : (
-          <TableContainer>
-            <Table>
-              <thead>
-                <tr>
-                  <TableHeader>Foto</TableHeader>
-                  <TableHeader>Nome</TableHeader>
-                  <TableHeader>Email</TableHeader>
-                  <TableHeader>Data Cadastro</TableHeader>
-                  <TableHeader>Nível de Acesso</TableHeader>
-                  <TableHeader>Status</TableHeader>
-                  <TableHeader>Ações</TableHeader>
-                </tr>
-              </thead>
-              <tbody>
-                {currentUsers.map((user) => (
-                  <TableRow key={user.id}>
-                    <TableCell>
-                      {renderAvatar(user)}
-                    </TableCell>
-                    <TableCell>{user.nome}</TableCell>
-                    <TableCell>{user.email}</TableCell>
-                    <TableCell>
-                      {user.dataCadastro ? new Date(user.dataCadastro).toLocaleDateString('pt-BR') : '-'}
-                    </TableCell>
-                    <TableCell>
-                      <AdminBadge isAdmin={user.isAdmin}>
-                        {user.isAdmin ? 'Admin' : user.isOrganizador ? 'Organizador' : 'Usuário'}
-                      </AdminBadge>
-                    </TableCell>
-                    <TableCell>
-                      <StatusBadge active={user.isActive}>
-                        {user.isActive ? 'Ativo' : 'Inativo'}
-                      </StatusBadge>
-                    </TableCell>
-                    <TableCell>
-                      <ActionButtons>
-                        <EditButton onClick={() => handleEdit(user.id)}>
-                          <FiEdit size={16} />
-                          Editar
-                        </EditButton>
-                        <DeleteButton onClick={() => handleDelete(user.id)}>
-                          <FiTrash2 size={16} />
-                          Excluir
-                        </DeleteButton>
-                      </ActionButtons>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </tbody>
-            </Table>
-          </TableContainer>
+          <>
+            <TableContainer>
+              <Table>
+                <thead>
+                  <tr>
+                    <TableHeader>Foto</TableHeader>
+                    <TableHeader>Nome</TableHeader>
+                    <TableHeader>Email</TableHeader>
+                    <TableHeader>Data Cadastro</TableHeader>
+                    <TableHeader>Nível de Acesso</TableHeader>
+                    <TableHeader>Status</TableHeader>
+                    <TableHeader>Ações</TableHeader>
+                  </tr>
+                </thead>
+                <tbody>
+                  {currentUsers.map((user) => (
+                    <TableRow key={user.id}>
+                      <TableCell>
+                        {renderAvatar(user)}
+                      </TableCell>
+                      <TableCell>{user.nome}</TableCell>
+                      <TableCell>{user.email}</TableCell>
+                      <TableCell>
+                        {user.dataCadastro ? new Date(user.dataCadastro).toLocaleDateString('pt-BR') : '-'}
+                      </TableCell>
+                      <TableCell>
+                        <AdminBadge isAdmin={user.isAdmin || user.isGerente}>
+                          {user.isGerente ? 'Gerente' : user.isAdmin ? 'Admin' : user.isOrganizador ? 'Organizador' : 'Usuário'}
+                        </AdminBadge>
+                      </TableCell>
+                      <TableCell>
+                        <StatusBadge active={user.isActive}>
+                          {user.isActive ? 'Ativo' : 'Inativo'}
+                        </StatusBadge>
+                      </TableCell>
+                      <TableCell>
+                        <ActionButtons>
+                          <EditButton onClick={() => handleEdit(user.id)}>
+                            <FiEdit size={16} />
+                            Editar
+                          </EditButton>
+                          <DeleteButton 
+                            onClick={() => handleDelete(user.id)}
+                            disabled={user.isGerente}
+                            style={{
+                              opacity: user.isGerente ? 0.5 : 1,
+                              cursor: user.isGerente ? 'not-allowed' : 'pointer',
+                              background: user.isGerente ? '#f1f5f9' : '#fee2e2',
+                              color: user.isGerente ? '#94a3b8' : '#dc2626'
+                            }}
+                          >
+                            <FiTrash2 size={16} />
+                            {user.isGerente ? 'Protegido' : 'Excluir'}
+                          </DeleteButton>
+                        </ActionButtons>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </tbody>
+              </Table>
+            </TableContainer>
+            
+            {filteredUsers.length > 7 && (
+              <PaginationContainer>
+                <PaginationButton 
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                >
+                  ‹ Anterior
+                </PaginationButton>
+                
+                <PaginationInfo>
+                  Página {currentPage} de {totalPages}
+                </PaginationInfo>
+                
+                <PaginationButton 
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                >
+                  Próximo ›
+                </PaginationButton>
+              </PaginationContainer>
+            )}
+          </>
         )}
         
         <EditUserModal
