@@ -80,25 +80,36 @@ const EventTitle = styled.h3`
   color: #1a237e;
   font-size: 18px;
   font-weight: 600;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 `;
 
 const EventInfo = styled.div`
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 `;
 
 const InfoRow = styled.div`
   display: flex;
-  align-items: center;
-  margin-bottom: 8px;
+  align-items: flex-start;
+  margin-bottom: 6px;
   color: #64748b;
   font-size: 14px;
+  
+  span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+  }
 `;
 
 const InfoLabel = styled.span`
   font-weight: 500;
   min-width: 60px;
   color: #475569;
+  margin-right: 2px;
 `;
 
 const StatusBadge = styled.span`
@@ -473,11 +484,11 @@ const Eventos = () => {
                   </InfoRow>
                   <InfoRow>
                     <InfoLabel>Local:</InfoLabel>
-                    <span>{event.localEvento}</span>
+                    <span>{event.localEvento.length > 30 ? event.localEvento.substring(0, 30) + '...' : event.localEvento}</span>
                   </InfoRow>
                   <InfoRow>
                     <InfoLabel>Descrição:</InfoLabel>
-                    <span>{event.descricao}</span>
+                    <span>{event.descricao && event.descricao.length > 35 ? event.descricao.substring(0, 35) + '...' : event.descricao || 'Sem descrição'}</span>
                   </InfoRow>
                 </EventInfo>
 

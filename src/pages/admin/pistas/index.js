@@ -149,20 +149,20 @@ const PistaTitle = styled.h3`
   color: #1a237e;
   font-size: 18px;
   font-weight: 600;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 `;
 
 const PistaInfo = styled.div`
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 `;
 
 const InfoRow = styled.div`
   display: flex;
   align-items: flex-start;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   color: #64748b;
   font-size: 14px;
   
@@ -178,7 +178,7 @@ const InfoLabel = styled.span`
   font-weight: 500;
   min-width: 60px;
   color: #475569;
-  margin-right: 8px;
+  margin-right: 2px;
 `;
 
 const StatusBadge = styled.span`
