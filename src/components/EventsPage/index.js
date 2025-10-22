@@ -401,72 +401,45 @@ const EventsPage = () => {
     try {
       const data = await getEvents();
       console.log('Eventos carregados:', data);
+      console.log('Status dos eventos:', data.map(e => ({ id: e.id, nome: e.nome, status: e.statusEvento })));
       if (data && data.length > 0) {
-        // Filtrar apenas eventos ativos
-        const eventosAtivos = data.filter(evento => evento.statusEvento === 'ativado');
+        // Filtrar apenas eventos publicados (sem filtro por enquanto para debug)
+        const eventosAtivos = data;
         
         // Processar eventos para carregar fotos
-        const eventosProcessados = await Promise.all(
-          eventosAtivos.map(async (evento) => {
-            let foto1Base64 = null;
-            let foto2Base64 = null;
-            let foto3Base64 = null;
-            
-            try {
-              const [foto1, foto2, foto3] = await Promise.all([
-                eventoService.buscarFoto1(evento.id).catch(() => null),
-                eventoService.buscarFoto2(evento.id).catch(() => null),
-                eventoService.buscarFoto3(evento.id).catch(() => null)
-              ]);
-              
-              if (foto1) foto1Base64 = `data:image/jpeg;base64,${foto1}`;
-              if (foto2) foto2Base64 = `data:image/jpeg;base64,${foto2}`;
-              if (foto3) foto3Base64 = `data:image/jpeg;base64,${foto3}`;
-              
-              console.log(`Fotos carregadas para evento ${evento.id}:`, {
-                foto1: !!foto1Base64,
-                foto2: !!foto2Base64,
-                foto3: !!foto3Base64
-              });
-            } catch (error) {
-              console.error(`Erro ao carregar fotos do evento ${evento.id}:`, error);
-            }
-            
-            const fotosEvento = [foto1Base64, foto2Base64, foto3Base64].filter(foto => foto);
-            
-            return {
-              ...evento,
-              nomeEvento: evento.nome,
-              descricao: evento.info,
-              dataEvento: evento.dataInicio ? new Date(evento.dataInicio).toLocaleDateString('pt-BR', {
-                day: '2-digit',
-                month: '2-digit', 
-                year: 'numeric'
-              }) : 'Data não informada',
-              horaEvento: evento.dataInicio ? new Date(evento.dataInicio).toLocaleTimeString('pt-BR', { 
-                hour: '2-digit', 
-                minute: '2-digit',
-                hour12: false
-              }) : '18:00',
-              dataFim: evento.dataFim ? new Date(evento.dataFim).toLocaleDateString('pt-BR', {
-                day: '2-digit',
-                month: '2-digit', 
-                year: 'numeric'
-              }) : null,
-              horaFim: evento.dataFim ? new Date(evento.dataFim).toLocaleTimeString('pt-BR', { 
-                hour: '2-digit', 
-                minute: '2-digit',
-                hour12: false
-              }) : null,
-              localEvento: evento.lugar_id?.nome || 'Local não informado',
-              imagemEvento: foto1Base64 || 'https://via.placeholder.com/400x280?text=Sem+Imagem',
-              fotosEvento: fotosEvento.length > 0 ? fotosEvento : ['https://via.placeholder.com/400x280?text=Sem+Imagem'],
-              criadoPor: evento.usuario_id?.nome || 'Usuário não informado',
-              statusEvento: evento.statusEvento,
-              linkSite: evento.linkSite
-            };
-          })
-        );
+        const eventosProcessados = eventosAtivos.map((evento) => {
+          return {
+            ...evento,
+            nomeEvento: evento.nome,
+            descricao: evento.info,
+            dataEvento: evento.dataInicio ? new Date(evento.dataInicio).toLocaleDateString('pt-BR', {
+              day: '2-digit',
+              month: '2-digit', 
+              year: 'numeric'
+            }) : 'Data não informada',
+            horaEvento: evento.dataInicio ? new Date(evento.dataInicio).toLocaleTimeString('pt-BR', { 
+              hour: '2-digit', 
+              minute: '2-digit',
+              hour12: false
+            }) : '18:00',
+            dataFim: evento.dataFim ? new Date(evento.dataFim).toLocaleDateString('pt-BR', {
+              day: '2-digit',
+              month: '2-digit', 
+              year: 'numeric'
+            }) : null,
+            horaFim: evento.dataFim ? new Date(evento.dataFim).toLocaleTimeString('pt-BR', { 
+              hour: '2-digit', 
+              minute: '2-digit',
+              hour12: false
+            }) : null,
+            localEvento: evento.lugar_id?.nome || 'Local não informado',
+            imagemEvento: evento.foto1 ? `data:image/jpeg;base64,${evento.foto1}` : placeholderImage,
+            fotosEvento: [evento.foto1, evento.foto2, evento.foto3].filter(f => f).map(f => `data:image/jpeg;base64,${f}`),
+            criadoPor: evento.usuario_id?.nome || 'Usuário não informado',
+            statusEvento: evento.statusEvento,
+            linkSite: evento.linkSite
+          };
+        });
         console.log('Eventos processados:', eventosProcessados);
         setEvents(eventosProcessados);
       }

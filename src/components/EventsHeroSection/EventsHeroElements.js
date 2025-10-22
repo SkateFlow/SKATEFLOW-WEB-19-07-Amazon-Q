@@ -130,10 +130,7 @@ export const ExploreButton = styled.button`
 `;
 
 export const StatsContainer = styled.div`
-  display: flex;
-  gap: 32px;
-  padding-top: 32px;
-  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  display: none;
 `;
 
 export const StatItem = styled.div`
@@ -176,6 +173,9 @@ export const EventCard = styled.div`
 export const ImageContainer = styled.div`
   position: relative;
   width: 100%;
+  height: 500px;
+  overflow: hidden;
+  border-radius: 16px;
 `;
 
 export const HeroImage = styled.img`
@@ -183,6 +183,23 @@ export const HeroImage = styled.img`
   height: 500px;
   object-fit: cover;
   border-radius: 16px;
+  transition: opacity 0.5s ease-in-out;
+  
+  &.fade-enter {
+    opacity: 0;
+  }
+  
+  &.fade-enter-active {
+    opacity: 1;
+  }
+  
+  &.fade-exit {
+    opacity: 1;
+  }
+  
+  &.fade-exit-active {
+    opacity: 0;
+  }
 `;
 
 export const OverlayCard = styled.div`
@@ -194,6 +211,11 @@ export const OverlayCard = styled.div`
   backdrop-filter: blur(8px);
   border-radius: 12px;
   padding: 16px;
+  transition: all 0.3s ease;
+  min-height: 140px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 `;
 
 export const CardTitle = styled.h3`
@@ -201,6 +223,9 @@ export const CardTitle = styled.h3`
   color: white;
   margin-bottom: 8px;
   font-size: 1rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 `;
 
 export const EventInfo = styled.div`
@@ -216,10 +241,18 @@ export const EventDetail = styled.div`
   gap: 8px;
   font-size: 0.875rem;
   color: rgba(255, 255, 255, 0.7);
+  min-height: 24px;
 
   svg {
     width: 16px;
     height: 16px;
+    flex-shrink: 0;
+  }
+  
+  span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 `;
 
@@ -258,5 +291,66 @@ export const DecorativeElement = styled.div`
     width: 128px;
     height: 128px;
     background: rgba(0, 86, 179, 0.2);
+  }
+`;
+
+
+export const CarouselButton = styled.button`
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(4, 60, 112, 0.8);
+  color: white;
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 10;
+
+  &:hover {
+    background: #043C70;
+    transform: translateY(-50%) scale(1.1);
+  }
+
+  &.prev {
+    left: 16px;
+  }
+
+  &.next {
+    right: 16px;
+  }
+
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+`;
+
+export const CarouselDots = styled.div`
+  position: absolute;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  z-index: 10;
+`;
+
+export const Dot = styled.button`
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: none;
+  background: ${props => props.active ? '#043C70' : 'rgba(255, 255, 255, 0.5)'};
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: ${props => props.active ? '#043C70' : 'rgba(255, 255, 255, 0.8)'};
   }
 `;

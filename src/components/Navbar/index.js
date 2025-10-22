@@ -175,24 +175,32 @@ const Navbar = ({ toggle, scrollNav: forceScrollNav }) => {
                                     )}
                                 </NavItem>
                                 <NavItem>
-                                <AnimatedScrollLink 
-                                    to="services"
-                                    smooth={true}
-                                    duration={500}
-                                    spy={true}
-                                    activeClass='active'
-                                    exact='true'
-                                    scrollNav={finalScrollNav}>Sobre nós</AnimatedScrollLink>
+                                    {location.pathname === '/' ? (
+                                        <AnimatedScrollLink 
+                                        to="services"
+                                        smooth={true}
+                                        duration={500}
+                                        spy={true}
+                                        activeClass='active'
+                                        exact='true'
+                                        scrollNav={finalScrollNav}>Sobre nós</AnimatedScrollLink>
+                                    ) : (
+                                        <AnimatedRouterLink to="/#services" scrollNav={finalScrollNav}>Sobre nós</AnimatedRouterLink>
+                                    )}
                                 </NavItem>
                                 <NavItem>
-                                    <AnimatedScrollLink 
-                                    to="signup"
-                                    smooth={true}
-                                    duration={500}
-                                    spy={true}
-                                    activeClass='active'
-                                    exact='true'
-                                    scrollNav={finalScrollNav}>Mobile</AnimatedScrollLink>
+                                    {location.pathname === '/' ? (
+                                        <AnimatedScrollLink 
+                                        to="signup"
+                                        smooth={true}
+                                        duration={500}
+                                        spy={true}
+                                        activeClass='active'
+                                        exact='true'
+                                        scrollNav={finalScrollNav}>Mobile</AnimatedScrollLink>
+                                    ) : (
+                                        <AnimatedRouterLink to="/#signup" scrollNav={finalScrollNav}>Mobile</AnimatedRouterLink>
+                                    )}
                                 </NavItem>
                             </NavMenu>
                         </NavLeftSection>
