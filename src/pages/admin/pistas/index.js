@@ -108,7 +108,6 @@ const Subtitle = styled.p`
 `;
 
 const ListContainer = styled.div`
-  background: #f8f9fa;
   border-radius: 12px;
   padding: 24px;
   margin-top: 24px;

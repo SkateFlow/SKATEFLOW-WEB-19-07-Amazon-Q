@@ -272,7 +272,7 @@ const Dashboard = () => {
   const [stats, setStats] = React.useState({
     eventosAtivos: 0,
     pistasAtivas: 0,
-    totalUsuarios: 0
+    usuariosAtivos: 0
   });
   const [loading, setLoading] = React.useState(true);
   const [chartView, setChartView] = React.useState('week');
@@ -292,20 +292,29 @@ const Dashboard = () => {
         usuarioService.listar()
       ]);
       
-      const eventosAtivos = eventos.filter(evento => evento.statusEvento === 'ativado').length;
-      const pistasAtivas = lugares.filter(lugar => lugar.statusPista === 'ativada').length;
-      const totalUsuarios = usuarios.length;
+      console.log('Eventos carregados:', eventos);
+      const eventosAtivos = eventos.filter(evento => {
+        console.log('Evento:', evento.nome, 'Status:', evento.statusEvento);
+        return evento.statusEvento === 'ativado' || evento.statusEvento === 'ATIVO' || evento.statusEvento === 'ativo';
+      }).length;
+      console.log('Eventos ativos encontrados:', eventosAtivos);
+      const pistasAtivas = lugares.filter(lugar => 
+        lugar.statusPista === 'ativada' || lugar.statusPista === 'ATIVA'
+      ).length;
+      const usuariosAtivos = usuarios.filter(usuario => 
+        usuario.statusUsuario === 'ATIVO' || usuario.statusUsuario === 'ativo'
+      ).length;
       
       setStats({
         eventosAtivos,
         pistasAtivas,
-        totalUsuarios
+        usuariosAtivos
       });
       
       processChartData(usuarios);
     } catch (error) {
       console.error('Erro ao carregar estatísticas:', error);
-      setStats({ eventosAtivos: 0, pistasAtivas: 0, totalUsuarios: 0 });
+      setStats({ eventosAtivos: 0, pistasAtivas: 0, usuariosAtivos: 0 });
     } finally {
       setLoading(false);
     }
@@ -454,29 +463,31 @@ const Dashboard = () => {
             </StatHeader>
           </StatCard>
 
-          <StatCard color="linear-gradient(90deg, #10b981 0%, #059669 100%)">
+          <StatCard color="linear-gradient(90deg, #f59e0b 0%, #d97706 100%)">
             <StatHeader>
               <div>
                 <StatValue>{loading ? '...' : stats.pistasAtivas}</StatValue>
                 <StatLabel>Pistas Ativas</StatLabel>
               </div>
-              <StatIcon bgColor="rgba(16, 185, 129, 0.1)" color="#10b981">
+              <StatIcon bgColor="rgba(245, 158, 11, 0.1)" color="#f59e0b">
                 <FiMapPin />
               </StatIcon>
             </StatHeader>
           </StatCard>
 
-          <StatCard color="linear-gradient(90deg, #ef4444 0%, #dc2626 100%)">
+          <StatCard color="linear-gradient(90deg, #10b981 0%, #059669 100%)">
             <StatHeader>
               <div>
-                <StatValue>{loading ? '...' : stats.totalUsuarios}</StatValue>
-                <StatLabel>Usuários Cadastrados</StatLabel>
+                <StatValue>{loading ? '...' : stats.usuariosAtivos}</StatValue>
+                <StatLabel>Usuários Ativos</StatLabel>
               </div>
-              <StatIcon bgColor="rgba(239, 68, 68, 0.1)" color="#ef4444">
+              <StatIcon bgColor="rgba(16, 185, 129, 0.1)" color="#10b981">
                 <FiUsers />
               </StatIcon>
             </StatHeader>
           </StatCard>
+
+
 
           <StatCard color="linear-gradient(90deg, #8b5cf6 0%, #7c3aed 100%)">
             <StatHeader>

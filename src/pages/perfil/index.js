@@ -496,10 +496,11 @@ const Perfil = () => {
       setFormData(prev => ({
         ...prev,
         nome: user.nome || '',
-        email: user.email || ''
+        email: user.email || '',
+        foto: user.foto || null
       }));
       
-      // Carregar foto do usuário
+      // Carregar foto do usuário sempre
       if (user.id) {
         usuarioService.buscarFoto(user.id)
           .then(fotoBase64 => {
@@ -1216,8 +1217,8 @@ const Perfil = () => {
         </BackButton>
         <SidebarHeader>
           <ProfileAvatar bgColor={getAvatarColor(user?.nome)}>
-            {user?.foto ? (
-              <ProfileImage src={user.foto} alt={user.nome} />
+            {(user?.foto || formData.foto) ? (
+              <ProfileImage src={user?.foto || formData.foto} alt={user?.nome} />
             ) : (
               user?.nome?.charAt(0)?.toUpperCase() || <FiUser />
             )}

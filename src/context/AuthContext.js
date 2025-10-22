@@ -38,11 +38,6 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const loadUserPhoto = async (userData) => {
-    // Se já tem foto, não carrega novamente
-    if (userData.foto) {
-      return;
-    }
-    
     try {
       const [fotoBase64, organizadores] = await Promise.all([
         usuarioService.buscarFoto(userData.id).catch(() => null),
