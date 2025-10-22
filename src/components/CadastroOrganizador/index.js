@@ -200,6 +200,37 @@ const CadastroOrganizador = () => {
   const navigate = useNavigate();
 
   const handleInputChange = (field, value) => {
+    // Validação e formatação para campos numéricos
+    if (field === 'telefone') {
+      const numbers = value.replace(/\D/g, '').slice(0, 11);
+      if (numbers.length <= 2) {
+        value = numbers.replace(/(\d{1,2})/, '($1');
+      } else if (numbers.length <= 7) {
+        value = numbers.replace(/(\d{2})(\d{1,5})/, '($1) $2');
+      } else if (numbers.length <= 10) {
+        value = numbers.replace(/(\d{2})(\d{4})(\d{1,4})/, '($1) $2-$3');
+      } else {
+        value = numbers.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+      }
+    } else if (field === 'cep') {
+      const numbers = value.replace(/\D/g, '').slice(0, 8);
+      value = numbers.replace(/(\d{5})(\d{3})/, '$1-$2');
+    } else if (field === 'cpf_cnpj') {
+      const numbers = value.replace(/\D/g, '').slice(0, 14);
+      if (numbers.length <= 11) {
+        value = numbers.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4')
+                      .replace(/(\d{3})(\d{3})(\d{1,3})/, '$1.$2.$3')
+                      .replace(/(\d{3})(\d{1,3})/, '$1.$2');
+      } else {
+        value = numbers.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5')
+                      .replace(/(\d{2})(\d{3})(\d{3})(\d{1,4})/, '$1.$2.$3/$4')
+                      .replace(/(\d{2})(\d{3})(\d{1,3})/, '$1.$2.$3')
+                      .replace(/(\d{2})(\d{1,3})/, '$1.$2');
+      }
+    } else if (field === 'numResidencia') {
+      value = value.replace(/\D/g, '').slice(0, 6);
+    }
+    
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -278,10 +309,10 @@ const CadastroOrganizador = () => {
         return;
       }
 
-      // Validar CPF (formato básico)
-      const cpfLimpo = formData.cpf_cnpj.replace(/\D/g, '');
-      if (cpfLimpo.length !== 11 && cpfLimpo.length !== 14) {
-        setErrorMessage('CPF/CNPJ deve ter 11 ou 14 dígitos');
+      // Validar CPF/CNPJ (formato básico)
+      const cpfCnpjLimpo = formData.cpf_cnpj.replace(/\D/g, '');
+      if (cpfCnpjLimpo.length !== 11 && cpfCnpjLimpo.length !== 14) {
+        setErrorMessage('CPF deve ter 11 dígitos ou CNPJ deve ter 14 dígitos');
         return;
       }
 
@@ -321,7 +352,7 @@ const CadastroOrganizador = () => {
       // 3. Criar organizador vinculado ao usuário
       const organizadorData = {
         nome: formData.nomeOrganizador,
-        cpf_cnpj: formData.cpf_cnpj,
+        cpf_cnpj: formData.cpf_cnpj.replace(/\D/g, ''),
         dataNascimento: formData.dataNascimento || null,
         telefone: formData.telefone,
         email: formData.email,
