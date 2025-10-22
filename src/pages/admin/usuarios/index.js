@@ -16,12 +16,15 @@ const AdminContainer = styled.div`
     radial-gradient(circle at 80% 20%, #c4e0ffff 0%, transparent 25%),
     radial-gradient(circle at 40% 40%, #ffffff 0%, transparent 25%),
     #f8fafc;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
 `;
 
 const ContentContainer = styled.div`
   margin-left: 250px;
   padding: 40px;
+  height: 100vh;
+  overflow: hidden;
 `;
 
 const Header = styled.div`
@@ -86,7 +89,7 @@ const Table = styled.table`
 `;
 
 const TableHeader = styled.th`
-  padding: 20px;
+  padding: 12px 20px;
   text-align: left;
   font-weight: 600;
   color: #1a237e;
@@ -138,7 +141,7 @@ const TableRow = styled.tr`
 `;
 
 const TableCell = styled.td`
-  padding: 20px;
+  padding: 12px 20px;
   border-bottom: 1px solid #e2e8f0;
   color: #475569;
   font-size: 14px;
@@ -365,25 +368,23 @@ const CreateGerenteButton = styled.button`
   align-items: center;
   gap: 8px;
   padding: 12px 20px;
-  border: none;
+  border: 2px solid #e2e8f0;
   border-radius: 8px;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
-  background: #0f2468ff;
-  color: white;
+  background: transparent;
+  color: #64748b;
   
   &:hover {
-    background: #113774ff;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(15, 36, 104, 0.3);
+    background: #f1f5f9;
+    border-color: #cbd5e0;
   }
   
   &:disabled {
     opacity: 0.6;
     cursor: not-allowed;
-    transform: none;
   }
 `;
 
@@ -651,10 +652,31 @@ const Usuarios = () => {
         </RefreshContainer>
 
         {loading ? (
-          <EmptyState>
-            <EmptyIcon>⏳</EmptyIcon>
-            <EmptyText>Carregando usuários...</EmptyText>
-          </EmptyState>
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: '300px',
+            color: '#64748b'
+          }}>
+            <div style={{
+              width: '40px',
+              height: '40px',
+              border: '3px solid #e2e8f0',
+              borderTop: '3px solid #667eea',
+              borderRadius: '50%',
+              animation: 'spin 1s linear infinite',
+              marginBottom: '16px'
+            }} />
+            <p style={{ textAlign: 'center', fontSize: '16px', fontWeight: '500', margin: '0' }}>Carregando usuários...</p>
+            <style>{`
+              @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+              }
+            `}</style>
+          </div>
         ) : error ? (
           <EmptyState>
             <EmptyIcon>⚠️</EmptyIcon>

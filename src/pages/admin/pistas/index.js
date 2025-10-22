@@ -448,6 +448,52 @@ const Pistas = () => {
         const pistasAtualizadas = pistasStorage.map(p => p.id === updatedPista.id ? updatedPista : p);
         localStorage.setItem(storageKey, JSON.stringify(pistasAtualizadas));
       }
+      
+      // Mostrar notificação após lista atualizada
+      const notification = document.createElement('div');
+      notification.style.cssText = `
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 10000;
+        background: #dcfce7;
+        border: 1px solid #bbf7d0;
+        color: #166534;
+        animation: slideIn 0.3s ease-out;
+      `;
+      notification.textContent = 'Pista atualizada com sucesso!';
+      
+      const style = document.createElement('style');
+      style.textContent = `
+        @keyframes slideIn {
+          from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+          to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+        @keyframes slideOut {
+          from { opacity: 1; transform: translateX(-50%) translateY(0); }
+          to { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+        }
+      `;
+      document.head.appendChild(style);
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        if (notification && document.body.contains(notification)) {
+          notification.style.animation = 'slideOut 0.3s ease-out';
+          setTimeout(() => {
+            if (document.body.contains(notification)) {
+              document.body.removeChild(notification);
+              document.head.removeChild(style);
+            }
+          }, 300);
+        }
+      }, 3000);
+      
     } catch (error) {
       console.error('Erro ao salvar pista:', error);
       alert('Erro ao salvar pista. Tente novamente.');
@@ -559,11 +605,31 @@ const Pistas = () => {
 
         <ListContainer>
           {loading ? (
-            <EmptyState>
-              <EmptyIcon>⏳</EmptyIcon>
-              <EmptyText>Carregando pistas...</EmptyText>
-              <EmptySubtext>Carregando dados do sistema</EmptySubtext>
-            </EmptyState>
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              height: '300px',
+              color: '#64748b'
+            }}>
+              <div style={{
+                width: '40px',
+                height: '40px',
+                border: '3px solid #e2e8f0',
+                borderTop: '3px solid #667eea',
+                borderRadius: '50%',
+                animation: 'spin 1s linear infinite',
+                marginBottom: '16px'
+              }} />
+              <p style={{ textAlign: 'center', fontSize: '16px', fontWeight: '500', margin: '0' }}>Carregando pistas...</p>
+              <style>{`
+                @keyframes spin {
+                  0% { transform: rotate(0deg); }
+                  100% { transform: rotate(360deg); }
+                }
+              `}</style>
+            </div>
           ) : filteredPistas.length === 0 ? (
             <EmptyState>
               <EmptyIcon>🛹</EmptyIcon>

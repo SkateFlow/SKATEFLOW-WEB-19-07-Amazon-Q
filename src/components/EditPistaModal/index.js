@@ -367,7 +367,7 @@ const EditPistaModal = ({ isOpen, onClose, pista, onSave }) => {
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              height: '100%',
+              minHeight: '750px',
               color: '#64748b'
             }}>
               <div style={{

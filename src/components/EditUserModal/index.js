@@ -40,20 +40,25 @@ const EditUserModal = ({ isOpen, onClose, user, onSave }) => {
   const [originalData, setOriginalData] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   React.useEffect(() => {
-    if (user) {
-      const data = {
-        nome: user.nome || '',
-        email: user.email || '',
-        isAdmin: user.isAdmin || false,
-        isActive: user.isActive !== undefined ? user.isActive : true,
-        foto: user.foto || ''
-      };
-      setFormData(data);
-      setOriginalData(data);
+    if (user && isOpen) {
+      setIsLoading(true);
+      setTimeout(() => {
+        const data = {
+          nome: user.nome || '',
+          email: user.email || '',
+          isAdmin: user.isAdmin || false,
+          isActive: user.isActive !== undefined ? user.isActive : true,
+          foto: user.foto || ''
+        };
+        setFormData(data);
+        setOriginalData(data);
+        setIsLoading(false);
+      }, 500);
     }
-  }, [user]);
+  }, [user, isOpen]);
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
@@ -99,6 +104,52 @@ const EditUserModal = ({ isOpen, onClose, user, onSave }) => {
       };
       
       onSave(updatedUser);
+      
+      // Mostrar notificação de sucesso
+      const notification = document.createElement('div');
+      notification.style.cssText = `
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 10000;
+        background: #dcfce7;
+        border: 1px solid #bbf7d0;
+        color: #166534;
+        animation: slideIn 0.3s ease-out;
+      `;
+      notification.textContent = 'Usuário atualizado com sucesso!';
+      
+      const style = document.createElement('style');
+      style.textContent = `
+        @keyframes slideIn {
+          from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+          to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+        @keyframes slideOut {
+          from { opacity: 1; transform: translateX(-50%) translateY(0); }
+          to { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+        }
+      `;
+      document.head.appendChild(style);
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        if (notification && document.body.contains(notification)) {
+          notification.style.animation = 'slideOut 0.3s ease-out';
+          setTimeout(() => {
+            if (document.body.contains(notification)) {
+              document.body.removeChild(notification);
+              document.head.removeChild(style);
+            }
+          }, 300);
+        }
+      }, 3000);
+      
       onClose();
     } catch (err) {
       setError(typeof err === 'string' ? err : 'Erro ao atualizar usuário');
@@ -134,6 +185,34 @@ const EditUserModal = ({ isOpen, onClose, user, onSave }) => {
             </ModalHeader>
 
             <ModalContent>
+              {isLoading ? (
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  minHeight: '400px',
+                  color: '#64748b'
+                }}>
+                  <div style={{
+                    width: '40px',
+                    height: '40px',
+                    border: '3px solid #e2e8f0',
+                    borderTop: '3px solid #667eea',
+                    borderRadius: '50%',
+                    animation: 'spin 1s linear infinite',
+                    marginBottom: '16px'
+                  }} />
+                  <p style={{ textAlign: 'center', fontSize: '16px', fontWeight: '500' }}>Carregando dados do usuário...</p>
+                  <style>{`
+                    @keyframes spin {
+                      0% { transform: rotate(0deg); }
+                      100% { transform: rotate(360deg); }
+                    }
+                  `}</style>
+                </div>
+              ) : (
+                <>
               <PhotoSection>
                 <PhotoDisplay>
                   {formData.foto ? (
@@ -210,6 +289,8 @@ const EditUserModal = ({ isOpen, onClose, user, onSave }) => {
                   </SaveButton>
                 )}
               </ButtonGroup>
+                </>
+              )}
             </ModalContent>
           </ModalContainer>
           
