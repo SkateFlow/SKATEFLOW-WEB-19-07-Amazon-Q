@@ -5,6 +5,13 @@ import { useAuth } from '../context/AuthContext';
 import { usuarioService } from '../services/usuarioService';
 import { FiEye, FiEyeOff } from 'react-icons/fi';
 import logoWhite from '../assets/images/logoof1.svg';
+import styled from 'styled-components';
+
+const FieldError = styled.div`
+  color: #f44336;
+  font-size: 12px;
+  margin-top: 4px;
+`;
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -20,6 +27,7 @@ const Login = () => {
   const [isRegister, setIsRegister] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({});
   const navigate = useNavigate();
   const { login } = useAuth();
 
@@ -42,6 +50,38 @@ const Login = () => {
     }
   }, []);
 
+  const validateFields = () => {
+    const errors = {};
+    
+    if (isRegister) {
+      if (!username) errors.username = 'Nome de usuário é obrigatório';
+      if (!email) errors.email = 'Email é obrigatório';
+      if (!password) errors.password = 'Senha é obrigatória';
+      if (!confirmPassword) errors.confirmPassword = 'Confirmação de senha é obrigatória';
+      
+      if (username && username.length < 3) {
+        errors.username = 'Nome deve ter pelo menos 3 caracteres';
+      }
+      if (password && password.length < 8) {
+        errors.password = 'Senha deve ter pelo menos 8 caracteres';
+      }
+      if (password && !/[A-Z]/.test(password)) {
+        errors.password = 'Senha deve ter pelo menos 1 letra maiúscula';
+      }
+      if (password && !/[0-9]/.test(password)) {
+        errors.password = 'Senha deve ter pelo menos 1 número';
+      }
+      if (password && confirmPassword && password !== confirmPassword) {
+        errors.confirmPassword = 'Senhas não coincidem';
+      }
+    } else {
+      if (!email) errors.email = 'Email é obrigatório';
+      if (!password) errors.password = 'Senha é obrigatória';
+    }
+    
+    return errors;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -49,39 +89,17 @@ const Login = () => {
     setSuccessMessage('');
     setAccountDeletedMessage('');
     setLoginMessage('');
+    
+    const errors = validateFields();
+    setFieldErrors(errors);
+    
+    if (Object.keys(errors).length > 0) {
+      setLoading(false);
+      return;
+    }
 
     try {
       if (isRegister) {
-        // Cadastro
-        if (!email || !password || !username || !confirmPassword) {
-          setErrorMessage('Preencha todos os campos');
-          return;
-        }
-        
-        if (username.length < 3) {
-          setErrorMessage('Nome de usuário deve ter pelo menos 3 caracteres');
-          return;
-        }
-        
-        if (password.length < 8) {
-          setErrorMessage('Senha deve ter pelo menos 8 caracteres');
-          return;
-        }
-        
-        if (!/[A-Z]/.test(password)) {
-          setErrorMessage('Senha deve ter pelo menos 1 letra maiúscula');
-          return;
-        }
-        
-        if (!/[0-9]/.test(password)) {
-          setErrorMessage('Senha deve ter pelo menos 1 número');
-          return;
-        }
-        
-        if (password !== confirmPassword) {
-          setErrorMessage('Senhas não coincidem');
-          return;
-        }
 
         await usuarioService.cadastrar({
           nome: username,
@@ -150,7 +168,9 @@ const Login = () => {
                   onChange={(e) => setUsername(e.target.value)}
                   autoComplete="off"
                   className="form-input"
+                  style={{ borderBottomColor: fieldErrors.username ? '#f44336' : '#e0e0e0' }}
                 />
+                {fieldErrors.username && <FieldError>{fieldErrors.username}</FieldError>}
               </div>
             )}
 
@@ -163,7 +183,9 @@ const Login = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 autoComplete="off"
                 className="form-input"
+                style={{ borderBottomColor: fieldErrors.email ? '#f44336' : '#e0e0e0' }}
               />
+              {fieldErrors.email && <FieldError>{fieldErrors.email}</FieldError>}
             </div>
 
             <div className="input-group password-group">
@@ -175,6 +197,7 @@ const Login = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 autoComplete="new-password"
                 className="form-input password-input"
+                style={{ borderBottomColor: fieldErrors.password ? '#f44336' : '#e0e0e0' }}
               />
               <button
                 type="button"
@@ -183,6 +206,7 @@ const Login = () => {
               >
                 {showPassword ? <FiEyeOff /> : <FiEye />}
               </button>
+              {fieldErrors.password && <FieldError>{fieldErrors.password}</FieldError>}
             </div>
 
             {isRegister && (
@@ -195,6 +219,7 @@ const Login = () => {
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   autoComplete="new-password"
                   className="form-input password-input"
+                  style={{ borderBottomColor: fieldErrors.confirmPassword ? '#f44336' : '#e0e0e0' }}
                 />
                 <button
                   type="button"
@@ -203,6 +228,7 @@ const Login = () => {
                 >
                   {showConfirmPassword ? <FiEyeOff /> : <FiEye />}
                 </button>
+                {fieldErrors.confirmPassword && <FieldError>{fieldErrors.confirmPassword}</FieldError>}
               </div>
             )}
 

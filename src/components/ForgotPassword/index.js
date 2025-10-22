@@ -4,6 +4,13 @@ import { useNavigate } from 'react-router-dom';
 import { usuarioService } from '../../services/usuarioService';
 import { FiEye, FiEyeOff } from 'react-icons/fi';
 import logoWhite from '../../assets/images/logoof1.svg';
+import styled from 'styled-components';
+
+const FieldError = styled.div`
+  color: #f44336;
+  font-size: 12px;
+  margin-top: 4px;
+`;
 
 const ForgotPassword = () => {
   const [step, setStep] = useState(1); // 1: email, 2: código, 3: nova senha
@@ -16,6 +23,7 @@ const ForgotPassword = () => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({});
   const navigate = useNavigate();
 
   const handleEnviarCodigo = async (e) => {
@@ -23,12 +31,17 @@ const ForgotPassword = () => {
     setLoading(true);
     setErrorMessage('');
     setSuccessMessage('');
+    
+    const errors = {};
+    if (!email) errors.email = 'Email é obrigatório';
+    setFieldErrors(errors);
+    
+    if (Object.keys(errors).length > 0) {
+      setLoading(false);
+      return;
+    }
 
     try {
-      if (!email) {
-        setErrorMessage('Digite seu email');
-        return;
-      }
 
       await usuarioService.esqueceuSenha(email);
       setSuccessMessage('Código enviado para seu email!');
@@ -48,12 +61,17 @@ const ForgotPassword = () => {
     setLoading(true);
     setErrorMessage('');
     setSuccessMessage('');
+    
+    const errors = {};
+    if (!codigo) errors.codigo = 'Código é obrigatório';
+    setFieldErrors(errors);
+    
+    if (Object.keys(errors).length > 0) {
+      setLoading(false);
+      return;
+    }
 
     try {
-      if (!codigo) {
-        setErrorMessage('Digite o código recebido');
-        return;
-      }
 
       await usuarioService.validarCodigo(email, codigo);
       setSuccessMessage('Código válido!');
@@ -73,32 +91,32 @@ const ForgotPassword = () => {
     setLoading(true);
     setErrorMessage('');
     setSuccessMessage('');
+    
+    const errors = {};
+    if (!novaSenha) errors.novaSenha = 'Nova senha é obrigatória';
+    if (!confirmarSenha) errors.confirmarSenha = 'Confirmação de senha é obrigatória';
+    
+    if (novaSenha && novaSenha.length < 8) {
+      errors.novaSenha = 'Senha deve ter pelo menos 8 caracteres';
+    }
+    if (novaSenha && !/[A-Z]/.test(novaSenha)) {
+      errors.novaSenha = 'Senha deve ter pelo menos 1 letra maiúscula';
+    }
+    if (novaSenha && !/[0-9]/.test(novaSenha)) {
+      errors.novaSenha = 'Senha deve ter pelo menos 1 número';
+    }
+    if (novaSenha && confirmarSenha && novaSenha !== confirmarSenha) {
+      errors.confirmarSenha = 'Senhas não coincidem';
+    }
+    
+    setFieldErrors(errors);
+    
+    if (Object.keys(errors).length > 0) {
+      setLoading(false);
+      return;
+    }
 
     try {
-      if (!novaSenha || !confirmarSenha) {
-        setErrorMessage('Preencha todos os campos');
-        return;
-      }
-
-      if (novaSenha.length < 8) {
-        setErrorMessage('Senha deve ter pelo menos 8 caracteres');
-        return;
-      }
-
-      if (!/[A-Z]/.test(novaSenha)) {
-        setErrorMessage('Senha deve ter pelo menos 1 letra maiúscula');
-        return;
-      }
-
-      if (!/[0-9]/.test(novaSenha)) {
-        setErrorMessage('Senha deve ter pelo menos 1 número');
-        return;
-      }
-
-      if (novaSenha !== confirmarSenha) {
-        setErrorMessage('Senhas não coincidem');
-        return;
-      }
 
       await usuarioService.redefinirSenha(email, codigo, novaSenha);
       setSuccessMessage('Senha redefinida com sucesso!');
@@ -128,7 +146,9 @@ const ForgotPassword = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 autoComplete="off"
                 className="form-input"
+                style={{ borderBottomColor: fieldErrors.email ? '#f44336' : '#e0e0e0' }}
               />
+              {fieldErrors.email && <FieldError>{fieldErrors.email}</FieldError>}
             </div>
 
             {errorMessage && (
@@ -174,11 +194,13 @@ const ForgotPassword = () => {
                 placeholder="Digite o código (5 dígitos)"
                 required
                 value={codigo}
-                onChange={(e) => setCodigo(e.target.value)}
+                onChange={(e) => setCodigo(e.target.value.replace(/\D/g, ''))}
                 autoComplete="off"
                 className="form-input"
                 maxLength="5"
+                style={{ borderBottomColor: fieldErrors.codigo ? '#f44336' : '#e0e0e0' }}
               />
+              {fieldErrors.codigo && <FieldError>{fieldErrors.codigo}</FieldError>}
             </div>
 
             {errorMessage && (
@@ -228,6 +250,7 @@ const ForgotPassword = () => {
                 onChange={(e) => setNovaSenha(e.target.value)}
                 autoComplete="new-password"
                 className="form-input password-input"
+                style={{ borderBottomColor: fieldErrors.novaSenha ? '#f44336' : '#e0e0e0' }}
               />
               <button
                 type="button"
@@ -236,6 +259,7 @@ const ForgotPassword = () => {
               >
                 {showPassword ? <FiEyeOff /> : <FiEye />}
               </button>
+              {fieldErrors.novaSenha && <FieldError>{fieldErrors.novaSenha}</FieldError>}
             </div>
 
             <div className="input-group password-group">
@@ -247,6 +271,7 @@ const ForgotPassword = () => {
                 onChange={(e) => setConfirmarSenha(e.target.value)}
                 autoComplete="new-password"
                 className="form-input password-input"
+                style={{ borderBottomColor: fieldErrors.confirmarSenha ? '#f44336' : '#e0e0e0' }}
               />
               <button
                 type="button"
@@ -255,6 +280,7 @@ const ForgotPassword = () => {
               >
                 {showConfirmPassword ? <FiEyeOff /> : <FiEye />}
               </button>
+              {fieldErrors.confirmarSenha && <FieldError>{fieldErrors.confirmarSenha}</FieldError>}
             </div>
 
             {errorMessage && (

@@ -93,19 +93,25 @@ const FormInput = styled.input`
   padding: 16px 0;
   background: transparent;
   border: none;
-  border-bottom: 2px solid #e0e0e0;
+  border-bottom: 2px solid ${props => props.hasError ? '#f44336' : '#e0e0e0'};
   color: #333;
   font-size: 16px;
   outline: none;
   transition: all 0.3s ease;
 
   &:focus {
-    border-bottom-color: #043C70;
+    border-bottom-color: ${props => props.hasError ? '#f44336' : '#043C70'};
   }
 
   &::placeholder {
-    color: #999;
+    color: ${props => props.hasError ? '#f44336' : '#999'};
   }
+`;
+
+const FieldError = styled.div`
+  color: #f44336;
+  font-size: 12px;
+  margin-top: 4px;
 `;
 
 const PasswordToggle = styled.button`
@@ -197,6 +203,7 @@ const CadastroOrganizador = () => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({});
   const navigate = useNavigate();
 
   const handleInputChange = (field, value) => {
@@ -259,36 +266,55 @@ const CadastroOrganizador = () => {
     }
   };
 
+  const validateFields = () => {
+    const errors = {};
+    
+    if (!formData.nome) errors.nome = 'Nome é obrigatório';
+    if (!formData.email) errors.email = 'Email é obrigatório';
+    if (!formData.senha) errors.senha = 'Senha é obrigatória';
+    if (!formData.confirmarSenha) errors.confirmarSenha = 'Confirmação de senha é obrigatória';
+    if (!formData.nomeOrganizador) errors.nomeOrganizador = 'Nome do organizador é obrigatório';
+    if (!formData.cpf_cnpj) errors.cpf_cnpj = 'CPF/CNPJ é obrigatório';
+    if (!formData.telefone) errors.telefone = 'Telefone é obrigatório';
+    if (!formData.cep) errors.cep = 'CEP é obrigatório';
+    if (!formData.dataNascimento) errors.dataNascimento = 'Data de nascimento é obrigatória';
+    
+    if (formData.senha && formData.senha.length < 8) {
+      errors.senha = 'Senha deve ter pelo menos 8 caracteres';
+    }
+    if (formData.senha && !/[A-Z]/.test(formData.senha)) {
+      errors.senha = 'Senha deve ter pelo menos 1 letra maiúscula';
+    }
+    if (formData.senha && !/[0-9]/.test(formData.senha)) {
+      errors.senha = 'Senha deve ter pelo menos 1 número';
+    }
+    if (formData.senha && formData.confirmarSenha && formData.senha !== formData.confirmarSenha) {
+      errors.confirmarSenha = 'Senhas não coincidem';
+    }
+    
+    const cpfCnpjLimpo = formData.cpf_cnpj.replace(/\D/g, '');
+    if (formData.cpf_cnpj && cpfCnpjLimpo.length !== 11 && cpfCnpjLimpo.length !== 14) {
+      errors.cpf_cnpj = 'CPF deve ter 11 dígitos ou CNPJ deve ter 14 dígitos';
+    }
+    
+    return errors;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setErrorMessage('');
     setSuccessMessage('');
+    
+    const errors = validateFields();
+    setFieldErrors(errors);
+    
+    if (Object.keys(errors).length > 0) {
+      setLoading(false);
+      return;
+    }
 
     try {
-      // Validações
-      if (!formData.nome || !formData.email || !formData.senha || !formData.confirmarSenha ||
-          !formData.nomeOrganizador || !formData.cpf_cnpj || !formData.telefone || !formData.cep ||
-          !formData.dataNascimento) {
-        setErrorMessage('Preencha todos os campos obrigatórios');
-        return;
-      }
-
-      // Validar tamanhos dos campos
-      if (formData.nome.length > 200) {
-        setErrorMessage('Nome deve ter no máximo 200 caracteres');
-        return;
-      }
-
-      if (formData.email.length > 200) {
-        setErrorMessage('Email deve ter no máximo 200 caracteres');
-        return;
-      }
-
-      if (formData.nomeOrganizador.length > 200) {
-        setErrorMessage('Nome do organizador deve ter no máximo 200 caracteres');
-        return;
-      }
 
       // Validar idade (maior de 18 anos)
       const hoje = new Date();
@@ -306,33 +332,6 @@ const CadastroOrganizador = () => {
       
       if (idadeReal < 18) {
         setErrorMessage('Apenas maiores de 18 anos podem se cadastrar como organizador');
-        return;
-      }
-
-      // Validar CPF/CNPJ (formato básico)
-      const cpfCnpjLimpo = formData.cpf_cnpj.replace(/\D/g, '');
-      if (cpfCnpjLimpo.length !== 11 && cpfCnpjLimpo.length !== 14) {
-        setErrorMessage('CPF deve ter 11 dígitos ou CNPJ deve ter 14 dígitos');
-        return;
-      }
-
-      if (formData.senha.length < 8) {
-        setErrorMessage('Senha deve ter pelo menos 8 caracteres');
-        return;
-      }
-
-      if (!/[A-Z]/.test(formData.senha)) {
-        setErrorMessage('Senha deve ter pelo menos 1 letra maiúscula');
-        return;
-      }
-
-      if (!/[0-9]/.test(formData.senha)) {
-        setErrorMessage('Senha deve ter pelo menos 1 número');
-        return;
-      }
-
-      if (formData.senha !== formData.confirmarSenha) {
-        setErrorMessage('Senhas não coincidem');
         return;
       }
 
@@ -421,8 +420,10 @@ const CadastroOrganizador = () => {
                     placeholder="Nome completo *"
                     value={formData.nome}
                     onChange={(e) => handleInputChange('nome', e.target.value)}
+                    hasError={fieldErrors.nome}
                     required
                   />
+                  {fieldErrors.nome && <FieldError>{fieldErrors.nome}</FieldError>}
                 </InputGroup>
 
                 <InputGroup>
@@ -431,8 +432,10 @@ const CadastroOrganizador = () => {
                     placeholder="Email *"
                     value={formData.email}
                     onChange={(e) => handleInputChange('email', e.target.value)}
+                    hasError={fieldErrors.email}
                     required
                   />
+                  {fieldErrors.email && <FieldError>{fieldErrors.email}</FieldError>}
                 </InputGroup>
 
                 <InputGroup>
@@ -441,6 +444,7 @@ const CadastroOrganizador = () => {
                     placeholder="Senha *"
                     value={formData.senha}
                     onChange={(e) => handleInputChange('senha', e.target.value)}
+                    hasError={fieldErrors.senha}
                     required
                     style={{ paddingRight: '40px' }}
                   />
@@ -450,6 +454,7 @@ const CadastroOrganizador = () => {
                   >
                     {showPassword ? <FiEyeOff /> : <FiEye />}
                   </PasswordToggle>
+                  {fieldErrors.senha && <FieldError>{fieldErrors.senha}</FieldError>}
                 </InputGroup>
 
                 <InputGroup>
@@ -458,6 +463,7 @@ const CadastroOrganizador = () => {
                     placeholder="Confirmar senha *"
                     value={formData.confirmarSenha}
                     onChange={(e) => handleInputChange('confirmarSenha', e.target.value)}
+                    hasError={fieldErrors.confirmarSenha}
                     required
                     style={{ paddingRight: '40px' }}
                   />
@@ -467,6 +473,7 @@ const CadastroOrganizador = () => {
                   >
                     {showConfirmPassword ? <FiEyeOff /> : <FiEye />}
                   </PasswordToggle>
+                  {fieldErrors.confirmarSenha && <FieldError>{fieldErrors.confirmarSenha}</FieldError>}
                 </InputGroup>
 
                 <InputGroup>
@@ -475,8 +482,10 @@ const CadastroOrganizador = () => {
                     placeholder="Nome do organizador *"
                     value={formData.nomeOrganizador}
                     onChange={(e) => handleInputChange('nomeOrganizador', e.target.value)}
+                    hasError={fieldErrors.nomeOrganizador}
                     required
                   />
+                  {fieldErrors.nomeOrganizador && <FieldError>{fieldErrors.nomeOrganizador}</FieldError>}
                 </InputGroup>
 
                 <InputGroup>
@@ -485,8 +494,10 @@ const CadastroOrganizador = () => {
                     placeholder="CNPJ ou CPF *"
                     value={formData.cpf_cnpj}
                     onChange={(e) => handleInputChange('cpf_cnpj', e.target.value)}
+                    hasError={fieldErrors.cpf_cnpj}
                     required
                   />
+                  {fieldErrors.cpf_cnpj && <FieldError>{fieldErrors.cpf_cnpj}</FieldError>}
                 </InputGroup>
 
                 <InputGroup>
@@ -495,8 +506,10 @@ const CadastroOrganizador = () => {
                     placeholder="Data de nascimento *"
                     value={formData.dataNascimento}
                     onChange={(e) => handleInputChange('dataNascimento', e.target.value)}
+                    hasError={fieldErrors.dataNascimento}
                     required
                   />
+                  {fieldErrors.dataNascimento && <FieldError>{fieldErrors.dataNascimento}</FieldError>}
                 </InputGroup>
               </FormSection>
 
@@ -508,8 +521,10 @@ const CadastroOrganizador = () => {
                     placeholder="Telefone *"
                     value={formData.telefone}
                     onChange={(e) => handleInputChange('telefone', e.target.value)}
+                    hasError={fieldErrors.telefone}
                     required
                   />
+                  {fieldErrors.telefone && <FieldError>{fieldErrors.telefone}</FieldError>}
                 </InputGroup>
 
 
@@ -524,8 +539,10 @@ const CadastroOrganizador = () => {
                       handleInputChange('cep', value);
                       buscarEnderecoPorCep(value);
                     }}
+                    hasError={fieldErrors.cep}
                     required
                   />
+                  {fieldErrors.cep && <FieldError>{fieldErrors.cep}</FieldError>}
                 </InputGroup>
 
                 <InputGroup>

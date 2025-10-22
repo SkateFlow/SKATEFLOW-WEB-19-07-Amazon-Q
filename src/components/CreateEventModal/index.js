@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { FiX, FiCamera, FiMapPin, FiCalendar, FiClock } from 'react-icons/fi';
+import { FiX, FiCamera, FiMapPin, FiCalendar, FiClock, FiChevronDown } from 'react-icons/fi';
+import { motion, AnimatePresence } from 'framer-motion';
 import { lugarService } from '../../services/lugarService';
 import { eventoService } from '../../services/eventService';
 import { useAuth } from '../../context/AuthContext';
@@ -267,12 +268,25 @@ const CreateEventModal = ({ isOpen, onClose, onSave }) => {
   const [photoError, setPhotoError] = useState(false);
   const [errors, setErrors] = useState({});
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
       loadLugares();
     }
   }, [isOpen]);
+
+  // Fechar dropdown ao clicar fora
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (isDropdownOpen && !event.target.closest('[data-dropdown]')) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isDropdownOpen]);
 
   const loadLugares = async () => {
     try {
@@ -516,19 +530,92 @@ const CreateEventModal = ({ isOpen, onClose, onSave }) => {
 
               <FormGroup className="full-width">
                 <Label><FiMapPin size={16} /> Local do Evento</Label>
-                <Select
-                  value={formData.lugarId}
-                  onChange={(e) => handleInputChange('lugarId', e.target.value)}
-                  hasError={errors.lugarId}
-                  required
-                >
-                  <option value="">Selecione um local</option>
-                  {lugares.map(lugar => (
-                    <option key={lugar.id} value={lugar.id}>
-                      {lugar.nome} - {lugar.rua && lugar.bairro ? `${lugar.rua}, ${lugar.bairro}` : lugar.cep}
-                    </option>
-                  ))}
-                </Select>
+                <div style={{ position: 'relative', width: '100%' }} data-dropdown>
+                  <button
+                    type="button"
+                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                    style={{
+                      width: '100%',
+                      padding: '12px 16px',
+                      border: `2px solid ${errors.lugarId ? '#dc2626' : '#e2e8f0'}`,
+                      borderRadius: '8px',
+                      fontSize: '16px',
+                      background: 'white',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      transition: 'all 0.3s ease',
+                      textAlign: 'left'
+                    }}
+                  >
+                    <span style={{ color: formData.lugarId ? '#1a237e' : '#94a3b8' }}>
+                      {formData.lugarId 
+                        ? lugares.find(l => l.id.toString() === formData.lugarId.toString())?.nome || 'Selecione um local'
+                        : 'Selecione um local'
+                      }
+                    </span>
+                    <FiChevronDown 
+                      style={{ 
+                        transform: isDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                        transition: 'transform 0.2s ease'
+                      }} 
+                    />
+                  </button>
+                  
+                  <AnimatePresence>
+                    {isDropdownOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.2 }}
+                        style={{
+                          position: 'absolute',
+                          top: '100%',
+                          left: 0,
+                          right: 0,
+                          background: 'white',
+                          border: '1px solid #e2e8f0',
+                          borderRadius: '8px',
+                          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                          zIndex: 1000,
+                          marginTop: '4px',
+                          overflow: 'hidden',
+                          maxHeight: '200px',
+                          overflowY: 'auto'
+                        }}
+                      >
+                        {lugares.map((lugar) => (
+                          <div
+                            key={lugar.id}
+                            onClick={() => {
+                              handleInputChange('lugarId', lugar.id.toString());
+                              setIsDropdownOpen(false);
+                            }}
+                            style={{
+                              padding: '12px 16px',
+                              cursor: 'pointer',
+                              fontSize: '14px',
+                              color: '#4a5568',
+                              fontWeight: '500',
+                              transition: 'background 0.2s ease',
+                              background: formData.lugarId === lugar.id.toString() ? '#f7fafc' : 'white',
+                              borderBottom: '1px solid #f1f5f9'
+                            }}
+                            onMouseEnter={(e) => e.target.style.background = '#f7fafc'}
+                            onMouseLeave={(e) => e.target.style.background = formData.lugarId === lugar.id.toString() ? '#f7fafc' : 'white'}
+                          >
+                            <div style={{ fontWeight: '600', marginBottom: '2px' }}>{lugar.nome}</div>
+                            <div style={{ fontSize: '12px', color: '#64748b' }}>
+                              {lugar.rua && lugar.bairro ? `${lugar.rua}, ${lugar.bairro}` : lugar.cep}
+                            </div>
+                          </div>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
                 {errors.lugarId && <div style={{ color: '#dc2626', fontSize: '12px', marginTop: '4px' }}>{errors.lugarId}</div>}
               </FormGroup>
 
