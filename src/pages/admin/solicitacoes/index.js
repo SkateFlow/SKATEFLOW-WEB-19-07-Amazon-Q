@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import SidebarAdmin from '../../../components/SidebarAdmin';
 import SearchBar from '../../../components/SearchBar';
 import ConfirmModal from '../../../components/ConfirmModal';
+import SolicitacaoPistaDetailsModal from '../../../components/SolicitacaoPistaDetailsModal';
+import SolicitacaoEventoDetailsModal from '../../../components/SolicitacaoEventoDetailsModal';
 import { usePistasPendentes } from '../../../hooks/usePistasPendentes';
 import { useEventosPendentes } from '../../../hooks/useEventosPendentes';
 import { solicitacaoPistaService } from '../../../services/solicitacaoPistaService';
@@ -231,6 +233,9 @@ const Solicitacoes = () => {
     const [aprovandoPista, setAprovandoPista] = useState(null);
   const [showMessage, setShowMessage] = useState('');
   const [loading, setLoading] = useState(true);
+  const [showPistaModal, setShowPistaModal] = useState(false);
+  const [showEventoModal, setShowEventoModal] = useState(false);
+  const [selectedSolicitacao, setSelectedSolicitacao] = useState(null);
   const { pistasPendentes, removerPistaPendente } = usePistasPendentes();
   const { eventosPendentes, aprovarEvento, rejeitarEvento } = useEventosPendentes();
   const [todasSolicitacoes, setTodasSolicitacoes] = useState([]);
@@ -564,7 +569,19 @@ const Solicitacoes = () => {
         ) : (
           <SolicitacaoGrid>
             {filteredSolicitacoes.map((solicitacao) => (
-              <SolicitacaoCard key={`${solicitacao.tipo}-${solicitacao.id}`}>
+              <SolicitacaoCard 
+                key={`${solicitacao.tipo}-${solicitacao.id}`}
+                onClick={() => {
+                  console.log('Card clicado:', solicitacao);
+                  setSelectedSolicitacao(solicitacao);
+                  if (solicitacao.tipo === 'pista') {
+                    setShowPistaModal(true);
+                  } else {
+                    setShowEventoModal(true);
+                  }
+                }}
+                style={{ cursor: 'pointer' }}
+              >
                 <CardContent>
                   <StatusBadge 
                     style={{
@@ -614,7 +631,51 @@ const Solicitacoes = () => {
           </SolicitacaoGrid>
         )}
         
-              </ContentContainer>
+        {console.log('Estados do modal:', { showPistaModal, selectedSolicitacao: !!selectedSolicitacao })}
+        <SolicitacaoPistaDetailsModal
+          isOpen={showPistaModal}
+          onClose={() => {
+            console.log('Fechando modal');
+            setShowPistaModal(false);
+            setTimeout(() => {
+              setSelectedSolicitacao(null);
+            }, 100);
+          }}
+          solicitacao={selectedSolicitacao}
+          onApprove={async (solicitacao) => {
+            await handleApprove(solicitacao);
+            setShowPistaModal(false);
+            setSelectedSolicitacao(null);
+          }}
+          onReject={async (solicitacao) => {
+            await handleReject(solicitacao);
+            setShowPistaModal(false);
+            setSelectedSolicitacao(null);
+          }}
+        />
+        
+        <SolicitacaoEventoDetailsModal
+          isOpen={showEventoModal}
+          onClose={() => {
+            setShowEventoModal(false);
+            setTimeout(() => {
+              setSelectedSolicitacao(null);
+            }, 100);
+          }}
+          solicitacao={selectedSolicitacao}
+          onApprove={async (solicitacao) => {
+            await handleApprove(solicitacao);
+            setShowEventoModal(false);
+            setSelectedSolicitacao(null);
+          }}
+          onReject={async (solicitacao) => {
+            await handleReject(solicitacao);
+            setShowEventoModal(false);
+            setSelectedSolicitacao(null);
+          }}
+        />
+        
+      </ContentContainer>
     </AdminContainer>
   );
 };

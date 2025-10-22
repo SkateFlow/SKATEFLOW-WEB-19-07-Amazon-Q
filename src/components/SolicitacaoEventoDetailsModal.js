@@ -1,147 +1,428 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { FiX, FiCalendar, FiMapPin, FiUser } from 'react-icons/fi';
-import {
-  ModalOverlay,
-  ModalContainer,
-  ModalHeader,
-  ModalTitle,
-  CloseButton,
-  ModalContent,
-  FormGrid,
-  FormGroup,
-  Label,
-  Input,
-  TextArea,
-  ButtonGroup,
-  SaveButton,
-  CancelButton
-} from './EditPistaModal/EditPistaModalElements';
+import styled from 'styled-components';
+import { FaMapMarkerAlt, FaCalendarAlt, FaChevronLeft, FaChevronRight, FaUser, FaClock } from 'react-icons/fa';
+import { convertBase64ToDataUrl } from '../utils/imageUtils';
 
-const SolicitacaoEventoDetailsModal = ({ isOpen, onClose, solicitacao, onApprove, onReject }) => {
-  const [fotosProcessadas, setFotosProcessadas] = useState([]);
-  const [imagemAmpliada, setImagemAmpliada] = useState(null);
+const PopupOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10003;
+  animation: ${props => props.isClosing ? 'fadeOut' : 'fadeIn'} 200ms ease-in-out forwards;
+  
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  @keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+  }
+`;
 
-  useEffect(() => {
-    if (solicitacao && solicitacao.fotos) {
-      const fotos = solicitacao.fotos.filter(foto => foto && foto.trim() !== '');
-      setFotosProcessadas(fotos);
+const PopupContent = styled.div`
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 0;
+  max-width: 650px;
+  width: 95%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+  animation: ${props => props.isClosing ? 'slideOut' : 'slideIn'} 300ms ease-in-out forwards;
+  
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: scale(0.9) translateY(-20px);
     }
-  }, [solicitacao]);
-
-  if (!solicitacao) return null;
-
-  const formatDate = (dateString) => {
-    try {
-      return new Date(dateString).toLocaleString('pt-BR');
-    } catch {
-      return 'Data inválida';
+    to {
+      opacity: 1;
+      transform: scale(1) translateY(0);
     }
+  }
+  
+  @keyframes slideOut {
+    from {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+    to {
+      opacity: 0;
+      transform: scale(0.9) translateY(-20px);
+    }
+  }
+`;
+
+const InstructionText = styled.div`
+  position: absolute;
+  top: -32px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 14px;
+  color: #9ca3af;
+  white-space: nowrap;
+`;
+
+const PopupBody = styled.div`
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+`;
+
+const CarouselContainer = styled.div`
+  position: relative;
+  width: 100%;
+  height: 300px;
+  overflow: hidden;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  border: 1px solid #e2e8f0;
+`;
+
+const CarouselTrack = styled.div`
+  display: flex;
+  width: 100%;
+  height: 100%;
+  transition: transform 700ms ease-out;
+  transform: translateX(-${props => props.currentIndex * 100}%);
+`;
+
+const ImageContainer = styled.div`
+  width: 100%;
+  height: 100%;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+`;
+
+const CarouselImage = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 300ms ease;
+  
+  &:hover {
+    transform: scale(1.05);
+  }
+`;
+
+const CarouselButton = styled.button`
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 300ms ease;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(4px);
+  
+  &:hover {
+    background: rgba(255, 255, 255, 1);
+    transform: translateY(-50%) scale(1.1);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+  }
+`;
+
+const PrevButton = styled(CarouselButton)`
+  left: 16px;
+`;
+
+const NextButton = styled(CarouselButton)`
+  right: 16px;
+`;
+
+const DotsContainer = styled.div`
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(4px);
+  border-radius: 20px;
+  padding: 8px 12px;
+`;
+
+const Dot = styled.button`
+  border: none;
+  cursor: pointer;
+  transition: all 300ms ease;
+  border-radius: 20px;
+  background: ${props => props.active ? '#ffffff' : 'rgba(255, 255, 255, 0.6)'};
+  width: ${props => props.active ? '24px' : '12px'};
+  height: 12px;
+  box-shadow: ${props => props.active ? '0 4px 8px rgba(0, 0, 0, 0.3)' : 'none'};
+`;
+
+const EventHeader = styled.div`
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+`;
+
+const EventTitle = styled.h2`
+  font-size: 26px;
+  font-weight: 700;
+  color: #1a237e;
+  margin: 0;
+  line-height: 1.2;
+  flex: 1;
+`;
+
+const StatusBadge = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  background: #fef3c7;
+  color: #92400e;
+  white-space: nowrap;
+`;
+
+const EventDescription = styled.p`
+  color: #64748b;
+  margin: 0;
+  line-height: 1.6;
+  font-size: 15px;
+`;
+
+const InfoSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+`;
+
+const InfoRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #1f2937;
+`;
+
+const InfoIcon = styled.div`
+  color: #1a237e;
+  display: flex;
+  align-items: center;
+  min-width: 20px;
+`;
+
+const InfoText = styled.span`
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
+`;
+
+const ButtonGroup = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+  padding-top: 24px;
+  border-top: 1px solid #e2e8f0;
+`;
+
+const ApproveButton = styled.button`
+  background: #10b981;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: #059669;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  }
+`;
+
+const RejectButton = styled.button`
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: #dc2626;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+  }
+`;
+
+const EventCarousel = ({ images = [] }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const validImages = images.filter(img => img && img.trim() !== '');
+  const displayImages = validImages.length > 0 ? validImages : ['https://via.placeholder.com/650x300/667eea/ffffff?text=🎪+Evento+de+Skate'];
+
+  const goToPrevious = () => {
+    setCurrentIndex(prevIndex => 
+      prevIndex === 0 ? displayImages.length - 1 : prevIndex - 1
+    );
+  };
+
+  const goToNext = () => {
+    setCurrentIndex(prevIndex => 
+      prevIndex === displayImages.length - 1 ? 0 : prevIndex + 1
+    );
+  };
+
+  const goToIndex = (index) => {
+    setCurrentIndex(index);
   };
 
   return (
-    <AnimatePresence mode="wait">
-      {isOpen && (
-        <ModalOverlay 
-          style={{ zIndex: 1003 }}
-          as={motion.div}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
-          onClick={onClose}
-        >
-          <ModalContainer 
-            as={motion.div}
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.9, opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <ModalHeader>
-              <ModalTitle>Detalhes da Solicitação de Evento</ModalTitle>
-              <CloseButton onClick={onClose}>
-                <FiX />
-              </CloseButton>
-            </ModalHeader>
-
-            <ModalContent>
-              {fotosProcessadas.length > 0 && (
-                <div style={{ marginBottom: '24px' }}>
-                  <Label>Fotos do Evento</Label>
-                  <div style={{ 
-                    display: 'grid',
-                    gridTemplateColumns: fotosProcessadas.length === 1 ? '1fr' : fotosProcessadas.length === 2 ? '1fr 1fr' : '1fr 1fr 1fr',
-                    gap: '16px',
-                    padding: '16px 0'
-                  }}>
-                    {fotosProcessadas.map((foto, index) => (
-                      <img 
-                        key={index}
-                        src={foto} 
-                        alt={`Foto ${index + 1}`}
-                        style={{
-                          width: '100%',
-                          height: '180px',
-                          objectFit: 'cover',
-                          borderRadius: '12px',
-                          border: '2px solid #e2e8f0',
-                          boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-                          cursor: 'pointer'
-                        }}
-                        onClick={() => setImagemAmpliada(foto)}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <FormGrid>
-                <FormGroup span={2}>
-                  <Label>Nome do Evento</Label>
-                  <Input value={solicitacao.nome || ''} readOnly />
-                </FormGroup>
-
-                <FormGroup span={2}>
-                  <Label>Descrição</Label>
-                  <TextArea value={solicitacao.info || ''} readOnly />
-                </FormGroup>
-
-                <FormGroup>
-                  <Label>Data de Início</Label>
-                  <Input value={formatDate(solicitacao.dataInicio)} readOnly />
-                </FormGroup>
-
-                <FormGroup>
-                  <Label>Data de Fim</Label>
-                  <Input value={formatDate(solicitacao.dataFim)} readOnly />
-                </FormGroup>
-
-                <FormGroup>
-                  <Label>Local (ID)</Label>
-                  <Input value={solicitacao.lugar_id?.id || 'Não informado'} readOnly />
-                </FormGroup>
-
-                <FormGroup>
-                  <Label>Solicitado por</Label>
-                  <Input value={solicitacao.criadoPor || 'Não informado'} readOnly />
-                </FormGroup>
-              </FormGrid>
-
-              <ButtonGroup>
-                <CancelButton onClick={() => onReject(solicitacao)}>
-                  ✗ Reprovar
-                </CancelButton>
-                <SaveButton onClick={() => onApprove(solicitacao)}>
-                  ✓ Aprovar
-                </SaveButton>
-              </ButtonGroup>
-            </ModalContent>
-          </ModalContainer>
-        </ModalOverlay>
+    <CarouselContainer>
+      <CarouselTrack currentIndex={currentIndex}>
+        {displayImages.map((image, index) => (
+          <ImageContainer key={index}>
+            <CarouselImage
+              src={image}
+              alt={`Event image ${index + 1}`}
+              onError={(e) => {
+                e.target.src = 'https://via.placeholder.com/480x220/667eea/ffffff?text=🎪+Erro+ao+Carregar';
+              }}
+            />
+          </ImageContainer>
+        ))}
+      </CarouselTrack>
+      
+      {displayImages.length > 1 && (
+        <>
+          <PrevButton onClick={goToPrevious}>
+            <FaChevronLeft size={18} />
+          </PrevButton>
+          
+          <NextButton onClick={goToNext}>
+            <FaChevronRight size={18} />
+          </NextButton>
+          
+          <DotsContainer>
+            {displayImages.map((_, index) => (
+              <Dot
+                key={index}
+                active={index === currentIndex}
+                onClick={() => goToIndex(index)}
+              />
+            ))}
+          </DotsContainer>
+        </>
       )}
-    </AnimatePresence>
+    </CarouselContainer>
+  );
+};
+
+const SolicitacaoEventoDetailsModal = ({ isOpen, onClose, solicitacao, onApprove, onReject }) => {
+  const [isClosing, setIsClosing] = useState(false);
+  const [fotosProcessadas, setFotosProcessadas] = useState([]);
+
+  useEffect(() => {
+    if (solicitacao) {
+      let fotos = [];
+      
+      if (solicitacao.imagens && Array.isArray(solicitacao.imagens)) {
+        fotos = solicitacao.imagens.filter(img => img && img !== '');
+      } else if (solicitacao.foto) {
+        fotos = [solicitacao.foto];
+      }
+      
+      const fotosConvertidas = fotos.map(foto => {
+        if (foto.startsWith('http')) {
+          return foto;
+        }
+        return convertBase64ToDataUrl(foto);
+      });
+      
+      setFotosProcessadas(fotosConvertidas);
+    }
+  }, [solicitacao]);
+
+  const handleClose = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      onClose();
+    }, 300);
+  };
+
+  if (!isOpen || !solicitacao) return null;
+
+  return (
+    <PopupOverlay onClick={handleClose} isClosing={isClosing}>
+      <PopupContent onClick={(e) => e.stopPropagation()} isClosing={isClosing}>
+        <InstructionText>clique fora para sair</InstructionText>
+        
+        <PopupBody>
+          <EventCarousel images={fotosProcessadas} />
+          
+          <EventHeader>
+            <EventTitle>{solicitacao.nome || 'Evento sem nome'}</EventTitle>
+            <StatusBadge>
+              <FaClock size={12} />
+              Pendente
+            </StatusBadge>
+          </EventHeader>
+          
+          <EventDescription>{solicitacao.descricao || 'Sem descrição'}</EventDescription>
+          
+          <InfoSection>
+            <InfoRow>
+              <InfoIcon><FaCalendarAlt size={18} /></InfoIcon>
+              <InfoText>Data: {solicitacao.dataEvento || 'Não informado'}</InfoText>
+            </InfoRow>
+            <InfoRow>
+              <InfoIcon><FaMapMarkerAlt size={18} /></InfoIcon>
+              <InfoText>Local: {solicitacao.localEvento || 'Não informado'}</InfoText>
+            </InfoRow>
+            <InfoRow>
+              <InfoIcon><FaUser size={16} /></InfoIcon>
+              <InfoText>Organizador: {solicitacao.criadoPor || 'Usuário não informado'}</InfoText>
+            </InfoRow>
+            <InfoRow>
+              <InfoIcon><span style={{ fontSize: '16px' }}>📋</span></InfoIcon>
+              <InfoText>Status: Pendente de aprovação</InfoText>
+            </InfoRow>
+          </InfoSection>
+
+          <ButtonGroup>
+            <RejectButton onClick={() => onReject(solicitacao)}>
+              ✗ Reprovar
+            </RejectButton>
+            <ApproveButton onClick={() => onApprove(solicitacao)}>
+              ✓ Aprovar
+            </ApproveButton>
+          </ButtonGroup>
+        </PopupBody>
+      </PopupContent>
+    </PopupOverlay>
   );
 };
 

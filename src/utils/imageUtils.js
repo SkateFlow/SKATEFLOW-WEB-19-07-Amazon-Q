@@ -32,15 +32,25 @@ export const convertImageToPngBase64 = (file) => {
 
 // Converte base64 de volta para data URL para exibir no frontend
 export const convertBase64ToDataUrl = (base64String) => {
-  if (!base64String) return '';
+  if (!base64String || base64String.trim() === '') {
+    return '';
+  }
   
   // Se já é uma data URL completa, retorna como está
   if (base64String.startsWith('data:')) {
     return base64String;
   }
   
+  // Se é uma URL HTTP, retorna como está
+  if (base64String.startsWith('http://') || base64String.startsWith('https://')) {
+    return base64String;
+  }
+  
+  // Remove possíveis espaços em branco
+  const cleanBase64 = base64String.trim();
+  
   // Adiciona o prefixo para criar uma data URL válida
-  return `data:image/png;base64,${base64String}`;
+  return `data:image/png;base64,${cleanBase64}`;
 };
 
 // Processa array de imagens para salvar no sistema
