@@ -314,11 +314,11 @@ const Pistas = () => {
       console.log('=== INICIANDO CARREGAMENTO DE PISTAS APROVADAS ===');
       const { lugarService } = await import('../../../services/lugarService');
       
-      // ✅ CORREÇÃO: Usar listarTodas() - retorna TODAS as pistas (ativas e inativas)
+      // ✅ CORREÇÃO: Usar listarTodas() - retorna pistas ativadas e inativas (exclui pendentes)
       const lugares = await lugarService.listarTodas();
-      // Não filtrar por status - mostrar todas as pistas na tela de admin
+      // Mostrar pistas ativadas e inativas na tela de admin (pendentes ficam em Solicitações)
       const todasPistas = Array.isArray(lugares) ? lugares : [];
-      console.log('✅ Todas as pistas do backend:', todasPistas.length, todasPistas);
+      console.log('✅ Pistas ativadas e inativas do backend:', todasPistas.length, todasPistas);
       
       const pistasFormatadas = await Promise.all(
         todasPistas.map(async (lugar) => {

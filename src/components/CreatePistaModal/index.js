@@ -316,27 +316,27 @@ const CreatePistaModal = ({ isOpen, onClose, onSave }) => {
         
         // Verificar nível de acesso do usuário
         const processarPista = async () => {
+          const dadosPista = {
+            nome: formData.nome,
+            descricao: formData.descricao,
+            tipo: formData.publica ? 'Pública' : 'Particular',
+            cep: formData.cep,
+            rua: formData.rua,
+            bairro: formData.bairro,
+            numero: formData.numero,
+            latitude: formData.latitude,
+            longitude: formData.longitude,
+            categoriaId: formData.categoriaId,
+            usuarioId: formData.usuarioId,
+            valor: formData.valor || 0,
+            foto1: processedImages[0]?.replace(/^data:image\/[a-z]+;base64,/, '') || null,
+            foto2: processedImages[1]?.replace(/^data:image\/[a-z]+;base64,/, '') || null,
+            foto3: processedImages[2]?.replace(/^data:image\/[a-z]+;base64,/, '') || null
+          };
+          
           if (user?.nivelAcesso === 'ADMIN' || user?.isOrganizador) {
             // Admin/Organizador: cria pista diretamente
             try {
-              const dadosPista = {
-                nome: formData.nome,
-                descricao: formData.descricao,
-                tipo: formData.publica ? 'Pública' : 'Particular',
-                cep: formData.cep,
-                rua: formData.rua,
-                bairro: formData.bairro,
-                numero: formData.numero,
-                latitude: formData.latitude,
-                longitude: formData.longitude,
-                categoriaId: formData.categoriaId,
-                usuarioId: formData.usuarioId,
-                valor: formData.valor || 0,
-                statusPista: 'ativada',
-                foto1: processedImages[0]?.replace(/^data:image\/[a-z]+;base64,/, '') || null,
-                foto2: processedImages[1]?.replace(/^data:image\/[a-z]+;base64,/, '') || null,
-                foto3: processedImages[2]?.replace(/^data:image\/[a-z]+;base64,/, '') || null
-              };
               await lugarService.criar(dadosPista);
               console.log('Pista criada com sucesso!');
             } catch (error) {
@@ -345,24 +345,7 @@ const CreatePistaModal = ({ isOpen, onClose, onSave }) => {
           } else {
             // Usuário comum: envia solicitação
             try {
-              const dadosSolicitacao = {
-                nome: formData.nome,
-                descricao: formData.descricao,
-                tipo: formData.publica ? 'Pública' : 'Particular',
-                cep: formData.cep,
-                rua: formData.rua,
-                bairro: formData.bairro,
-                numero: formData.numero,
-                latitude: formData.latitude,
-                longitude: formData.longitude,
-                categoriaId: formData.categoriaId,
-                usuarioId: formData.usuarioId,
-                valor: formData.valor || 0,
-                foto1: processedImages[0]?.replace(/^data:image\/[a-z]+;base64,/, '') || null,
-                foto2: processedImages[1]?.replace(/^data:image\/[a-z]+;base64,/, '') || null,
-                foto3: processedImages[2]?.replace(/^data:image\/[a-z]+;base64,/, '') || null
-              };
-              await lugarService.solicitar(dadosSolicitacao);
+              await lugarService.solicitar(dadosPista);
               console.log('Solicitação enviada com sucesso!');
             } catch (error) {
               console.error('Erro ao enviar solicitação:', error);

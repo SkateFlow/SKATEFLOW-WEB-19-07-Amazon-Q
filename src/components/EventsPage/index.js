@@ -403,8 +403,8 @@ const EventsPage = () => {
       console.log('Eventos carregados:', data);
       console.log('Status dos eventos:', data.map(e => ({ id: e.id, nome: e.nome, status: e.statusEvento })));
       if (data && data.length > 0) {
-        // Filtrar apenas eventos publicados (sem filtro por enquanto para debug)
-        const eventosAtivos = data;
+        // Filtrar apenas eventos ativados
+        const eventosAtivos = data.filter(evento => evento.statusEvento === 'ativado');
         
         // Processar eventos para carregar fotos
         const eventosProcessados = eventosAtivos.map((evento) => {

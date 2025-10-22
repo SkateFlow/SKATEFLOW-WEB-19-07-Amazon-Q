@@ -199,7 +199,8 @@ const Eventos = () => {
     try {
       setLoading(true);
       const { eventoService } = await import('../../../services/eventService');
-      const data = await eventoService.listar();
+      const { listarTodosParaAdmin } = await import('../../../services/eventService');
+      const data = await listarTodosParaAdmin();
       
       const eventosFormatados = data.map(evento => ({
         id: evento.id,
@@ -209,7 +210,7 @@ const Eventos = () => {
         descricao: evento.info,
         dataInicio: evento.dataInicio,
         dataFim: evento.dataFim,
-        active: evento.statusEvento === 'Publicado' || evento.statusEvento === 'ativado'
+        active: evento.statusEvento === 'ativado'
       }));
       
       setEvents(eventosFormatados);
@@ -291,7 +292,7 @@ const Eventos = () => {
         info: updatedEvent.descricao,
         dataInicio: updatedEvent.dataInicio,
         dataFim: updatedEvent.dataFim,
-        statusEvento: updatedEvent.ativo ? 'Publicado' : 'Pendente'
+        statusEvento: updatedEvent.ativo ? 'ativado' : 'inativo'
       };
       
       await eventoService.atualizar(updatedEvent.id, eventoData);
@@ -384,7 +385,7 @@ const Eventos = () => {
       
       await eventoService.atualizar(eventId, {
         ...eventoCompleto,
-        statusEvento: event.active ? 'Pendente' : 'Publicado'
+        statusEvento: event.active ? 'inativo' : 'ativado'
       });
       
       setEvents(events.map(event => 

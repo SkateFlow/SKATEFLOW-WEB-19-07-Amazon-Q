@@ -242,8 +242,10 @@ const Solicitacoes = () => {
       try {
         setLoading(true);
         console.log('Carregando solicitações do backend...');
+        
+        // Carregar pistas pendentes
         const solicitacoesBackend = await solicitacaoPistaService.listarPendentes();
-        console.log('Solicitações encontradas:', solicitacoesBackend);
+        console.log('Solicitações de pistas encontradas:', solicitacoesBackend);
         
         const solicitacoesPistas = solicitacoesBackend.map(s => ({ 
           ...s, 
@@ -254,8 +256,21 @@ const Solicitacoes = () => {
           publica: s.tipo === 'Pública'
         }));
         
-        // Adicionar eventos pendentes do localStorage
-        const eventosFormatados = eventosPendentes.map(e => ({
+        // Carregar eventos pendentes do backend
+        const { eventoService } = await import('../../../services/eventService');
+        const eventosPendentesBackend = await eventoService.listarPendentes();
+        console.log('Eventos pendentes encontrados:', eventosPendentesBackend);
+        
+        const eventosFormatados = eventosPendentesBackend.map(e => ({
+          ...e,
+          tipo: 'evento',
+          origem: 'backend',
+          dataEvento: e.dataInicio ? new Date(e.dataInicio).toLocaleDateString('pt-BR') : 'Não informado',
+          localEvento: e.lugar_id?.nome || 'Local não informado'
+        }));
+        
+        // Adicionar eventos pendentes do localStorage (para compatibilidade)
+        const eventosLocalStorage = eventosPendentes.map(e => ({
           ...e,
           tipo: 'evento',
           origem: 'localStorage',
@@ -263,7 +278,7 @@ const Solicitacoes = () => {
           localEvento: e.lugar_id?.nome || 'Local não informado'
         }));
         
-        setTodasSolicitacoes([...solicitacoesPistas, ...eventosFormatados]);
+        setTodasSolicitacoes([...solicitacoesPistas, ...eventosFormatados, ...eventosLocalStorage]);
       } catch (error) {
         console.error('Erro ao carregar solicitações:', error);
         setTodasSolicitacoes([]);
@@ -296,7 +311,12 @@ const Solicitacoes = () => {
       if (solicitacao.tipo === 'pista') {
         await solicitacaoPistaService.aprovar(solicitacao.id);
       } else if (solicitacao.tipo === 'evento') {
-        aprovarEvento(solicitacao.id);
+        if (solicitacao.origem === 'backend') {
+          const { eventoService } = await import('../../../services/eventService');
+          await eventoService.aprovar(solicitacao.id);
+        } else {
+          aprovarEvento(solicitacao.id);
+        }
       }
       
       // Recarregar solicitações
@@ -310,7 +330,18 @@ const Solicitacoes = () => {
         publica: s.tipo === 'Pública'
       }));
       
-      const eventosFormatados = eventosPendentes.map(e => ({
+      // Recarregar eventos do backend
+      const { eventoService } = await import('../../../services/eventService');
+      const eventosPendentesBackend = await eventoService.listarPendentes();
+      const eventosBackendFormatados = eventosPendentesBackend.map(e => ({
+        ...e,
+        tipo: 'evento',
+        origem: 'backend',
+        dataEvento: e.dataInicio ? new Date(e.dataInicio).toLocaleDateString('pt-BR') : 'Não informado',
+        localEvento: e.lugar_id?.nome || 'Local não informado'
+      }));
+      
+      const eventosLocalStorage = eventosPendentes.map(e => ({
         ...e,
         tipo: 'evento',
         origem: 'localStorage',
@@ -318,7 +349,7 @@ const Solicitacoes = () => {
         localEvento: e.lugar_id?.nome || 'Local não informado'
       }));
       
-      setTodasSolicitacoes([...solicitacoesPistas, ...eventosFormatados]);
+      setTodasSolicitacoes([...solicitacoesPistas, ...eventosBackendFormatados, ...eventosLocalStorage]);
       
       setShowMessage('Aprovação concluída');
       setTimeout(() => setShowMessage(''), 2500);
@@ -338,7 +369,12 @@ const Solicitacoes = () => {
       if (solicitacao.tipo === 'pista') {
         await solicitacaoPistaService.rejeitar(solicitacao.id);
       } else if (solicitacao.tipo === 'evento') {
-        rejeitarEvento(solicitacao.id);
+        if (solicitacao.origem === 'backend') {
+          const { eventoService } = await import('../../../services/eventService');
+          await eventoService.rejeitar(solicitacao.id);
+        } else {
+          rejeitarEvento(solicitacao.id);
+        }
       }
       
       // Recarregar solicitações
@@ -352,7 +388,18 @@ const Solicitacoes = () => {
         publica: s.tipo === 'Pública'
       }));
       
-      const eventosFormatados = eventosPendentes.map(e => ({
+      // Recarregar eventos do backend
+      const { eventoService } = await import('../../../services/eventService');
+      const eventosPendentesBackend = await eventoService.listarPendentes();
+      const eventosBackendFormatados = eventosPendentesBackend.map(e => ({
+        ...e,
+        tipo: 'evento',
+        origem: 'backend',
+        dataEvento: e.dataInicio ? new Date(e.dataInicio).toLocaleDateString('pt-BR') : 'Não informado',
+        localEvento: e.lugar_id?.nome || 'Local não informado'
+      }));
+      
+      const eventosLocalStorage = eventosPendentes.map(e => ({
         ...e,
         tipo: 'evento',
         origem: 'localStorage',
@@ -360,7 +407,7 @@ const Solicitacoes = () => {
         localEvento: e.lugar_id?.nome || 'Local não informado'
       }));
       
-      setTodasSolicitacoes([...solicitacoesPistas, ...eventosFormatados]);
+      setTodasSolicitacoes([...solicitacoesPistas, ...eventosBackendFormatados, ...eventosLocalStorage]);
       
     } catch (error) {
       console.error('Erro ao rejeitar solicitação:', error);
@@ -398,6 +445,7 @@ const Solicitacoes = () => {
               setLoading(true);
               const carregarSolicitacoes = async () => {
                 try {
+                  // Carregar pistas pendentes
                   const solicitacoesBackend = await solicitacaoPistaService.listarPendentes();
                   const solicitacoesPistas = solicitacoesBackend.map(s => ({ 
                     ...s, 
@@ -407,14 +455,27 @@ const Solicitacoes = () => {
                     localizacao: `${s.rua || ''}, ${s.bairro || ''}`.replace(/^,\s*|,\s*$/g, '') || 'Não informado',
                     publica: s.tipo === 'Pública'
                   }));
-                  const eventosFormatados = eventosPendentes.map(e => ({
+                  
+                  // Carregar eventos pendentes do backend
+                  const { eventoService } = await import('../../../services/eventService');
+                  const eventosPendentesBackend = await eventoService.listarPendentes();
+                  const eventosBackendFormatados = eventosPendentesBackend.map(e => ({
+                    ...e,
+                    tipo: 'evento',
+                    origem: 'backend',
+                    dataEvento: e.dataInicio ? new Date(e.dataInicio).toLocaleDateString('pt-BR') : 'Não informado',
+                    localEvento: e.lugar_id?.nome || 'Local não informado'
+                  }));
+                  
+                  const eventosLocalStorage = eventosPendentes.map(e => ({
                     ...e,
                     tipo: 'evento',
                     origem: 'localStorage',
                     dataEvento: e.dataInicio ? new Date(e.dataInicio).toLocaleDateString('pt-BR') : 'Não informado',
                     localEvento: e.lugar_id?.nome || 'Local não informado'
                   }));
-                  setTodasSolicitacoes([...solicitacoesPistas, ...eventosFormatados]);
+                  
+                  setTodasSolicitacoes([...solicitacoesPistas, ...eventosBackendFormatados, ...eventosLocalStorage]);
                 } catch (error) {
                   console.error('Erro ao carregar solicitações:', error);
                 } finally {

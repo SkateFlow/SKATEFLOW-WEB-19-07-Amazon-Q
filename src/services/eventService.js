@@ -110,6 +110,51 @@ export const eventoService = {
     } catch (error) {
       throw error.response?.data || 'Erro ao salvar foto';
     }
+  },
+
+  solicitar: async (evento) => {
+    try {
+      const response = await api.post('/evento/solicitar', evento);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || 'Erro ao solicitar evento';
+    }
+  },
+
+  listarPendentes: async () => {
+    try {
+      const response = await api.get('/evento/pendentes');
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || 'Erro ao buscar eventos pendentes';
+    }
+  },
+
+  aprovar: async (id) => {
+    try {
+      const response = await api.post(`/evento/aprovar/${id}`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || 'Erro ao aprovar evento';
+    }
+  },
+
+  rejeitar: async (id) => {
+    try {
+      const response = await api.post(`/evento/rejeitar/${id}`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || 'Erro ao rejeitar evento';
+    }
+  },
+
+  listarTodosParaAdmin: async () => {
+    try {
+      const response = await api.get('/evento/admin/todos');
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || 'Erro ao buscar eventos para admin';
+    }
   }
 };
 
@@ -117,3 +162,5 @@ export const getEvents = eventoService.listar;
 export const createEvent = eventoService.criar;
 export const updateEvent = eventoService.atualizar;
 export const deleteEvent = eventoService.deletar;
+export const solicitarEvento = eventoService.solicitar;
+export const listarTodosParaAdmin = eventoService.listarTodosParaAdmin;
