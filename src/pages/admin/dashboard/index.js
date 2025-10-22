@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { FiCalendar, FiMapPin, FiTrendingUp, FiUsers } from 'react-icons/fi';
+import { motion, AnimatePresence } from 'framer-motion';
 import SidebarAdmin from '../../../components/SidebarAdmin';
 import { eventoService } from '../../../services/eventService';
 import { lugarService } from '../../../services/lugarService';
@@ -149,6 +150,71 @@ const ViewToggle = styled.div`
   padding: 4px;
 `;
 
+const DropdownContainer = styled.div`
+  position: relative;
+  margin-right: 12px;
+`;
+
+const DropdownButton = styled.button`
+  padding: 8px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  background: white;
+  color: #1a237e;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-width: 120px;
+  transition: all 0.2s ease;
+  
+  &:focus {
+    outline: none;
+    border-color: #667eea;
+  }
+  
+  &:hover {
+    border-color: #cbd5e0;
+  }
+`;
+
+const DropdownList = styled.div`
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  margin-top: 4px;
+  overflow: hidden;
+  max-height: 200px;
+  overflow-y: auto;
+`;
+
+const DropdownItem = styled.div`
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #4a5568;
+  font-weight: 500;
+  transition: background 0.2s ease;
+  background: ${props => props.selected ? '#f7fafc' : 'white'};
+  border-bottom: 1px solid #f1f5f9;
+  
+  &:hover {
+    background: #f7fafc;
+  }
+  
+  &:last-child {
+    border-bottom: none;
+  }
+`;
+
 const ToggleButton = styled.button`
   padding: 8px 16px;
   border: none;
@@ -277,9 +343,26 @@ const Dashboard = () => {
   const [loading, setLoading] = React.useState(true);
   const [chartView, setChartView] = React.useState('week');
   const [chartData, setChartData] = React.useState([]);
+  const [selectedMonth, setSelectedMonth] = React.useState(new Date().getMonth());
+  const [selectedYear, setSelectedYear] = React.useState(new Date().getFullYear());
+  const [monthDropdownOpen, setMonthDropdownOpen] = React.useState(false);
+  const [yearDropdownOpen, setYearDropdownOpen] = React.useState(false);
 
   React.useEffect(() => {
     loadStats();
+  }, []);
+
+  // Fechar dropdowns ao clicar fora
+  React.useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest('[data-dropdown]')) {
+        setMonthDropdownOpen(false);
+        setYearDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   const loadStats = async () => {
@@ -358,25 +441,24 @@ const Dashboard = () => {
         });
       });
     } else {
-      // Mostrar dias do mês atual
-      const currentMonth = now.getMonth();
-      const currentYear = now.getFullYear();
-      const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+      // Mostrar dias do mês selecionado
+      const daysInMonth = new Date(selectedYear, selectedMonth + 1, 0).getDate();
       const counts = new Array(daysInMonth).fill(0);
       
       usuarios.forEach(usuario => {
         const date = new Date(usuario.dataCadastro);
-        if (date.getFullYear() === currentYear && date.getMonth() === currentMonth) {
+        if (date.getFullYear() === selectedYear && date.getMonth() === selectedMonth) {
           const day = date.getDate();
           counts[day - 1]++; // -1 porque array começa em 0
         }
       });
       
       for (let day = 1; day <= daysInMonth; day++) {
+        const isCurrentMonth = selectedMonth === now.getMonth() && selectedYear === now.getFullYear();
         data.push({ 
           label: day.toString(), 
           value: counts[day - 1],
-          isToday: day === now.getDate()
+          isToday: isCurrentMonth && day === now.getDate()
         });
       }
     }
@@ -385,10 +467,27 @@ const Dashboard = () => {
   };
 
   React.useEffect(() => {
-    if (stats.totalUsuarios > 0) {
+    if (stats.usuariosAtivos > 0) {
       usuarioService.listar().then(processChartData);
     }
-  }, [chartView]);
+  }, [chartView, selectedMonth, selectedYear]);
+
+  const getMonthOptions = () => {
+    const months = [
+      'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+      'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+    ];
+    return months.map((month, index) => ({ value: index, label: month }));
+  };
+
+  const getYearOptions = () => {
+    const currentYear = new Date().getFullYear();
+    const years = [];
+    for (let year = currentYear - 2; year <= currentYear + 1; year++) {
+      years.push({ value: year, label: year.toString() });
+    }
+    return years;
+  };
 
   const renderChart = () => {
     if (!chartData.length) return null;
@@ -510,20 +609,86 @@ const Dashboard = () => {
               </ChartIcon>
               Cadastros de Usuários
             </ChartTitle>
-            <ViewToggle>
-              <ToggleButton 
-                active={chartView === 'week'} 
-                onClick={() => setChartView('week')}
-              >
-                Semana
-              </ToggleButton>
-              <ToggleButton 
-                active={chartView === 'month'} 
-                onClick={() => setChartView('month')}
-              >
-                Mês
-              </ToggleButton>
-            </ViewToggle>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              {chartView === 'month' && (
+                <>
+                  <DropdownContainer data-dropdown>
+                    <DropdownButton onClick={() => setMonthDropdownOpen(!monthDropdownOpen)}>
+                      <span>{getMonthOptions()[selectedMonth]?.label}</span>
+                      <FiUsers style={{ transform: monthDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s ease' }} />
+                    </DropdownButton>
+                    <AnimatePresence>
+                      {monthDropdownOpen && (
+                        <DropdownList
+                          as={motion.div}
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          {getMonthOptions().map(option => (
+                            <DropdownItem
+                              key={option.value}
+                              selected={selectedMonth === option.value}
+                              onClick={() => {
+                                setSelectedMonth(option.value);
+                                setMonthDropdownOpen(false);
+                              }}
+                            >
+                              {option.label}
+                            </DropdownItem>
+                          ))}
+                        </DropdownList>
+                      )}
+                    </AnimatePresence>
+                  </DropdownContainer>
+                  <DropdownContainer data-dropdown>
+                    <DropdownButton onClick={() => setYearDropdownOpen(!yearDropdownOpen)}>
+                      <span>{selectedYear}</span>
+                      <FiUsers style={{ transform: yearDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s ease' }} />
+                    </DropdownButton>
+                    <AnimatePresence>
+                      {yearDropdownOpen && (
+                        <DropdownList
+                          as={motion.div}
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          {getYearOptions().map(option => (
+                            <DropdownItem
+                              key={option.value}
+                              selected={selectedYear === option.value}
+                              onClick={() => {
+                                setSelectedYear(option.value);
+                                setYearDropdownOpen(false);
+                              }}
+                            >
+                              {option.label}
+                            </DropdownItem>
+                          ))}
+                        </DropdownList>
+                      )}
+                    </AnimatePresence>
+                  </DropdownContainer>
+                </>
+              )}
+              <ViewToggle>
+                <ToggleButton 
+                  active={chartView === 'week'} 
+                  onClick={() => setChartView('week')}
+                >
+                  Semana
+                </ToggleButton>
+                <ToggleButton 
+                  active={chartView === 'month'} 
+                  onClick={() => setChartView('month')}
+                >
+                  Mês
+                </ToggleButton>
+              </ViewToggle>
+            </div>
           </ChartHeader>
           <ChartContainer>
             {loading ? (

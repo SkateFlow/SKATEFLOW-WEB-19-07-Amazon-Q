@@ -150,6 +150,9 @@ const PistaTitle = styled.h3`
   font-size: 18px;
   font-weight: 600;
   margin-bottom: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 `;
 
 const PistaInfo = styled.div`
@@ -158,7 +161,7 @@ const PistaInfo = styled.div`
 
 const InfoRow = styled.div`
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 8px;
   color: #64748b;
   font-size: 14px;
@@ -167,6 +170,7 @@ const InfoRow = styled.div`
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    flex: 1;
   }
 `;
 
@@ -269,14 +273,9 @@ const Pistas = () => {
   const [loading, setLoading] = useState(true);
   const { pistasPendentes, aprovarPista, rejeitarPista } = usePistasPendentes();
 
-  const truncateDescription = (text) => {
-    if (text.length <= 25) return text;
-    return text.substring(0, 25) + '...';
-  };
-
-  const truncateLocation = (text) => {
-    if (!text || text.length <= 25) return text;
-    return text.substring(0, 25) + '...';
+  const truncateText = (text, maxLength = 30) => {
+    if (!text || text.length <= maxLength) return text || 'Não informado';
+    return text.substring(0, maxLength) + '...';
   };
   const [pistasBase, setPistasBase] = useState([]);
 
@@ -663,16 +662,17 @@ const Pistas = () => {
                     <InfoRow>
                       <InfoLabel>Localização:</InfoLabel>
                       <span>
-                        {truncateLocation(
+                        {truncateText(
                           pista.rua && pista.bairro 
                             ? `${pista.rua}, ${pista.bairro}${pista.cep ? ` - ${pista.cep}` : ''}` 
-                            : pista.localizacao || 'Não informado'
+                            : pista.localizacao || 'Não informado',
+                          35
                         )}
                       </span>
                     </InfoRow>
                     <InfoRow>
                       <InfoLabel>Descrição:</InfoLabel>
-                      <span>{truncateDescription(pista.descricao)}</span>
+                      <span>{truncateText(pista.descricao, 30)}</span>
                     </InfoRow>
                     <div style={{ display: 'flex', gap: '16px', marginTop: '8px' }}>
                       {pista.tipo && (

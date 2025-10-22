@@ -195,6 +195,9 @@ const PistaName = styled.h3`
   color: #2d3748;
   margin: 0 0 8px 0;
   font-size: 16px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 `;
 
 const PistaDescription = styled.p`
@@ -404,11 +407,13 @@ const AllPistasModal = ({ isOpen, onClose, pistas, lugares = [], onPistaClick })
                       
                       <PistaLocation>
                         <FiMapPin />
-                        <span>
-                          {pista.rua && pista.bairro 
-                            ? `${pista.rua}${pista.numero ? `, ${pista.numero}` : ''} - ${pista.bairro}`
-                            : pista.localizacao || pista.location || 'Localização não informada'
-                          }
+                        <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {(() => {
+                            const location = pista.rua && pista.bairro 
+                              ? `${pista.rua}${pista.numero ? `, ${pista.numero}` : ''} - ${pista.bairro}`
+                              : pista.localizacao || pista.location || 'Localização não informada';
+                            return location.length > 35 ? location.substring(0, 35) + '...' : location;
+                          })()} 
                         </span>
                       </PistaLocation>
                       

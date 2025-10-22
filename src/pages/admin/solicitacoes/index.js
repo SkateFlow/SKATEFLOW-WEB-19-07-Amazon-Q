@@ -10,7 +10,11 @@ import { useEventosPendentes } from '../../../hooks/useEventosPendentes';
 import { solicitacaoPistaService } from '../../../services/solicitacaoPistaService';
 
 const AdminContainer = styled.div`
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  background: 
+    radial-gradient(circle at 20% 80%, #d0e6ffff 0%, transparent 25%),
+    radial-gradient(circle at 80% 20%, #c4e0ffff 0%, transparent 25%),
+    radial-gradient(circle at 40% 40%, #ffffff 0%, transparent 25%),
+    #f8fafc;
   min-height: 100vh;
 `;
 
@@ -59,56 +63,48 @@ const SolicitacaoGrid = styled.div`
 const SolicitacaoCard = styled.div`
   background: #fff;
   border-radius: 12px;
-  padding: 54px 46px;
+  padding: 20px;
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
   border: 1px solid #e2e8f0;
   transition: all 0.3s ease;
   position: relative;
   display: flex;
-  flex-direction: column;
-  gap: 28px;
-  min-height: 360px; /* 🔥 altura bem maior */
+  gap: 20px;
+  min-height: 140px;
 
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
   }
 
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, #667eea 0%, #1a237e 100%);
-  }
+
 `;
 
 const CardContent = styled.div`
   flex: 1;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 10px;
+  gap: 12px;
 `;
 
 const CardActions = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 10px;
+  width: 120px;
   flex-shrink: 0;
+  justify-content: center;
 `;
 
 const SolicitacaoTitle = styled.h3`
   color: #1a237e;
-  font-size: 22px;
+  font-size: 18px;
   font-weight: 600;
-  margin-bottom: 16px;
-  white-space: normal;
-  word-break: break-word;
-  overflow-wrap: anywhere;
-  line-height: 1.4;
+  margin-bottom: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
 `;
 
 const SolicitacaoInfo = styled.div`
@@ -145,14 +141,16 @@ const StatusBadge = styled.span`
 const ActionButton = styled.button`
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 12px 20px;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px 12px;
   border: none;
-  border-radius: 8px;
-  font-size: 16px;
+  border-radius: 6px;
+  font-size: 13px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
+  white-space: nowrap;
 
   &.approve {
     background: #dcfce7;
@@ -584,11 +582,7 @@ const Solicitacoes = () => {
                       : `${solicitacao.dataEvento} - ${solicitacao.localEvento}`
                     }
                   </div>
-                  {solicitacao.tipo === 'pista' && solicitacao.categoria && (
-                    <div style={{ fontSize: '12px', color: '#667eea', fontWeight: '500' }}>
-                      🛹 {solicitacao.categoria}
-                    </div>
-                  )}
+
                 </CardContent>
                 <CardActions>
                   <ActionButton 

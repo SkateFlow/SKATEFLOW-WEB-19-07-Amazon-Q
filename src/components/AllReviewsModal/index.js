@@ -81,7 +81,37 @@ const ReviewComment = styled.p`
   line-height: 1.4;
 `;
 
-const AllReviewsModalComponent = ({ isOpen, onClose, avaliacoes }) => {
+const LoadingContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  gap: 16px;
+`;
+
+const LoadingSpinner = styled.div`
+  width: 40px;
+  height: 40px;
+  border: 3px solid #e2e8f0;
+  border-top: 3px solid #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+`;
+
+const LoadingText = styled.p`
+  color: #64748b;
+  font-size: 14px;
+  margin: 0;
+  text-align: center;
+`;
+
+const AllReviewsModalComponent = ({ isOpen, onClose, avaliacoes, loading = false }) => {
   const renderStars = (rating) => {
     return Array.from({ length: 5 }, (_, index) => (
       <FaStar 
@@ -112,22 +142,35 @@ const AllReviewsModalComponent = ({ isOpen, onClose, avaliacoes }) => {
             <ModalCloseButton onClick={onClose}>×</ModalCloseButton>
             <h3 style={{ color: '#1a237e', marginBottom: '20px' }}>Todas as Avaliações</h3>
             
-            <ReviewsList>
-              {avaliacoes.map((review) => (
-                <ReviewCard key={review.id}>
-                  <ReviewHeader>
-                    <ReviewUser>
-                      <FaUser size={12} color="#64748b" />
-                      {review.usuario}
-                    </ReviewUser>
-                    <ReviewStars>
-                      {renderStars(review.rating)}
-                    </ReviewStars>
-                  </ReviewHeader>
-                  <ReviewComment>{review.comentario}</ReviewComment>
-                </ReviewCard>
-              ))}
-            </ReviewsList>
+            {loading ? (
+              <LoadingContainer>
+                <LoadingSpinner />
+                <LoadingText>Carregando avaliações...</LoadingText>
+              </LoadingContainer>
+            ) : (
+              <ReviewsList>
+                {avaliacoes.map((review, index) => (
+                  <ReviewCard 
+                    key={review.id}
+                    as={motion.div}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: index * 0.1 }}
+                  >
+                    <ReviewHeader>
+                      <ReviewUser>
+                        <FaUser size={12} color="#64748b" />
+                        {review.usuario}
+                      </ReviewUser>
+                      <ReviewStars>
+                        {renderStars(review.rating)}
+                      </ReviewStars>
+                    </ReviewHeader>
+                    <ReviewComment>{review.comentario}</ReviewComment>
+                  </ReviewCard>
+                ))}
+              </ReviewsList>
+            )}
           </AllReviewsContent>
         </AllReviewsModal>
       )}
