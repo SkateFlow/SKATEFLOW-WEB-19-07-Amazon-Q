@@ -295,7 +295,7 @@ const Dashboard = () => {
       console.log('Eventos carregados:', eventos);
       const eventosAtivos = eventos.filter(evento => {
         console.log('Evento:', evento.nome, 'Status:', evento.statusEvento);
-        return evento.statusEvento === 'ativado' || evento.statusEvento === 'ATIVO' || evento.statusEvento === 'ativo';
+        return evento.statusEvento === 'ativado' || evento.statusEvento === 'ATIVO' || evento.statusEvento === 'ativo' || evento.statusEvento === 'Publicado';
       }).length;
       console.log('Eventos ativos encontrados:', eventosAtivos);
       const pistasAtivas = lugares.filter(lugar => 

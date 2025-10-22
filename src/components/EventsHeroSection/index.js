@@ -28,6 +28,7 @@ import {
 } from './EventsHeroElements';
 
 const EventsHeroSection = () => {
+
   return (
     <EventsHeroContainer id="events-hero">
       <EventsHeroContent>
@@ -54,7 +55,7 @@ const EventsHeroSection = () => {
 
             <StatsContainer>
               <StatItem>
-                <StatNumber>150+</StatNumber>
+                <StatNumber>50+</StatNumber>
                 <StatLabel>Eventos Ativos</StatLabel>
               </StatItem>
               <StatItem>
