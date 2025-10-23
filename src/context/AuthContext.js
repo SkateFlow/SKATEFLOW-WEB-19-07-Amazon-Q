@@ -84,8 +84,12 @@ export const AuthProvider = ({ children }) => {
     return user?.nivelAcesso === 'ADMIN' || user?.nivelAcesso === 'GERENTE';
   };
 
+  const canCreateEventsDirectly = () => {
+    return user?.nivelAcesso !== 'USER';
+  };
+
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, loading, login, logout, checkUserExists, isAdminOrGerente }}>
+    <AuthContext.Provider value={{ user, isAuthenticated, loading, login, logout, checkUserExists, isAdminOrGerente, canCreateEventsDirectly }}>
       {children}
     </AuthContext.Provider>
   );

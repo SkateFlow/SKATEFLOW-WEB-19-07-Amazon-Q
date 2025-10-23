@@ -356,12 +356,14 @@ const CreateEventModal = ({ isOpen, onClose, onSave }) => {
       
       if (!formData.nome.trim()) {
         newErrors.nome = 'Nome do evento é obrigatório';
+      } else if (formData.nome.length > 50) {
+        newErrors.nome = 'Nome deve ter no máximo 50 caracteres';
       }
       
       if (!formData.info.trim()) {
         newErrors.info = 'Descrição é obrigatória';
-      } else if (formData.info.length > 300) {
-        newErrors.info = 'Descrição deve ter no máximo 300 caracteres';
+      } else if (formData.info.length > 255) {
+        newErrors.info = 'Descrição deve ter no máximo 255 caracteres';
       }
       
       if (!formData.dataInicio) {
@@ -392,44 +394,20 @@ const CreateEventModal = ({ isOpen, onClose, onSave }) => {
       }
       
       const processarEvento = async () => {
-        if (user?.nivelAcesso === 'ADMIN' || user?.isOrganizador) {
-          // Admin/Organizador: cria evento diretamente
-          try {
-            const eventoData = {
-              nome: formData.nome,
-              info: formData.info,
-              dataInicio: new Date(formData.dataInicio).toISOString(),
-              dataFim: new Date(formData.dataFim).toISOString(),
-              statusEvento: 'ativado',
-              linkSite: formData.linkSite || null,
-              usuario_id: { id: user.id },
-              lugar_id: { id: parseInt(formData.lugarId) },
-              foto1: formData.foto ? formData.foto.split(',')[1] : null
-            };
-            await eventoService.criar(eventoData);
-            console.log('Evento criado com sucesso!');
-          } catch (error) {
-            console.error('Erro ao criar evento:', error);
-          }
-        } else {
-          // Usuário comum: envia solicitação
-          try {
-            const eventoData = {
-              nome: formData.nome,
-              info: formData.info,
-              dataInicio: new Date(formData.dataInicio).toISOString(),
-              dataFim: new Date(formData.dataFim).toISOString(),
-              linkSite: formData.linkSite || null,
-              usuario_id: { id: user.id },
-              lugar_id: { id: parseInt(formData.lugarId) },
-              foto1: formData.foto ? formData.foto.split(',')[1] : null
-            };
-            await eventoService.solicitar(eventoData);
-            console.log('Solicitação enviada com sucesso!');
-          } catch (error) {
-            console.error('Erro ao enviar solicitação:', error);
-          }
-        }
+        console.log('Enviando solicitação de evento para usuário:', user?.nivelAcesso);
+        
+        // Todos os níveis enviam solicitação
+        const eventoData = {
+          nome: formData.nome.substring(0, 30),
+          info: formData.info.substring(0, 100),
+          dataInicio: new Date(formData.dataInicio).toISOString(),
+          dataFim: new Date(formData.dataFim).toISOString(),
+          linkSite: formData.linkSite && formData.linkSite.trim() ? formData.linkSite.substring(0, 50) : null,
+          usuario_id: { id: user.id },
+          lugar_id: { id: parseInt(formData.lugarId) },
+          foto1: formData.foto ? formData.foto.split(',')[1] : null
+        };
+        await eventoService.solicitar(eventoData);
       };
       
       await processarEvento();
@@ -461,7 +439,22 @@ const CreateEventModal = ({ isOpen, onClose, onSave }) => {
 
     } catch (error) {
       console.error('Erro ao processar evento:', error);
-      alert(typeof error === 'string' ? error : 'Erro ao processar evento');
+      
+      let errorMessage = 'Erro ao processar evento';
+      
+      if (error?.response?.data) {
+        if (typeof error.response.data === 'string') {
+          errorMessage = error.response.data;
+        } else if (error.response.data.message) {
+          errorMessage = error.response.data.message;
+        }
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+      
+      alert(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -469,12 +462,12 @@ const CreateEventModal = ({ isOpen, onClose, onSave }) => {
 
   if (!isOpen) return null;
   
-  if (authLoading) {
+  if (authLoading || !user) {
     return (
       <ModalOverlay>
         <ModalContent>
           <div style={{ padding: '40px', textAlign: 'center' }}>
-            Carregando...
+            {authLoading ? 'Carregando...' : 'Você precisa estar logado para solicitar eventos.'}
           </div>
         </ModalContent>
       </ModalOverlay>
@@ -485,7 +478,7 @@ const CreateEventModal = ({ isOpen, onClose, onSave }) => {
     <ModalOverlay onClick={onClose}>
       <ModalContent onClick={(e) => e.stopPropagation()}>
         <ModalHeader>
-          <ModalTitle>Criar Novo Evento</ModalTitle>
+          <ModalTitle>Solicitar Novo Evento</ModalTitle>
           <CloseButton onClick={onClose}>
             <FiX size={24} />
           </CloseButton>
@@ -522,6 +515,7 @@ const CreateEventModal = ({ isOpen, onClose, onSave }) => {
                   value={formData.nome}
                   onChange={(e) => handleInputChange('nome', e.target.value)}
                   placeholder="Digite o nome do evento"
+                  maxLength={50}
                   hasError={errors.nome}
                   required
                 />
@@ -649,12 +643,12 @@ const CreateEventModal = ({ isOpen, onClose, onSave }) => {
                   value={formData.info}
                   onChange={(e) => handleInputChange('info', e.target.value)}
                   placeholder="Descreva o evento..."
-                  maxLength={300}
+                  maxLength={255}
                   hasError={errors.info}
                   required
                 />
                 <div style={{ fontSize: '12px', color: '#64748b', textAlign: 'right' }}>
-                  {formData.info.length}/300 caracteres
+                  {formData.info.length}/255 caracteres
                 </div>
                 {errors.info && <div style={{ color: '#dc2626', fontSize: '12px', marginTop: '4px' }}>{errors.info}</div>}
               </FormGroup>
@@ -666,6 +660,7 @@ const CreateEventModal = ({ isOpen, onClose, onSave }) => {
                   value={formData.linkSite}
                   onChange={(e) => handleInputChange('linkSite', e.target.value)}
                   placeholder="https://exemplo.com"
+                  maxLength={100}
                 />
               </FormGroup>
             </FormGrid>
@@ -676,7 +671,7 @@ const CreateEventModal = ({ isOpen, onClose, onSave }) => {
                 Cancelar
               </Button>
               <Button type="submit" primary disabled={loading}>
-                {loading ? 'Criando...' : 'Criar Evento'}
+                {loading ? 'Enviando...' : 'Enviar Solicitação'}
               </Button>
             </ButtonGroup>
           </form>
@@ -686,7 +681,7 @@ const CreateEventModal = ({ isOpen, onClose, onSave }) => {
       <EventRequestConfirmModal
         isOpen={showSuccessModal}
         onClose={() => setShowSuccessModal(false)}
-        isOrganizer={user?.nivelAcesso === 'ADMIN' || user?.isOrganizador}
+        isOrganizer={false}
       />
     </ModalOverlay>
   );
