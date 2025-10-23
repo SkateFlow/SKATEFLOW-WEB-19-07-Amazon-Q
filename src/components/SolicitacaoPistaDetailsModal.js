@@ -438,7 +438,7 @@ const SolicitacaoPistaDetailsModal = ({ isOpen, onClose, solicitacao, onApprove,
   const [isClosing, setIsClosing] = useState(false);
   const [fotosProcessadas, setFotosProcessadas] = useState([]);
 
-  console.log('Modal props:', { isOpen, solicitacao: !!solicitacao });
+
 
   useEffect(() => {
     if (solicitacao) {
@@ -490,17 +490,7 @@ const SolicitacaoPistaDetailsModal = ({ isOpen, onClose, solicitacao, onApprove,
     handleClose();
   };
 
-  if (!isOpen) {
-    console.log('Modal não aberto');
-    return null;
-  }
-
-  if (!solicitacao) {
-    console.log('Solicitação não encontrada');
-    return null;
-  }
-
-  console.log('Renderizando modal com solicitação:', solicitacao.nome);
+  if (!isOpen || !solicitacao) return null;
 
   return (
     <div

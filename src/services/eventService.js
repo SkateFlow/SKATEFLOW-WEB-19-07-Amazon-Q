@@ -124,7 +124,44 @@ export const eventoService = {
   listarPendentes: async () => {
     try {
       const response = await api.get('/evento/pendentes');
-      return response.data;
+      const eventos = response.data;
+      
+      // Processar cada evento para incluir imagens e dados do usuário
+      const eventosComImagens = await Promise.all(
+        eventos.map(async (evento) => {
+          const fotos = [];
+          
+          // Buscar fotos se existirem
+          try {
+            const foto1Response = await api.get(`/evento/foto1/${evento.id}`);
+            if (foto1Response.data) {
+              fotos.push(`data:image/png;base64,${foto1Response.data}`);
+            }
+          } catch (e) { /* Foto não existe */ }
+          
+          try {
+            const foto2Response = await api.get(`/evento/foto2/${evento.id}`);
+            if (foto2Response.data) {
+              fotos.push(`data:image/png;base64,${foto2Response.data}`);
+            }
+          } catch (e) { /* Foto não existe */ }
+          
+          try {
+            const foto3Response = await api.get(`/evento/foto3/${evento.id}`);
+            if (foto3Response.data) {
+              fotos.push(`data:image/png;base64,${foto3Response.data}`);
+            }
+          } catch (e) { /* Foto não existe */ }
+          
+          return {
+            ...evento,
+            fotos,
+            criadoPor: evento.usuario_id?.nome || 'Usuário não informado'
+          };
+        })
+      );
+      
+      return eventosComImagens;
     } catch (error) {
       throw error.response?.data || 'Erro ao buscar eventos pendentes';
     }

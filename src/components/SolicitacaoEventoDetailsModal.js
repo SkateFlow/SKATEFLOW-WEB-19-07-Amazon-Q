@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { FaMapMarkerAlt, FaCalendarAlt, FaChevronLeft, FaChevronRight, FaUser, FaClock } from 'react-icons/fa';
+import { FaMapMarkerAlt, FaCalendarAlt, FaChevronLeft, FaChevronRight, FaUser, FaClock, FaTimes } from 'react-icons/fa';
 import { convertBase64ToDataUrl } from '../utils/imageUtils';
 
 const PopupOverlay = styled.div`
@@ -349,80 +349,173 @@ const SolicitacaoEventoDetailsModal = ({ isOpen, onClose, solicitacao, onApprove
     if (solicitacao) {
       let fotos = [];
       
-      if (solicitacao.imagens && Array.isArray(solicitacao.imagens)) {
-        fotos = solicitacao.imagens.filter(img => img && img !== '');
-      } else if (solicitacao.foto) {
+      // Processar diferentes formatos de imagem
+      if (solicitacao.fotos && Array.isArray(solicitacao.fotos)) {
+        fotos = solicitacao.fotos.filter(foto => foto && foto.trim() !== '');
+      } else if (solicitacao.imagens && Array.isArray(solicitacao.imagens)) {
+        fotos = solicitacao.imagens.filter(img => img && img.trim() !== '');
+      } else if (solicitacao.foto && solicitacao.foto.trim() !== '') {
         fotos = [solicitacao.foto];
       }
       
+      // Converte as imagens para o formato correto
       const fotosConvertidas = fotos.map(foto => {
-        if (foto.startsWith('http')) {
-          return foto;
+        try {
+          if (foto.startsWith('http://') || foto.startsWith('https://')) {
+            return foto;
+          }
+          return convertBase64ToDataUrl(foto);
+        } catch (error) {
+          console.warn('Erro ao processar imagem:', error);
+          return 'https://via.placeholder.com/700x350/ef4444/ffffff?text=Erro+na+Imagem';
         }
-        return convertBase64ToDataUrl(foto);
       });
       
       setFotosProcessadas(fotosConvertidas);
+    } else {
+      setFotosProcessadas([]);
     }
   }, [solicitacao]);
 
   const handleClose = () => {
     setIsClosing(true);
     setTimeout(() => {
+      setIsClosing(false);
       onClose();
     }, 300);
+  };
+
+  const handleApprove = () => {
+    onApprove(solicitacao);
+    handleClose();
+  };
+
+  const handleReject = () => {
+    onReject(solicitacao);
+    handleClose();
   };
 
   if (!isOpen || !solicitacao) return null;
 
   return (
-    <PopupOverlay onClick={handleClose} isClosing={isClosing}>
-      <PopupContent onClick={(e) => e.stopPropagation()} isClosing={isClosing}>
-        <InstructionText>clique fora para sair</InstructionText>
+    <div
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 99999
+      }}
+      onClick={handleClose}
+    >
+      <div
+        style={{
+          background: '#ffffff',
+          borderRadius: '20px',
+          padding: '32px',
+          maxWidth: '700px',
+          width: '95%',
+          maxHeight: '90vh',
+          overflowY: 'auto',
+          position: 'relative',
+          boxShadow: '0 25px 50px rgba(0, 0, 0, 0.25)'
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          onClick={handleClose}
+          style={{
+            position: 'absolute',
+            top: '16px',
+            right: '16px',
+            background: 'rgba(255, 255, 255, 0.9)',
+            border: 'none',
+            width: '36px',
+            height: '36px',
+            borderRadius: '50%',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}
+        >
+          <FaTimes size={14} color="#64748b" />
+        </button>
         
-        <PopupBody>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
           <EventCarousel images={fotosProcessadas} />
           
-          <EventHeader>
-            <EventTitle>{solicitacao.nome || 'Evento sem nome'}</EventTitle>
-            <StatusBadge>
-              <FaClock size={12} />
-              Pendente
-            </StatusBadge>
-          </EventHeader>
-          
-          <EventDescription>{solicitacao.descricao || 'Sem descrição'}</EventDescription>
-          
-          <InfoSection>
-            <InfoRow>
-              <InfoIcon><FaCalendarAlt size={18} /></InfoIcon>
-              <InfoText>Data: {solicitacao.dataEvento || 'Não informado'}</InfoText>
-            </InfoRow>
-            <InfoRow>
-              <InfoIcon><FaMapMarkerAlt size={18} /></InfoIcon>
-              <InfoText>Local: {solicitacao.localEvento || 'Não informado'}</InfoText>
-            </InfoRow>
-            <InfoRow>
-              <InfoIcon><FaUser size={16} /></InfoIcon>
-              <InfoText>Organizador: {solicitacao.criadoPor || 'Usuário não informado'}</InfoText>
-            </InfoRow>
-            <InfoRow>
-              <InfoIcon><span style={{ fontSize: '16px' }}>📋</span></InfoIcon>
-              <InfoText>Status: Pendente de aprovação</InfoText>
-            </InfoRow>
-          </InfoSection>
+          <div>
+            <h2 style={{ fontSize: '26px', fontWeight: '700', color: '#1a237e', margin: '0 0 16px 0' }}>
+              {solicitacao.nome || 'Evento sem nome'}
+            </h2>
+            
+            <p style={{ color: '#64748b', margin: '0 0 16px 0', lineHeight: '1.6' }}>
+              {solicitacao.info || solicitacao.descricao || 'Sem descrição disponível'}
+            </p>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '24px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <FaCalendarAlt size={18} color="#1a237e" />
+                <span>Data: {solicitacao.dataEvento || 'Não informado'}</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <FaMapMarkerAlt size={18} color="#1a237e" />
+                <span>Local: {solicitacao.localEvento || 'Não informado'}</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <FaUser size={16} color="#1a237e" />
+                <span>Organizador: {solicitacao.criadoPor || 'Usuário não informado'}</span>
+              </div>
+              {solicitacao.linkSite && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <span style={{ fontSize: '16px' }}>🔗</span>
+                  <span>Site: {solicitacao.linkSite}</span>
+                </div>
+              )}
+            </div>
 
-          <ButtonGroup>
-            <RejectButton onClick={() => onReject(solicitacao)}>
-              ✗ Reprovar
-            </RejectButton>
-            <ApproveButton onClick={() => onApprove(solicitacao)}>
-              ✓ Aprovar
-            </ApproveButton>
-          </ButtonGroup>
-        </PopupBody>
-      </PopupContent>
-    </PopupOverlay>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '16px', paddingTop: '24px', borderTop: '1px solid #e2e8f0' }}>
+              <button
+                onClick={handleReject}
+                style={{
+                  background: '#ef4444',
+                  color: 'white',
+                  border: 'none',
+                  padding: '12px 24px',
+                  borderRadius: '8px',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  cursor: 'pointer'
+                }}
+              >
+                ✗ Reprovar
+              </button>
+              <button
+                onClick={handleApprove}
+                style={{
+                  background: '#10b981',
+                  color: 'white',
+                  border: 'none',
+                  padding: '12px 24px',
+                  borderRadius: '8px',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  cursor: 'pointer'
+                }}
+              >
+                ✓ Aprovar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 

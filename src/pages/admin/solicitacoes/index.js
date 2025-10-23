@@ -572,7 +572,6 @@ const Solicitacoes = () => {
               <SolicitacaoCard 
                 key={`${solicitacao.tipo}-${solicitacao.id}`}
                 onClick={() => {
-                  console.log('Card clicado:', solicitacao);
                   setSelectedSolicitacao(solicitacao);
                   if (solicitacao.tipo === 'pista') {
                     setShowPistaModal(true);
@@ -631,11 +630,9 @@ const Solicitacoes = () => {
           </SolicitacaoGrid>
         )}
         
-        {console.log('Estados do modal:', { showPistaModal, selectedSolicitacao: !!selectedSolicitacao })}
         <SolicitacaoPistaDetailsModal
           isOpen={showPistaModal}
           onClose={() => {
-            console.log('Fechando modal');
             setShowPistaModal(false);
             setTimeout(() => {
               setSelectedSolicitacao(null);
