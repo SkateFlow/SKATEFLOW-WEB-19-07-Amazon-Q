@@ -54,5 +54,5 @@ export const homeObjThree = {
     dark: false,
     primary: false,
     darkText: true,
-    linkTo: 'https://www.example.com', // Link para download do app
+    linkTo: '/app-download', // Link para página de download do app
 };

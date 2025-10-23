@@ -14,7 +14,8 @@ import Perfil from './pages/perfil';
 import ForgotPasswordPage from './pages/forgot-password';
 import CadastroOrganizadorPage from './pages/cadastro-organizador';
 import PerfilOrganizador from './pages/organizador/perfil';
-import EventosOrganizador from './pages/organizador/eventos'; 
+import EventosOrganizador from './pages/organizador/eventos';
+import AppDownloadPage from './pages/app-download';
 // Páginas administrativas
 import { Dashboard, Eventos, Pistas, Usuarios } from './pages/admin';
 import Solicitacoes from './pages/admin/solicitacoes';
@@ -36,6 +37,7 @@ function App() {
             <Route path="/perfil" element={<Perfil />} />
             <Route path="/organizador/perfil" element={<PerfilOrganizador />} />
             <Route path="/organizador/eventos" element={<EventosOrganizador />} />
+            <Route path="/app-download" element={<AppDownloadPage />} />
             
             {/* Rotas administrativas */}
             <Route path={ROUTES.ADMIN} element={<AdminRoute><Dashboard /></AdminRoute>} />
