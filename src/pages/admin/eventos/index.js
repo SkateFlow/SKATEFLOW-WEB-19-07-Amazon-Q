@@ -259,18 +259,8 @@ const Eventos = () => {
       // Buscar dados completos do evento
       const eventoCompleto = await eventoService.buscarPorId(eventId);
       
-      // Carregar fotos
-      const [foto1, foto2, foto3] = await Promise.all([
-        eventoService.buscarFoto1(eventId).catch(() => null),
-        eventoService.buscarFoto2(eventId).catch(() => null),
-        eventoService.buscarFoto3(eventId).catch(() => null)
-      ]);
-      
-      const fotos = [
-        foto1 ? `data:image/jpeg;base64,${foto1}` : '',
-        foto2 ? `data:image/jpeg;base64,${foto2}` : '',
-        foto3 ? `data:image/jpeg;base64,${foto3}` : ''
-      ];
+      // Carregar foto
+      const foto1 = await eventoService.buscarFoto1(eventId).catch(() => null);
       
       // Formatar dados para o modal
       const eventoFormatado = {
@@ -280,7 +270,7 @@ const Eventos = () => {
         dataInicio: eventoCompleto.dataInicio,
         dataFim: eventoCompleto.dataFim,
         ativo: eventoCompleto.statusEvento === 'Publicado' || eventoCompleto.statusEvento === 'ativado',
-        fotos: fotos,
+        foto: foto1 ? `data:image/jpeg;base64,${foto1}` : '',
         publicadoPor: eventoCompleto.usuario_id?.nome || 'Usuário não informado',
         dataCadastro: eventoCompleto.dataCadastro ? new Date(eventoCompleto.dataCadastro).toLocaleDateString('pt-BR') : new Date().toLocaleDateString('pt-BR')
       };
@@ -297,7 +287,7 @@ const Eventos = () => {
     try {
       const { eventoService } = await import('../../../services/eventService');
       
-      // Preparar dados para o backend incluindo fotos
+      // Preparar dados para o backend incluindo foto
       const eventoData = {
         nome: updatedEvent.nomeEvento,
         info: updatedEvent.descricao,
@@ -305,9 +295,7 @@ const Eventos = () => {
         dataFim: updatedEvent.dataFim,
         statusEvento: updatedEvent.ativo ? 'ativado' : 'inativo',
         linkSite: updatedEvent.linkSite || null,
-        foto1: updatedEvent.fotos && updatedEvent.fotos[0] && updatedEvent.fotos[0].startsWith('data:image/') ? updatedEvent.fotos[0].split(',')[1] : null,
-        foto2: updatedEvent.fotos && updatedEvent.fotos[1] && updatedEvent.fotos[1].startsWith('data:image/') ? updatedEvent.fotos[1].split(',')[1] : null,
-        foto3: updatedEvent.fotos && updatedEvent.fotos[2] && updatedEvent.fotos[2].startsWith('data:image/') ? updatedEvent.fotos[2].split(',')[1] : null
+        foto1: updatedEvent.foto && updatedEvent.foto.startsWith('data:image/') ? updatedEvent.foto.split(',')[1] : null
       };
       
       await eventoService.atualizarComFotos(updatedEvent.id, eventoData);

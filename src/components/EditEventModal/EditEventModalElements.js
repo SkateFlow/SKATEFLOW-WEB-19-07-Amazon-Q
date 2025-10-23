@@ -59,9 +59,8 @@ export const ModalContent = styled.div`
 `;
 
 export const PhotoSection = styled.div`
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
+  display: flex;
+  justify-content: center;
   margin-bottom: 32px;
 `;
 
@@ -74,7 +73,8 @@ export const PhotoUpload = styled.div`
   cursor: pointer;
   transition: all 0.3s ease;
   color: #64748b;
-  height: 120px;
+  width: 200px;
+  height: 150px;
   display: flex;
   flex-direction: column;
   align-items: center;

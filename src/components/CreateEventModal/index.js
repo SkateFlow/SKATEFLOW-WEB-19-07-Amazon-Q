@@ -142,9 +142,8 @@ const TextArea = styled.textarea`
 `;
 
 const PhotoSection = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 12px;
+  display: flex;
+  justify-content: center;
   margin-bottom: 24px;
   padding: 16px;
   background: #f8fafc;
@@ -154,8 +153,8 @@ const PhotoSection = styled.div`
 
 const PhotoUpload = styled.div`
   position: relative;
-  width: 100%;
-  height: 100px;
+  width: 200px;
+  height: 150px;
   border: 2px dashed ${props => props.hasError ? '#dc2626' : '#cbd5e0'};
   border-radius: 12px;
   display: flex;
@@ -261,7 +260,7 @@ const CreateEventModal = ({ isOpen, onClose, onSave }) => {
     dataFim: '',
     lugarId: '',
     linkSite: '',
-    fotos: [null, null, null]
+    foto: null
   });
   const [lugares, setLugares] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -302,7 +301,7 @@ const CreateEventModal = ({ isOpen, onClose, onSave }) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handlePhotoChange = (index, file) => {
+  const handlePhotoChange = (file) => {
     if (file) {
       // Verificar tamanho do arquivo (max 2MB)
       if (file.size > 2 * 1024 * 1024) {
@@ -339,9 +338,7 @@ const CreateEventModal = ({ isOpen, onClose, onSave }) => {
           // Comprimir para JPEG com qualidade 0.6
           const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.6);
           
-          const newFotos = [...formData.fotos];
-          newFotos[index] = compressedDataUrl;
-          setFormData(prev => ({ ...prev, fotos: newFotos }));
+          setFormData(prev => ({ ...prev, foto: compressedDataUrl }));
         };
         img.src = e.target.result;
       };
@@ -379,11 +376,10 @@ const CreateEventModal = ({ isOpen, onClose, onSave }) => {
         newErrors.lugarId = 'Selecione uma pista';
       }
       
-      // Validar se pelo menos uma foto foi adicionada
-      const temFoto = formData.fotos.some(foto => foto !== null && foto !== '');
-      if (!temFoto) {
+      // Validar se foto foi adicionada
+      if (!formData.foto) {
         setPhotoError(true);
-        newErrors.fotos = 'É obrigatório adicionar pelo menos uma foto';
+        newErrors.foto = 'É obrigatório adicionar uma foto';
       } else {
         setPhotoError(false);
       }
@@ -408,9 +404,7 @@ const CreateEventModal = ({ isOpen, onClose, onSave }) => {
               linkSite: formData.linkSite || null,
               usuario_id: { id: user.id },
               lugar_id: { id: parseInt(formData.lugarId) },
-              foto1: formData.fotos[0] ? formData.fotos[0].split(',')[1] : null,
-              foto2: formData.fotos[1] ? formData.fotos[1].split(',')[1] : null,
-              foto3: formData.fotos[2] ? formData.fotos[2].split(',')[1] : null
+              foto1: formData.foto ? formData.foto.split(',')[1] : null
             };
             await eventoService.criar(eventoData);
             console.log('Evento criado com sucesso!');
@@ -428,9 +422,7 @@ const CreateEventModal = ({ isOpen, onClose, onSave }) => {
               linkSite: formData.linkSite || null,
               usuario_id: { id: user.id },
               lugar_id: { id: parseInt(formData.lugarId) },
-              foto1: formData.fotos[0] ? formData.fotos[0].split(',')[1] : null,
-              foto2: formData.fotos[1] ? formData.fotos[1].split(',')[1] : null,
-              foto3: formData.fotos[2] ? formData.fotos[2].split(',')[1] : null
+              foto1: formData.foto ? formData.foto.split(',')[1] : null
             };
             await eventoService.solicitar(eventoData);
             console.log('Solicitação enviada com sucesso!');
@@ -463,7 +455,7 @@ const CreateEventModal = ({ isOpen, onClose, onSave }) => {
         dataFim: '',
         lugarId: '',
         linkSite: '',
-        fotos: [null, null, null]
+        foto: null
       });
       setErrors({});
 
@@ -502,27 +494,24 @@ const CreateEventModal = ({ isOpen, onClose, onSave }) => {
         <ModalBody>
           <form onSubmit={handleSubmit}>
             <PhotoSection hasError={photoError}>
-              {[0, 1, 2].map(index => (
-                <PhotoUpload
-                  key={index}
-                  hasImage={formData.fotos[index]}
-                  hasError={photoError}
-                >
-                  {formData.fotos[index] ? (
-                    <PhotoPreview src={formData.fotos[index]} alt={`Foto ${index + 1}`} />
-                  ) : (
-                    <>
-                      <FiCamera size={20} />
-                      <span>Foto {index + 1}</span>
-                    </>
-                  )}
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => handlePhotoChange(index, e.target.files[0])}
-                  />
-                </PhotoUpload>
-              ))}
+              <PhotoUpload
+                hasImage={formData.foto}
+                hasError={photoError}
+              >
+                {formData.foto ? (
+                  <PhotoPreview src={formData.foto} alt="Foto do evento" />
+                ) : (
+                  <>
+                    <FiCamera size={24} />
+                    <span>Adicionar Foto</span>
+                  </>
+                )}
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handlePhotoChange(e.target.files[0])}
+                />
+              </PhotoUpload>
             </PhotoSection>
 
             <FormGrid>

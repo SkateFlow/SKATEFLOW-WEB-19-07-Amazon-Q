@@ -32,7 +32,7 @@ const EditEventModal = ({ isOpen, onClose, event, onSave }) => {
     dataFim: '',
     linkSite: '',
     ativo: true,
-    fotos: ['', '', '']
+    foto: ''
   });
   
   const [locationInfo, setLocationInfo] = useState('');
@@ -52,7 +52,7 @@ const EditEventModal = ({ isOpen, onClose, event, onSave }) => {
           dataFim: event.dataFim || '',
           linkSite: event.linkSite || '',
           ativo: event.ativo !== undefined ? event.ativo : true,
-          fotos: event.fotos || ['', '', '']
+          foto: event.foto || ''
         };
         setFormData(data);
         setOriginalData(data);
@@ -108,7 +108,7 @@ const EditEventModal = ({ isOpen, onClose, event, onSave }) => {
     }
   };
 
-  const handlePhotoChange = (index, file) => {
+  const handlePhotoChange = (file) => {
     if (file && file instanceof File) {
       // Verificar tamanho do arquivo (max 2MB)
       if (file.size > 2 * 1024 * 1024) {
@@ -145,11 +145,9 @@ const EditEventModal = ({ isOpen, onClose, event, onSave }) => {
           // Comprimir para JPEG com qualidade 0.6
           const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.6);
           
-          const newFotos = formData.fotos ? [...formData.fotos] : ['', '', ''];
-          newFotos[index] = compressedDataUrl;
           setFormData(prev => ({
             ...prev,
-            fotos: newFotos
+            foto: compressedDataUrl
           }));
         };
         img.src = e.target.result;
@@ -311,31 +309,29 @@ const EditEventModal = ({ isOpen, onClose, event, onSave }) => {
               ) : (
                 <>
               <PhotoSection>
-                {[0, 1, 2].map((index) => (
-                  <PhotoUpload key={index}>
-                    {formData.fotos && formData.fotos[index] ? (
-                      <img 
-                        src={formData.fotos[index]} 
-                        alt={`Preview ${index + 1}`}
-                      />
-                    ) : (
-                      <>
-                        <FiUpload />
-                        <span>Foto {index + 1}</span>
-                      </>
-                    )}
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          handlePhotoChange(index, file);
-                        }
-                      }}
+                <PhotoUpload>
+                  {formData.foto ? (
+                    <img 
+                      src={formData.foto} 
+                      alt="Preview do evento"
                     />
-                  </PhotoUpload>
-                ))}
+                  ) : (
+                    <>
+                      <FiUpload />
+                      <span>{event ? 'Alterar Foto' : 'Adicionar Foto'}</span>
+                    </>
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        handlePhotoChange(file);
+                      }
+                    }}
+                  />
+                </PhotoUpload>
               </PhotoSection>
 
               <FormGrid>

@@ -1,4 +1,5 @@
 import api from '../utils/api';
+import { compressBase64Image } from '../utils/imageOptimizer';
 
 export const eventoService = {
   listar: async () => {
@@ -21,9 +22,16 @@ export const eventoService = {
 
   criar: async (evento) => {
     try {
-      // Se o evento tem fotos, usar o endpoint com fotos
-      if (evento.foto1 || evento.foto2 || evento.foto3 || (evento.fotos && evento.fotos.length > 0)) {
-        const response = await api.post('/evento/saveWithPhotos', evento);
+      // Se o evento tem foto, otimizar antes de enviar
+      if (evento.foto1 || (evento.fotos && evento.fotos.length > 0)) {
+        const eventoOtimizado = { ...evento };
+        
+        // Otimizar foto se existir
+        if (evento.foto1) {
+          eventoOtimizado.foto1 = await compressBase64Image(evento.foto1);
+        }
+        
+        const response = await api.post('/evento/saveWithPhotos', eventoOtimizado);
         return response.data;
       } else {
         const response = await api.post('/evento/save', evento);
@@ -45,7 +53,14 @@ export const eventoService = {
 
   atualizarComFotos: async (id, evento) => {
     try {
-      const response = await api.put(`/evento/updateWithPhotos/${id}`, evento);
+      const eventoOtimizado = { ...evento };
+      
+      // Otimizar foto se existir
+      if (evento.foto1) {
+        eventoOtimizado.foto1 = await compressBase64Image(evento.foto1);
+      }
+      
+      const response = await api.put(`/evento/updateWithPhotos/${id}`, eventoOtimizado);
       return response.data;
     } catch (error) {
       throw error.response?.data || 'Erro ao atualizar evento com fotos';
@@ -66,27 +81,15 @@ export const eventoService = {
       const response = await api.get(`/evento/foto1/${id}`);
       return response.data;
     } catch (error) {
+      if (error.response?.status === 404) {
+        return null; // Foto não existe
+      }
+      console.warn(`Erro ao buscar foto1 do evento ${id}:`, error.message);
       return null;
     }
   },
 
-  buscarFoto2: async (id) => {
-    try {
-      const response = await api.get(`/evento/foto2/${id}`);
-      return response.data;
-    } catch (error) {
-      return null;
-    }
-  },
 
-  buscarFoto3: async (id) => {
-    try {
-      const response = await api.get(`/evento/foto3/${id}`);
-      return response.data;
-    } catch (error) {
-      return null;
-    }
-  },
 
   salvarFoto1: async (id, fotoBase64) => {
     try {
@@ -99,31 +102,18 @@ export const eventoService = {
     }
   },
 
-  salvarFoto2: async (id, fotoBase64) => {
-    try {
-      const response = await api.put(`/evento/foto2/${id}`, fotoBase64, {
-        headers: { 'Content-Type': 'text/plain' }
-      });
-      return response.data;
-    } catch (error) {
-      throw error.response?.data || 'Erro ao salvar foto';
-    }
-  },
 
-  salvarFoto3: async (id, fotoBase64) => {
-    try {
-      const response = await api.put(`/evento/foto3/${id}`, fotoBase64, {
-        headers: { 'Content-Type': 'text/plain' }
-      });
-      return response.data;
-    } catch (error) {
-      throw error.response?.data || 'Erro ao salvar foto';
-    }
-  },
 
   solicitar: async (evento) => {
     try {
-      const response = await api.post('/evento/solicitar', evento);
+      const eventoOtimizado = { ...evento };
+      
+      // Otimizar foto se existir
+      if (evento.foto1) {
+        eventoOtimizado.foto1 = await compressBase64Image(evento.foto1);
+      }
+      
+      const response = await api.post('/evento/solicitar', eventoOtimizado);
       return response.data;
     } catch (error) {
       throw error.response?.data || 'Erro ao solicitar evento';
@@ -140,25 +130,11 @@ export const eventoService = {
         eventos.map(async (evento) => {
           const fotos = [];
           
-          // Buscar fotos se existirem
+          // Buscar foto se existir
           try {
             const foto1Response = await api.get(`/evento/foto1/${evento.id}`);
             if (foto1Response.data) {
               fotos.push(`data:image/png;base64,${foto1Response.data}`);
-            }
-          } catch (e) { /* Foto não existe */ }
-          
-          try {
-            const foto2Response = await api.get(`/evento/foto2/${evento.id}`);
-            if (foto2Response.data) {
-              fotos.push(`data:image/png;base64,${foto2Response.data}`);
-            }
-          } catch (e) { /* Foto não existe */ }
-          
-          try {
-            const foto3Response = await api.get(`/evento/foto3/${evento.id}`);
-            if (foto3Response.data) {
-              fotos.push(`data:image/png;base64,${foto3Response.data}`);
             }
           } catch (e) { /* Foto não existe */ }
           

@@ -9,11 +9,14 @@ const api = axios.create({
   timeout: 10000,
 });
 
-// Interceptor para traatamento de erros
+// Interceptor para tratamento de erros
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    console.error('API Error:', error);
+    // Log apenas erros que não sejam 404 de imagens
+    if (!(error.response?.status === 404 && error.config?.url?.includes('/foto'))) {
+      console.error('API Error:', error);
+    }
     return Promise.reject(error);
   }
 );
