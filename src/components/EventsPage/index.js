@@ -397,6 +397,26 @@ const EventsPage = () => {
 
 
 
+  const carregarFotosEvento = async (eventoId) => {
+    const fotos = [];
+    try {
+      const foto1 = await eventoService.buscarFoto1(eventoId);
+      if (foto1) fotos.push(`data:image/jpeg;base64,${foto1}`);
+    } catch (e) {}
+    
+    try {
+      const foto2 = await eventoService.buscarFoto2(eventoId);
+      if (foto2) fotos.push(`data:image/jpeg;base64,${foto2}`);
+    } catch (e) {}
+    
+    try {
+      const foto3 = await eventoService.buscarFoto3(eventoId);
+      if (foto3) fotos.push(`data:image/jpeg;base64,${foto3}`);
+    } catch (e) {}
+    
+    return fotos;
+  };
+
   const fetchEvents = async () => {
     try {
       const data = await getEvents();
@@ -407,7 +427,7 @@ const EventsPage = () => {
         const eventosAtivos = data.filter(evento => evento.statusEvento === 'ativado');
         
         // Processar eventos para carregar fotos
-        const eventosProcessados = eventosAtivos.map((evento) => {
+        const eventosProcessados = await Promise.all(eventosAtivos.map(async (evento) => {
           return {
             ...evento,
             nomeEvento: evento.nome,
@@ -434,12 +454,12 @@ const EventsPage = () => {
             }) : null,
             localEvento: evento.lugar_id?.nome || 'Local não informado',
             imagemEvento: evento.foto1 ? `data:image/jpeg;base64,${evento.foto1}` : placeholderImage,
-            fotosEvento: [evento.foto1, evento.foto2, evento.foto3].filter(f => f).map(f => `data:image/jpeg;base64,${f}`),
+            fotosEvento: await carregarFotosEvento(evento.id),
             criadoPor: evento.usuario_id?.nome || 'Usuário não informado',
             statusEvento: evento.statusEvento,
             linkSite: evento.linkSite
           };
-        });
+        }));
         console.log('Eventos processados:', eventosProcessados);
         setEvents(eventosProcessados);
       }

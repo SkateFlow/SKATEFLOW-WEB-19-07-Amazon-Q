@@ -1,11 +1,12 @@
 import React from 'react';
 import styled from 'styled-components';
-import { FiCalendar, FiMapPin, FiTrendingUp, FiUsers } from 'react-icons/fi';
+import { FiCalendar, FiMapPin, FiClock, FiUsers } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import SidebarAdmin from '../../../components/SidebarAdmin';
 import { eventoService } from '../../../services/eventService';
 import { lugarService } from '../../../services/lugarService';
 import { usuarioService } from '../../../services/usuarioService';
+import { solicitacaoPistaService } from '../../../services/solicitacaoPistaService';
 
 
 const AdminContainer = styled.div`
@@ -338,7 +339,8 @@ const Dashboard = () => {
   const [stats, setStats] = React.useState({
     eventosAtivos: 0,
     pistasAtivas: 0,
-    usuariosAtivos: 0
+    usuariosAtivos: 0,
+    solicitacoesPendentes: 0
   });
   const [loading, setLoading] = React.useState(true);
   const [chartView, setChartView] = React.useState('week');
@@ -369,10 +371,12 @@ const Dashboard = () => {
     try {
       setLoading(true);
       
-      const [eventos, lugares, usuarios] = await Promise.all([
+      const [eventos, lugares, usuarios, pistasPendentes, eventosPendentes] = await Promise.all([
         eventoService.listar(),
         lugarService.listar(),
-        usuarioService.listar()
+        usuarioService.listar(),
+        solicitacaoPistaService.listarPendentes(),
+        eventoService.listarPendentes()
       ]);
       
       console.log('Eventos carregados:', eventos);
@@ -387,17 +391,19 @@ const Dashboard = () => {
       const usuariosAtivos = usuarios.filter(usuario => 
         usuario.statusUsuario === 'ATIVO' || usuario.statusUsuario === 'ativo'
       ).length;
+      const solicitacoesPendentes = pistasPendentes.length + eventosPendentes.length;
       
       setStats({
         eventosAtivos,
         pistasAtivas,
-        usuariosAtivos
+        usuariosAtivos,
+        solicitacoesPendentes
       });
       
       processChartData(usuarios);
     } catch (error) {
       console.error('Erro ao carregar estatísticas:', error);
-      setStats({ eventosAtivos: 0, pistasAtivas: 0, usuariosAtivos: 0 });
+      setStats({ eventosAtivos: 0, pistasAtivas: 0, usuariosAtivos: 0, solicitacoesPendentes: 0 });
     } finally {
       setLoading(false);
     }
@@ -588,14 +594,14 @@ const Dashboard = () => {
 
 
 
-          <StatCard color="linear-gradient(90deg, #8b5cf6 0%, #7c3aed 100%)">
+          <StatCard color="linear-gradient(90deg, #ef4444 0%, #dc2626 100%)">
             <StatHeader>
               <div>
-                <StatValue>100%</StatValue>
-                <StatLabel>Sistema Online</StatLabel>
+                <StatValue>{loading ? '...' : stats.solicitacoesPendentes}</StatValue>
+                <StatLabel>Solicitações Pendentes</StatLabel>
               </div>
-              <StatIcon bgColor="rgba(139, 92, 246, 0.1)" color="#8b5cf6">
-                <FiTrendingUp />
+              <StatIcon bgColor="rgba(239, 68, 68, 0.1)" color="#ef4444">
+                <FiClock />
               </StatIcon>
             </StatHeader>
           </StatCard>

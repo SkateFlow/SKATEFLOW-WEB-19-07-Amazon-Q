@@ -124,7 +124,6 @@ const InfoRow = styled.div`
 
 const InfoLabel = styled.span`
   font-weight: 500;
-  min-width: 60px;
   color: #475569;
 `;
 
@@ -592,11 +591,16 @@ const Solicitacoes = () => {
                     {solicitacao.tipo === 'pista' ? '🛹 Pista' : '🎆 Evento'}
                   </StatusBadge>
                   <SolicitacaoTitle style={{ marginBottom: '4px' }}>{solicitacao.nome}</SolicitacaoTitle>
-                  <div style={{ color: '#64748b', fontSize: '16px', marginBottom: '6px' }}>
-                    {solicitacao.tipo === 'pista' 
-                      ? (solicitacao.localizacao || `${solicitacao.rua || ''}, ${solicitacao.bairro || ''}`.replace(/^,\s*|,\s*$/g, '') || 'Não informado')
-                      : `${solicitacao.dataEvento} - ${solicitacao.localEvento}`
-                    }
+                  <div style={{ color: '#64748b', fontSize: '14px', marginBottom: '6px', display: 'flex', gap: '4px' }}>
+                    <span style={{ fontWeight: '500' }}>
+                      {solicitacao.tipo === 'pista' ? 'Localização:' : 'Data/Local:'}
+                    </span>
+                    <span>
+                      {solicitacao.tipo === 'pista' 
+                        ? (solicitacao.localizacao || `${solicitacao.rua || ''}, ${solicitacao.bairro || ''}`.replace(/^,\s*|,\s*$/g, '') || 'Não informado')
+                        : `${solicitacao.dataEvento} - ${solicitacao.localEvento}`
+                      }
+                    </span>
                   </div>
 
                 </CardContent>

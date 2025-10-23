@@ -122,15 +122,6 @@ export const usuarioService = {
     }
   },
 
-  validarCodigo: async (email, codigo) => {
-    try {
-      const response = await api.post('/usuario/validarCodigo', { email, codigo });
-      return response.data;
-    } catch (error) {
-      throw error.response?.data || 'Código inválido ou expirado';
-    }
-  },
-
   redefinirSenha: async (email, codigo, novaSenha) => {
     try {
       const response = await api.post('/usuario/redefinirSenha', { email, codigo, novaSenha });

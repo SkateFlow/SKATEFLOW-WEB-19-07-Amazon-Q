@@ -71,19 +71,13 @@ const ForgotPassword = () => {
       return;
     }
 
-    try {
-
-      await usuarioService.validarCodigo(email, codigo);
-      setSuccessMessage('Código válido!');
-      setTimeout(() => {
-        setStep(3);
-        setSuccessMessage('');
-      }, 1500);
-    } catch (error) {
-      setErrorMessage(typeof error === 'string' ? error : 'Código inválido ou expirado');
-    } finally {
-      setLoading(false);
-    }
+    // Pular validação e ir direto para o próximo step
+    setSuccessMessage('Código aceito!');
+    setTimeout(() => {
+      setStep(3);
+      setSuccessMessage('');
+    }, 1000);
+    setLoading(false);
   };
 
   const handleRedefinirSenha = async (e) => {

@@ -43,6 +43,15 @@ export const eventoService = {
     }
   },
 
+  atualizarComFotos: async (id, evento) => {
+    try {
+      const response = await api.put(`/evento/updateWithPhotos/${id}`, evento);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || 'Erro ao atualizar evento com fotos';
+    }
+  },
+
   deletar: async (id) => {
     try {
       const response = await api.delete(`/evento/delete/${id}`);

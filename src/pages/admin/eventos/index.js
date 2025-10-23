@@ -297,30 +297,20 @@ const Eventos = () => {
     try {
       const { eventoService } = await import('../../../services/eventService');
       
-      // Preparar dados para o backend
+      // Preparar dados para o backend incluindo fotos
       const eventoData = {
         nome: updatedEvent.nomeEvento,
         info: updatedEvent.descricao,
         dataInicio: updatedEvent.dataInicio,
         dataFim: updatedEvent.dataFim,
-        statusEvento: updatedEvent.ativo ? 'ativado' : 'inativo'
+        statusEvento: updatedEvent.ativo ? 'ativado' : 'inativo',
+        linkSite: updatedEvent.linkSite || null,
+        foto1: updatedEvent.fotos && updatedEvent.fotos[0] && updatedEvent.fotos[0].startsWith('data:image/') ? updatedEvent.fotos[0].split(',')[1] : null,
+        foto2: updatedEvent.fotos && updatedEvent.fotos[1] && updatedEvent.fotos[1].startsWith('data:image/') ? updatedEvent.fotos[1].split(',')[1] : null,
+        foto3: updatedEvent.fotos && updatedEvent.fotos[2] && updatedEvent.fotos[2].startsWith('data:image/') ? updatedEvent.fotos[2].split(',')[1] : null
       };
       
-      await eventoService.atualizar(updatedEvent.id, eventoData);
-      
-      // Salvar fotos se foram alteradas
-      if (updatedEvent.fotos) {
-        for (let i = 0; i < updatedEvent.fotos.length; i++) {
-          if (updatedEvent.fotos[i] && updatedEvent.fotos[i].startsWith('data:image/')) {
-            const fotoBase64 = updatedEvent.fotos[i].split(',')[1];
-            try {
-              await eventoService[`salvarFoto${i + 1}`](updatedEvent.id, fotoBase64);
-            } catch (error) {
-              console.error(`Erro ao salvar foto ${i + 1}:`, error);
-            }
-          }
-        }
-      }
+      await eventoService.atualizarComFotos(updatedEvent.id, eventoData);
       
       // Atualizar lista local
       setEvents(events.map(event => 

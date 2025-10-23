@@ -110,14 +110,49 @@ const EditEventModal = ({ isOpen, onClose, event, onSave }) => {
 
   const handlePhotoChange = (index, file) => {
     if (file && file instanceof File) {
+      // Verificar tamanho do arquivo (max 2MB)
+      if (file.size > 2 * 1024 * 1024) {
+        alert('Imagem muito grande. Tamanho máximo: 2MB');
+        return;
+      }
+      
       const reader = new FileReader();
       reader.onload = (e) => {
-        const newFotos = formData.fotos ? [...formData.fotos] : ['', '', ''];
-        newFotos[index] = e.target.result;
-        setFormData(prev => ({
-          ...prev,
-          fotos: newFotos
-        }));
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          
+          // Redimensionar se necessário (max 800px)
+          let { width, height } = img;
+          const maxSize = 800;
+          
+          if (width > maxSize || height > maxSize) {
+            if (width > height) {
+              height = (height * maxSize) / width;
+              width = maxSize;
+            } else {
+              width = (width * maxSize) / height;
+              height = maxSize;
+            }
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          
+          ctx.drawImage(img, 0, 0, width, height);
+          
+          // Comprimir para JPEG com qualidade 0.6
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.6);
+          
+          const newFotos = formData.fotos ? [...formData.fotos] : ['', '', ''];
+          newFotos[index] = compressedDataUrl;
+          setFormData(prev => ({
+            ...prev,
+            fotos: newFotos
+          }));
+        };
+        img.src = e.target.result;
       };
       reader.onerror = () => {
         console.error('Erro ao ler arquivo');
