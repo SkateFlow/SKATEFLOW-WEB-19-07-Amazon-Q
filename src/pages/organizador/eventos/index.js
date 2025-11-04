@@ -6,6 +6,7 @@ import CreateEventModal from '../../../components/CreateEventModal';
 import EditEventModal from '../../../components/EditEventModal';
 import { useAuth } from '../../../context/AuthContext';
 import { eventoService } from '../../../services/eventService';
+import api from '../../../utils/api';
 
 const Container = styled.div`
   background: 
@@ -202,16 +203,12 @@ const EventosOrganizador = () => {
   const loadEventos = async () => {
     try {
       setLoading(true);
-      const data = await eventoService.listar();
-      // Filtrar apenas eventos do organizador logado
-      const eventosDoOrganizador = data.filter(evento => 
-        evento.usuario_id?.id === user?.id
-      );
-      setEventos(eventosDoOrganizador);
+      const response = await api.get(`/evento/usuario/${user.id}`);
+      setEventos(response.data);
       
       // Carregar imagens dos eventos
       const images = {};
-      for (const evento of eventosDoOrganizador) {
+      for (const evento of response.data) {
         try {
           const foto1 = await eventoService.buscarFoto1(evento.id);
           if (foto1) {

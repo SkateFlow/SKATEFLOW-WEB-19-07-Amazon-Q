@@ -217,8 +217,7 @@ const PerfilOrganizador = () => {
           usuario_id: { id: user.id }
         };
         
-        // Aqui você precisaria implementar o método update no organizadorService
-        console.log('Dados para atualizar:', organizadorUpdate);
+        await organizadorService.atualizar(organizadorData.id, organizadorUpdate);
       }
 
       setEditing(false);

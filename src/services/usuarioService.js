@@ -48,6 +48,15 @@ export const usuarioService = {
 
   atualizar: async (id, usuario) => {
     try {
+      const response = await api.put(`/usuario/atualizarSimples/${id}`, usuario);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || 'Erro ao atualizar usuário';
+    }
+  },
+
+  atualizarCompleto: async (id, usuario) => {
+    try {
       const formData = new FormData();
       if (usuario.nome) formData.append('nome', usuario.nome);
       if (usuario.email) formData.append('email', usuario.email);
@@ -128,6 +137,24 @@ export const usuarioService = {
       return response.data;
     } catch (error) {
       throw error.response?.data || 'Erro ao redefinir senha';
+    }
+  },
+
+  buscarEventosDoUsuario: async (id) => {
+    try {
+      const response = await api.get(`/evento/usuario/${id}`);
+      return response.data;
+    } catch (error) {
+      return [];
+    }
+  },
+
+  buscarPistasDoUsuario: async (id) => {
+    try {
+      const response = await api.get(`/lugar/usuario/${id}`);
+      return response.data;
+    } catch (error) {
+      return [];
     }
   }
 };

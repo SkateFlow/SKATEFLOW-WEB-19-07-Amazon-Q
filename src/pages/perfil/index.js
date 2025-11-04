@@ -527,13 +527,11 @@ const Perfil = () => {
   const loadUserEventos = async () => {
     setLoadingItems(true);
     try {
-      const eventos = await eventoService.listar();
-      const userEventos = eventos.filter(evento => 
-        evento.usuario_id?.id === user.id || evento.usuario_id === user.id
-      );
-      setUserEventos(userEventos);
+      const eventos = await usuarioService.buscarEventosDoUsuario(user.id);
+      setUserEventos(eventos);
     } catch (error) {
       console.error('Erro ao carregar eventos:', error);
+      setUserEventos([]);
     } finally {
       setLoadingItems(false);
     }
@@ -542,30 +540,11 @@ const Perfil = () => {
   const loadUserPistas = async () => {
     setLoadingItems(true);
     try {
-      const pistas = await lugarService.listar();
-      console.log('Todas as pistas:', pistas);
-      console.log('User ID atual:', user.id);
-      
-      const userPistas = pistas.filter(pista => {
-        const isOwner = pista.usuario?.id === user.id || 
-                       pista.usuarioId === user.id ||
-                       pista.usuario_id?.id === user.id;
-        
-        console.log(`Pista ${pista.nome}:`, {
-          pistaUsuarioId: pista.usuario?.id,
-          pistaUsuarioIdDirect: pista.usuarioId,
-          pistaUsuario_id: pista.usuario_id?.id,
-          userIdAtual: user.id,
-          isOwner
-        });
-        
-        return isOwner;
-      });
-      
-      console.log('Pistas filtradas para o usuário:', userPistas);
-      setUserPistas(userPistas);
+      const pistas = await usuarioService.buscarPistasDoUsuario(user.id);
+      setUserPistas(pistas);
     } catch (error) {
       console.error('Erro ao carregar pistas:', error);
+      setUserPistas([]);
     } finally {
       setLoadingItems(false);
     }

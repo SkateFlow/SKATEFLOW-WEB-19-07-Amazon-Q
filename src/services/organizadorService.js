@@ -17,5 +17,14 @@ export const organizadorService = {
     } catch (error) {
       throw error.response?.data || 'Erro ao buscar organizadores';
     }
+  },
+
+  atualizar: async (id, organizador) => {
+    try {
+      const response = await api.put(`/organizador/update/${id}`, organizador);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || 'Erro ao atualizar organizador';
+    }
   }
 };
